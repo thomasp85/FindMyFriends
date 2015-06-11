@@ -44,6 +44,6 @@ subclasses
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
-plotGroup(testPG, lowerLimit=0)
+plotGroup(testPG, 10, lowerLimit=0.25)
 }
 

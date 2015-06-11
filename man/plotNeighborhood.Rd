@@ -38,7 +38,7 @@ pgVirtualLoc subclasses
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 
-# Nice little overview of the neighborhood of gene group 10
-plotNeighborhood(testPG, 10)
+# Nice little overview of the neighborhood of gene group 30
+plotNeighborhood(testPG, 30)
 }
 
