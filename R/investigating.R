@@ -90,7 +90,7 @@ setMethod(
         info$nGeneGroups <- apply(pgMatrix(object)[, rownames(info)], 2, function(x) sum(x!=0))
         if(hasParalogueLinks(object)) {
             links <- split(1:nGeneGroups(object), groupInfo(object)$paralogue)
-            parMat <- apply(pgMatrix(object)[, rownames(info)], function(x) {
+            parMat <- apply(pgMatrix(object)[, rownames(info)], 2, function(x) {
                 sapply(links, function(i) sum(x[i]))
             })
         } else {
