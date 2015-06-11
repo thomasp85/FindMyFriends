@@ -28,7 +28,7 @@ setMethod(
         new(
             class(pg1),
             pg,
-            sequenceInfo = rbind(pg1@sequenceInfo, pg2@sequenceInfo)
+            geneLocation = rbind(pg1@geneLocation, pg2@geneLocation)
         )
     }
 )

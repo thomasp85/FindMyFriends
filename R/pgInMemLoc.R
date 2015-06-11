@@ -21,7 +21,7 @@ setClass(
         geneLocation='data.frame'
     ),
     prototype = list(
-        sequenceInfo = data.frame(contig=character(), start=integer(), end=integer(), strand=integer())
+        geneLocation = data.frame(contig=character(), start=integer(), end=integer(), strand=integer())
     )
 )
 #' @describeIn geneLocation Get gene location for pgInMemLoc subclasses

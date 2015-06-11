@@ -201,7 +201,7 @@ setMethod(
         }
         object@matrix <- getPgMatrix(object)
         if(inherits(object, 'pgInMemLoc')) {
-            object@sequenceInfo <- object@sequenceInfo[-ind, , drop=FALSE]
+            object@geneLocation <- object@geneLocation[-ind, , drop=FALSE]
         }
         if(inherits(object, 'pgFull')) {
             object@sequences <- object@sequences[-ind]

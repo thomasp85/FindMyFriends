@@ -30,9 +30,9 @@ NULL
 #' 
 #' @param ... Additional defaults to set on the object
 #' 
-#' @return A pgVirtual subclass object depending on sequenceInfo and lowMem.
+#' @return A pgVirtual subclass object depending on geneLocation and lowMem.
 #' \tabular{lll}{
-#'  \bold{sequenceInfo} \tab \bold{lowMem} \tab \bold{Resulting class}         \cr
+#'  \bold{geneLocation} \tab \bold{lowMem} \tab \bold{Resulting class}         \cr
 #'  NULL                \tab FALSE         \tab \code{\linkS4class{pgFull}}    \cr
 #'  NULL                \tab TRUE          \tab \code{\linkS4class{pgLM}}      \cr
 #'  !NULL               \tab FALSE         \tab \code{\linkS4class{pgFullLoc}} \cr

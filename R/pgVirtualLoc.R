@@ -34,10 +34,10 @@ setClass(
         }
         gL <- geneLocation(object)
         if(nrow(gL) != nGenes(object)) {
-            return('Sequence and sequenceInfo length differ')
+            return('Sequence and geneLocation length differ')
         }
         if(!all(c('contig', 'start', 'end', 'strand') %in% names(gL))) {
-            return('Missing columns in sequenceInfo')
+            return('Missing columns in geneLocation')
         }
         if(!all(unique(gL$strand)) %in% c(-1, 1)) {
             return('Strand must be coded with -1 and 1')
