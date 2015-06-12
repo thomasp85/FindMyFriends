@@ -527,7 +527,7 @@ setMethod(
 #' 
 #' @param chunkSize Number of organisms to process at a time
 #' 
-#' @importFrom ggdendro dendro_data
+#' @importFrom ggdendro dendro_data dendro_data.dendrogram label
 #' 
 setMethod(
     'plotTree', 'pgVirtual',
