@@ -1,7 +1,7 @@
 ---
 title: "Creating pangenomes using FindMyFriends"
 author: "Thomas Lin Pedersen"
-date: "January 12th 2015"
+date: "June 12th 2015"
 output: 
     rmarkdown::html_vignette:
         css: styles.css
@@ -376,7 +376,7 @@ order to do further analysis is the pangenome matrix and raw sequences:
 # Get the pangenome matrix as an ExpressionSet object
 as(mycoPan, 'ExpressionSet')
 # or as a regular matrix
-as(mycoPan, 'matrix')[1:6, 1:10]
+as(mycoPan, 'matrix')[1:6, ]
 
 # Get all genes split into gene groups
 genes(mycoPan, split='group')
