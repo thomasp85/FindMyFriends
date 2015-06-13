@@ -217,7 +217,7 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
     seqs <- genes(pangenome, subset=geneGroup$genes)
     sMat <- as.matrix(linearKernel(
         getExRep(seqs, spectrumKernel(kmerSize)), 
-        sparse=T, 
+        sparse=F,  # To avoid strange crash on AWS
         diag=F, 
         lowerLimit = lowerLimit))
     if(!is.null(maxLengthDif)) {
