@@ -47,6 +47,8 @@ setMethod(
                         down = lapply(neighbors[[i]], `[[`, i='down'),
                         up = lapply(neighbors[[i]], `[[`, i='up')
                     )
+                    cat('Splitting ', thisRound[i], '\n')
+                    flush.console()
                     newGroup <- neighborSplitting(
                         group, 
                         pangenome=object, 
