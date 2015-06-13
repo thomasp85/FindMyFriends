@@ -62,48 +62,6 @@ setMethod(
 
 ### SPLITTING HELPER FUNCTIONS
 
-#' Extract the neighbors for each gene in a pangenome
-#' 
-#' This function extract neighborhood information for each gene in terms of the
-#' gene groups the flanking genes are members of. The direction of the gene is
-#' normalized so that forward and backward is flipped if the gene is located on
-#' the complementary strand (strand=-1)
-#' 
-#' @param pangenome A pgVirtualLoc subclass object
-#' 
-#' @param flankSize The number of genes in each direction to extract
-#' 
-#' @return A list with an element for each gene group. Each element contains the
-#' gene members as indexes, the backwards and forwards gene groups for each gene
-#' member and the organism each gene member comes from.
-#' 
-#' @importFrom dplyr %>% group_by arrange mutate ungroup do
-#' 
-#' @noRd
-#' 
-getNeighbors <- function(pangenome, flankSize) {
-    geneLocation <- geneLocation(pangenome)
-    geneLocation$gene <- 1:nGenes(pangenome)
-    geneLocation$organism <- orgNames(pangenome)[seqToOrg(pangenome)]
-    geneLocation$geneGroup <- groupNames(pangenome)[seqToGeneGroup(pangenome)]
-    
-    neighbors <- geneLocation %>% 
-        group_by(organism, contig) %>%
-        arrange(start, end) %>%
-        mutate(backward=collectNeighbors(geneGroup, 'b', flankSize), forward=collectNeighbors(geneGroup, 'f', flankSize)) %>%
-        ungroup() %>%
-        group_by(geneGroup) %>%
-        do(groupInfo={
-            list(
-                genes=.$gene, 
-                backward=ifelse(.$strand==1,.$backward, .$forward), 
-                forward=ifelse(.$strand==1,.$forward, .$backward), 
-                organism=.$organism
-            )
-        }) %>%
-        arrange(match(geneGroup, groupNames(pangenome)))
-    neighbors$groupInfo
-}
 
 #' Convert a sorted vector of groups to a vector of neighbors
 #' 
