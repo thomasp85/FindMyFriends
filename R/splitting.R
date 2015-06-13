@@ -165,8 +165,8 @@ collectNeighbors <- function(groups, dir, n) {
 #' @noRd
 #' 
 neighborhoodSimilarity <- function(geneGroup, minFlank=1, forceParalogues=TRUE) {
-    backward <- lapply(strsplit(geneGroup$backward, ';'), rev)
-    forward <- strsplit(geneGroup$forward, ';')
+    backward <- geneGroup$down
+    forward <- geneGroup$up
     res <- matrix(0, nrow=length(backward), ncol=length(backward))
     for(i in 1:length(backward)) {
         for(j in i:length(backward)) {
@@ -174,10 +174,10 @@ neighborhoodSimilarity <- function(geneGroup, minFlank=1, forceParalogues=TRUE) 
             if(forceParalogues && geneGroup$organism[i] == geneGroup$organism[j]) next
             
             bIntersect <- intersect(backward[[i]], backward[[j]])
-            if(length(bIntersect) < minFlank) next
+            if(length(bIntersect) < minFlank && length(backward[[i]]) > 0 && length(backward[[j]]) > 0) next
             
             fIntersect <- intersect(forward[[i]], forward[[j]])
-            if(length(fIntersect) < minFlank) next
+            if(length(fIntersect) < minFlank && length(forward[[i]]) > 0 && length(forward[[j]]) > 0) next
             
             iVec <- c(bIntersect[order(match(bIntersect,backward[[i]]))],
                       fIntersect[order(match(fIntersect,backward[[i]]))])
