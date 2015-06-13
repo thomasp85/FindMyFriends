@@ -28,22 +28,52 @@ setMethod(
     function(object, flankSize, minFlank, forceParalogues, kmerSize, lowerLimit, maxLengthDif=0.1) {
         .fillDefaults(defaults(object))
         
-        neighbors <- getNeighbors(object, flankSize)
-        
-        newGroups <- lapply(
-            neighbors, 
-            neighborSplitting, 
-            pangenome=object, 
-            kmerSize=kmerSize, 
-            lowerLimit=lowerLimit,
-            minFlank=minFlank,
-            forceParalogues=forceParalogues,
-            maxLengthDif=maxLengthDif
-        )
-        manualGrouping(object, unlist(newGroups, recursive=FALSE))
+        pending <- rep(TRUE, nGeneGroups(object))
+        containsParalogues <- anyParalogues(object)
+        currentGrouping <- seqToGeneGroup(object)
+        lastCall <- FALSE
+        while(any(pending)) {
+            if(!lastCall) {
+                hadChanges <- FALSE
+                thisRound <- which(pending)
+                neighbors <- trailGroups2(thisRound, currentGrouping, object, flankSize)
+            }
+            for(i in seq_along(thisRound)) {
+                if(lastCall || qualifies(thisRound[i], neighbors[[i]], containsParalogues[i], pending)) {
+                    genes <- as.integer(names(neighbors[[i]]))
+                    group <- list(
+                        genes = genes,
+                        organism = seqToOrg(object)[genes],
+                        down = lapply(neighbors[[i]], `[[`, i='down'),
+                        up = lapply(neighbors[[i]], `[[`, i='up')
+                    )
+                    newGroup <- neighborSplitting(
+                        group, 
+                        pangenome=object, 
+                        kmerSize=kmerSize, 
+                        lowerLimit=lowerLimit,
+                        minFlank=as.integer(containsParalogues[i]),
+                        forceParalogues=forceParalogues,
+                        maxLengthDif=maxLengthDif
+                    )
+                    if(length(newGroup) != 1) {
+                        newGroupNames <- seq(max(currentGrouping)+1, length.out=length(newGroup))
+                        currentGrouping[unlist(newGroup)] <- rep(newGroupNames, lengths(newGroup))
+                    }
+                    pending[[thisRound[i]]] <- FALSE
+                    hadChanges <- TRUE
+                }
+            }
+            if(!hadChanges) {
+                if(lastCall) {
+                    stop('No convergence')
+                }
+                lastCall <- TRUE
+            }
+        }
+        manualGrouping(object, match(currentGrouping, unique(currentGrouping)))
     }
 )
-
 # setMethod(
 #     'similaritySplit', 'pgVirtual',
 #     function(object, forceParalogues, kmerSize, lowerLimit) {
@@ -206,6 +236,46 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
     aMat <- aMat[aMat$nWeight != 0 & aMat$sWeight != 0,]
     
     gr <- graph.data.frame(aMat, directed=FALSE, vertices = geneGroup$genes)
+    
+    chosenCliques <- list()
+    
+    while(ecount(gr) != 0) {
+        clique <- extractClique(gr, length(unique(geneGroup$organism)))
+        gr <- gr - clique
+        chosenCliques <- append(chosenCliques, list(as.integer(clique)))
+    }
+    if(vcount(gr) != 0) {
+        chosenCliques <- append(chosenCliques, as.list(as.integer(V(gr)$name)))
+    }
+    
+    chosenCliques
+}
+neighborSplitting2 <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLengthDif, ...) {
+    if(length(geneGroup$genes) == 1) return(list(geneGroup$genes))
+    
+    nMat <- neighborhoodSimilarity(geneGroup, ...)
+    seqs <- genes(pangenome, subset=geneGroup$genes)
+    sMat <- as.matrix(linearKernel(
+        getExRep(seqs, spectrumKernel(kmerSize)), 
+        sparse=T, 
+        diag=F, 
+        lowerLimit = lowerLimit))
+    if(!is.null(maxLengthDif)) {
+        if(maxLengthDif < 1) {
+            lMat <- outer(width(seqs), width(seqs), function(a,b) {abs(a-b)/pmax(a,b)}) < maxLengthDif
+        } else {
+            lMat <- outer(width(seqs), width(seqs), function(a,b) {abs(a-b)}) < maxLengthDif
+        }
+        sMat[!lMat] <- 0
+    }
+    dimnames(sMat) <- list(geneGroup$genes, geneGroup$genes)
+    dimnames(nMat) <- list(geneGroup$genes, geneGroup$genes)
+    nMat <- melt(nMat, varnames = c('from', 'to'), value.name = 'nWeight')
+    sMat <- melt(sMat, varnames = c('from', 'to'), value.name = 'sWeight')
+    aMat <- merge(nMat, sMat)
+    aMat <- aMat[aMat$nWeight != 0 & aMat$sWeight != 0,]
+    
+    gr <- graph.data.frame(aMat, directed=FALSE, vertices = geneGroup$genes)
     cliques <- maximal.cliques(gr)
     minWeights <- do.call(rbind, lapply(cliques, function(i) {
         edges <- E(induced.subgraph(gr, i))
@@ -248,4 +318,101 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
         }
     }
     chosenCliques
+}
+#' Extract the \emph{best} clique from a graph
+#' 
+#' This function takes a graph with edge attributes sWeight and nWeight and find
+#' the best clique. The best clique is defined as the clique containing the edge
+#' with highest sWeight, and if there are multiple the clique of those with the
+#' highest nWeight edge. If there is still ties the largest of the cliques is
+#' chosen and if there is a tie there the first one is chosen.
+#' 
+#' @param gr An undirected igraph object with edge attributes nWeight and 
+#' sWeight
+#' 
+#' @return A character vector with the name of the vertices included in the 
+#' clique
+#' 
+#' @importFrom igraph get.edgelist edge.attributes neighborhood induced.subgraph largest.cliques degree vcount V E ecount
+#' 
+#' @noRd
+#' 
+extractClique <- function(gr, nDistinct) {
+    if(all(degree(gr) == vcount(gr)-1)) return(list(as.integer(V(gr)$name)))
+    
+    maxEdges <- ceiling(vcount(gr)/nDistinct)*nDistinct*(nDistinct-1)/2
+    currentECount <- ecount(gr)
+    if(currentECount > maxEdges) {
+        edges <- E(gr)
+        badEdges <- order(edges$nWeight, edges$sWeight)[seq_len(currentECount - maxEdges)]
+        gr <- gr - E(gr)[badEdges]
+    }
+    
+    edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
+    
+    cliques <- maximal.cliques(gr)
+    cliques[lengths(cliques) == 1] <- NULL
+    cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
+        edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
+        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]))
+    }))
+    bestClique <- which(cliqueStat[,1] == max(cliqueStat[,1]))
+    if(length(bestClique) != 1) {
+        bestClique <- bestClique[which.max(cliqueStat[bestClique, 2])]
+    }
+    V(gr)$name[cliques[[bestClique]]]
+}
+trailGroups2 <- function(groups, currentGrouping, pg, vicinity) {
+    genes <- which(currentGrouping %in% groups)
+    info <- geneLocation(pg)
+    locations <- unique(paste(seqToOrg(pg)[genes], info$contig[genes], sep='>'))
+    info$gene <- 1:nrow(info)
+    info$group <- currentGrouping
+    info$organism <- seqToOrg(pg)
+    info <- info %>%
+        filter(paste(organism, contig, sep='>') %in% locations) %>%
+        group_by(organism, contig) %>%
+        arrange(start, end) %>%
+        do(trail={
+            geneInd <- which(.$gene %in% genes)
+            res <- lapply(geneInd, function(x) {
+                trailSeq <- x + c(-1, 1)*vicinity
+                if(trailSeq[1] < 1) trailSeq[1] <- 1
+                if(trailSeq[2] > nrow(.)) trailSeq[2] <- nrow(.)
+                if(.$strand[x] == -1) {
+                    trailSeq <- rev(trailSeq)
+                }
+                downLength <- abs(trailSeq[1] - x)+1
+                list(
+                    down = .$group[seq(trailSeq[1], x)[-downLength]],
+                    up = .$group[seq(x, trailSeq[2])[-1]]
+                )
+            })
+            names(res) <- .$gene[geneInd]
+            res
+        })
+    info <- unlist(info$trail, recursive=FALSE)
+    info <- info[match(names(info), as.character(genes))]
+    info <- split(info, currentGrouping[genes])
+    info[match(names(info), as.character(groups))]
+}
+anyParalogues <- function(pangenome) {
+    groups <- data.frame(organism=seqToOrg(pangenome), geneGroup=seqToGeneGroup(pangenome))
+    groups <- groups %>%
+        group_by(geneGroup) %>%
+        summarise(paralogues=anyDuplicated(organism)!=0)
+    groups$paralogues
+}
+qualifies <- function(group, neighbors, hasParalogues, pending) {
+    if(!hasParalogues) return(TRUE)
+    down <- lapply(neighbors, `[[`, i='down')
+    down[lengths(down)==0] <- NULL
+    downResolved <- all(!pending[unique(unlist(down))], na.rm = TRUE)
+    up <- lapply(neighbors, `[[`, i='up')
+    up[lengths(up)==0] <- NULL
+    upResolved <- all(!pending[unique(unlist(up))], na.rm = TRUE)
+    if(all(downResolved, upResolved)) return(TRUE)
+    if(length(Reduce(intersect, down)) == 0) return(TRUE)
+    if(length(Reduce(intersect, up)) == 0) return(TRUE)
+    FALSE
 }
