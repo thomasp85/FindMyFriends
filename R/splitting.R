@@ -47,8 +47,6 @@ setMethod(
                         down = lapply(neighbors[[i]], `[[`, i='down'),
                         up = lapply(neighbors[[i]], `[[`, i='up')
                     )
-                    cat('Splitting ', thisRound[i], '\n')
-                    flush.console()
                     newGroup <- neighborSplitting(
                         group, 
                         pangenome=object, 
@@ -340,7 +338,7 @@ neighborSplitting2 <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLe
 #' @noRd
 #' 
 extractClique <- function(gr, nDistinct) {
-    if(all(degree(gr) == vcount(gr)-1)) return(list(as.integer(V(gr)$name)))
+    if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
     
     maxEdges <- ceiling(vcount(gr)/nDistinct)*nDistinct*(nDistinct-1)/2
     currentECount <- ecount(gr)
