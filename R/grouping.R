@@ -35,22 +35,8 @@ setMethod(
 #' @param lowerLimit A numeric giving the lower bounds of similarity below which
 #' it will be set to zero.
 #'   
-#' @param algorithm The name of the community detection algorithm from igraph to
-#' use for gene grouping. See \code{\link[igraph]{communities}} for an overview.
-#' The trailing '.community' can be omitted from the name. Default is 'infomap',
-#' which is also the recommended.
-#' 
-#' @param rescale logical. Should the similarities be rescaled so 
-#' lowerLimit->0
-#' 
-#' @param transform An optional transformation function for the similarity 
-#' values
-#'   
 #' @param pParam An optional BiocParallelParam object that defines the workers 
 #' used for parallelisation.
-#'   
-#' @param nSplits The number of subtrees to split the tree into for 
-#' parallelisation.
 #'   
 #' @param cacheDB A \code{\linkS4class{filehash}} object or a path to a 
 #' directory where cached results should be stored. If omitted caching will not
@@ -62,7 +48,7 @@ setMethod(
 #' 
 setMethod(
     'gpcGrouping', 'pgVirtual',
-    function(object, kmerSize, tree, lowerLimit, algorithm, rescale, transform, pParam, nSplits, cacheDB, ...) {
+    function(object, lowMem, kmerSize, tree, lowerLimit, pParam, cacheDB) {
         .fillDefaults(defaults(object))
         
         args <- mget(ls())

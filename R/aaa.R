@@ -319,17 +319,7 @@ weaveChunks <- function(squares, split) {
 #' @param lowerLimit The lower limit of the cosine similarity in order for it to
 #' be reported.
 #' 
-#' @param algorithm The community detection algorithm from igraph to use for 
-#' grouping of genes.
-#' 
-#' @param rescale logical Should the cosine similarity be normalised between 
-#' lowerLimit and 1?
-#' 
-#' @param transform A transformation function for the cosine similarity.
-#' 
 #' @param cacheDB A subclass of filehash to use for result cahcing
-#' 
-#' @param ... Arguments to pass on to algorithm
 #' 
 #' @return A list grouping gene indexes in pangenome
 #' 
@@ -337,10 +327,11 @@ weaveChunks <- function(squares, split) {
 #' @importFrom filehash dbExists dbFetch dbInsert
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
 #' @importFrom BiocParallel bpworkers
+#' @importFrom igraph clusters graph.adjacency
 #' 
 #' @noRd
 #' 
-recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, algorithm, rescale, transform, cacheDB, ...) {
+recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, pParam) {
     args <- mget(ls())
     args$tree <- NULL
     
@@ -384,8 +375,7 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, algorithm,
     } else {
         sim <- lkParallel(erRep, pParam, nSplits=bpworkers(pParam), diag=FALSE, lowerLimit=lowerLimit)
     }
-    sim <- transformSim(sim, lowerLimit, rescale, transform)
-    members <- igGroup(sim, algorithm, ...)
+    members <- clusters(graph.adjacency(sim, mode='lower', weighted=T, diag=FALSE))$membership
     newGroups <- lapply(split(groups, members), unlist)
     if(!missing(cacheDB)) {
         dbInsert(cacheDB, key, newGroups)

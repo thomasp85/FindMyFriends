@@ -8,8 +8,8 @@
 \usage{
 gpcGrouping(object, ...)
 
-\S4method{gpcGrouping}{pgVirtual}(object, kmerSize, tree, lowerLimit, algorithm,
-  rescale, transform, pParam, nSplits, cacheDB, ...)
+\S4method{gpcGrouping}{pgVirtual}(object, lowMem, kmerSize, tree, lowerLimit,
+  pParam, cacheDB)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -28,22 +28,8 @@ for each of their genes).}
 \item{lowerLimit}{A numeric giving the lower bounds of similarity below which
 it will be set to zero.}
 
-\item{algorithm}{The name of the community detection algorithm from igraph to
-use for gene grouping. See \code{\link[igraph]{communities}} for an overview.
-The trailing '.community' can be omitted from the name. Default is 'infomap',
-which is also the recommended.}
-
-\item{rescale}{logical. Should the similarities be rescaled so
-lowerLimit->0}
-
-\item{transform}{An optional transformation function for the similarity
-values}
-
 \item{pParam}{An optional BiocParallelParam object that defines the workers
 used for parallelisation.}
-
-\item{nSplits}{The number of subtrees to split the tree into for
-parallelisation.}
 
 \item{cacheDB}{A \code{\linkS4class{filehash}} object or a path to a
 directory where cached results should be stored. If omitted caching will not

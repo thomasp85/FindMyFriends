@@ -563,7 +563,7 @@ setGeneric(
 #' 
 #' @param object A pgVirtual subclass
 #'   
-#' @param ... parameters passed on to the community detection algorithm.
+#' @param ... parameters passed on.
 #'   
 #' @return An object of the same class as 'object'.
 #' 
