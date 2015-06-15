@@ -1,7 +1,7 @@
 # FindMyFriends
 *Fast alignment-free pangenome creation and exploration*
 
-[![Build Status](https://travis-ci.org/thomasp85/FindMyFriends.svg?branch=master)](https://travis-ci.org/thomasp85/FindMyFriends)
+[![Build Status](https://travis-ci.org/thomasp85/FindMyFriends.svg?branch=master)](https://travis-ci.org/thomasp85/FindMyFriends) [![codecov.io](http://codecov.io/github/thomasp85/FindMyFriends/coverage.svg?branch=master)](http://codecov.io/github/thomasp85/FindMyFriends?branch=master)
 
 FindMyFriends is an R package for doing pangenomic analyses on microbial genomes. It is slated for inclusion in Bioconductor but until then it can be installed using devtools:
 
