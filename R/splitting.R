@@ -365,13 +365,13 @@ extractClique <- function(gr, nDistinct) {
 trailGroups2 <- function(groups, currentGrouping, pg, vicinity) {
     genes <- which(currentGrouping %in% groups)
     info <- geneLocation(pg)
-    locations <- unique(paste(seqToOrg(pg)[genes], info$contig[genes], sep='>'))
     info$gene <- 1:nrow(info)
     info$group <- currentGrouping
     info$organism <- seqToOrg(pg)
+    info$location <- paste(info$organism, info$contig, sep='>')
+    info <- info[info$location %in% unique(info$location[genes]), , drop=FALSE]
     info <- info %>%
-        filter(paste(organism, contig, sep='>') %in% locations) %>%
-        group_by(organism, contig) %>%
+        group_by(location) %>%
         arrange(start, end) %>%
         do(trail={
             geneInd <- which(.$gene %in% genes)
@@ -392,9 +392,9 @@ trailGroups2 <- function(groups, currentGrouping, pg, vicinity) {
             res
         })
     info <- unlist(info$trail, recursive=FALSE)
-    info <- info[match(names(info), as.character(genes))]
+    info <- info[match(as.character(genes), names(info))]
     info <- split(info, currentGrouping[genes])
-    info[match(names(info), as.character(groups))]
+    info[match(as.character(groups), names(info))]
 }
 anyParalogues <- function(pangenome) {
     groups <- data.frame(organism=seqToOrg(pangenome), geneGroup=seqToGeneGroup(pangenome))
