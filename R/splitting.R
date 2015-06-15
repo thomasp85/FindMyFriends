@@ -239,13 +239,20 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
     
     chosenCliques <- list()
     
-    while(ecount(gr) != 0) {
-        clique <- extractClique(gr, length(unique(geneGroup$organism)))
-        gr <- gr - clique
-        chosenCliques <- append(chosenCliques, list(as.integer(clique)))
-    }
-    if(vcount(gr) != 0) {
-        chosenCliques <- append(chosenCliques, as.list(as.integer(V(gr)$name)))
+    unconnected <- clusters(gr)
+    
+    for(i in seq_len(unconnected$no)) {
+        members <- which(unconnected$membership == i)
+        subgr <- induced.subgraph(gr, members)
+        
+        while(ecount(subgr) != 0) {
+            clique <- extractClique(subgr, length(unique(geneGroup$organism[members])))
+            subgr <- subgr - clique
+            chosenCliques <- append(chosenCliques, list(as.integer(clique)))
+        }
+        if(vcount(subgr) != 0) {
+            chosenCliques <- append(chosenCliques, as.list(as.integer(V(subgr)$name)))
+        }
     }
     
     chosenCliques
