@@ -336,10 +336,14 @@ weaveChunks <- function(squares, split) {
 #' @importFrom digest digest
 #' @importFrom filehash dbExists dbFetch dbInsert
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
+#' @importFrom BiocParallel bpworkers
 #' 
 #' @noRd
 #' 
 recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, algorithm, rescale, transform, cacheDB, ...) {
+    args <- mget(ls())
+    args$tree <- NULL
+    
     if('pgGroups' %in% names(attributes(tree))) {
         return(attr(tree, 'pgGroups'))
     }
@@ -362,13 +366,8 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, algorithm,
         }
         groups <- as.list(which(seqToOrg(pangenome) == org))
     } else {
-        if(missing(er)) {
-            group1 <- recurseCompare(pangenome, tree[[1]], kmerSize=kmerSize, lowerLimit=lowerLimit, algorithm=algorithm, rescale=rescale, transform=transform, cacheDB=cacheDB, ...)
-            group2 <- recurseCompare(pangenome, tree[[2]], kmerSize=kmerSize, lowerLimit=lowerLimit, algorithm=algorithm, rescale=rescale, transform=transform, cacheDB=cacheDB, ...)
-        } else {
-            group1 <- recurseCompare(pangenome, tree[[1]], er, lowerLimit=lowerLimit, algorithm=algorithm, rescale=rescale, transform=transform, cacheDB=cacheDB, ...)
-            group2 <- recurseCompare(pangenome, tree[[2]], er, lowerLimit=lowerLimit, algorithm=algorithm, rescale=rescale, transform=transform, cacheDB=cacheDB, ...)
-        }
+        group1 <- do.call(recurseCompare, append(args, list(tree=tree[[1]])))
+        group2 <- do.call(recurseCompare, append(args, list(tree=tree[[2]])))
         groups <- c(group1, group2)
     }
     represent <- sapply(groups, function(x) {x[sample.int(length(x), size=1L)]})
@@ -376,10 +375,14 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, algorithm,
     if(length(unlist(groups)) > 1e6 || runif(1) < 0.01) gc() # Ensures always gc() when ngenes reaches 1mill
     
     if(missing(er)) {
-        er <- getExRep(genes(pangenome, subset=represent), spectrumKernel(kmerSize))
-        sim <- linearKernel(er, sparse = TRUE, lowerLimit = lowerLimit, diag=FALSE)
+        erRep <- getExRep(genes(pangenome, subset=represent), spectrumKernel(kmerSize))
     } else {
-        sim <- linearKernel(er, selx=represent, sparse = TRUE, lowerLimit = lowerLimit, diag=FALSE)
+        erRep <- er[represent,]
+    }
+    if(missing(pParam)) {
+        sim <- linearKernel(erRep, sparse = TRUE, lowerLimit = lowerLimit, diag=FALSE)
+    } else {
+        sim <- lkParallel(erRep, pParam, nSplits=bpworkers(pParam), diag=FALSE, lowerLimit=lowerLimit)
     }
     sim <- transformSim(sim, lowerLimit, rescale, transform)
     members <- igGroup(sim, algorithm, ...)

@@ -65,7 +65,11 @@ setMethod(
     function(object, kmerSize, tree, lowerLimit, algorithm, rescale, transform, pParam, nSplits, cacheDB, ...) {
         .fillDefaults(defaults(object))
         
-        args <- list(pangenome=object, lowerLimit=lowerLimit, algorithm=algorithm, rescale=rescale, transform=transform, ...)
+        args <- mget(ls())
+        args$lowMem <- NULL
+        args$object <- NULL
+        args$pangenome <- object
+        
         if(!missing(cacheDB)) {
             if(!inherits(cacheDB, 'filehash')) {
                 if(suppressMessages(dbCreate(cacheDB, type='RDS'))) {
@@ -80,18 +84,11 @@ setMethod(
             tree <- orgTree(object, type='kmer', kmerSize=rep(kmerSize, length=2)[2], dist='euclidean', clust='ward.D2')
         }
         args$tree <- as.dendrogram(tree)
-        if(inherits(object, 'pgLM')) {
-            args$kmerSize <- kmerSize
-        } else {
+        if(!lowMem) {
+            args$kmerSize <- NULL
             args$er <- getExRep(genes(object), spectrumKernel(kmerSize))
         }
-        if(missing(pParam)) {
-            groups <- do.call(recurseCompare, args)
-        } else {
-            args$pParam <- pParam
-            args$nSplits <- nSplits
-            groups <- do.call(recurseCompPar, args)
-        }
+        groups <- do.call(recurseCompare, args)
         manualGrouping(object, groups)
     }
 )
