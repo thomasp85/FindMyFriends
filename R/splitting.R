@@ -369,6 +369,8 @@ extractClique2 <- function(gr, nDistinct) {
     }
     V(gr)$name[cliques[[bestClique]]]
 }
+#' @importFrom igraph degree vcount V graph.coreness E largest.cliques get.edgelist edge.attributes
+#' 
 extractClique <- function(gr, nDistinct) {
     if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
     
@@ -392,10 +394,11 @@ extractClique <- function(gr, nDistinct) {
             if(lastLower == lastUpper) break
         }
         gr <- subgr
-        cliques <- maximal.cliques(gr, subset=which(graph.coreness(gr)==max(coreness)))
+        #cliques <- maximal.cliques(gr, subset=which(graph.coreness(gr)==max(coreness)))
     } else {
-        cliques <- maximal.cliques(gr)
+        #cliques <- maximal.cliques(gr)
     }
+    cliques <- largest.cliques(gr)
     
     edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
     
