@@ -344,7 +344,7 @@ neighborSplitting2 <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLe
 #' 
 #' @noRd
 #' 
-extractClique <- function(gr, nDistinct) {
+extractClique2 <- function(gr, nDistinct) {
     if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
     
     maxEdges <- ceiling(vcount(gr)/nDistinct)*nDistinct*(nDistinct-1)/2
@@ -358,6 +358,47 @@ extractClique <- function(gr, nDistinct) {
     edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
     
     cliques <- maximal.cliques(gr)
+    cliques[lengths(cliques) == 1] <- NULL
+    cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
+        edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
+        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]))
+    }))
+    bestClique <- which(cliqueStat[,1] == max(cliqueStat[,1]))
+    if(length(bestClique) != 1) {
+        bestClique <- bestClique[which.max(cliqueStat[bestClique, 2])]
+    }
+    V(gr)$name[cliques[[bestClique]]]
+}
+extractClique <- function(gr, nDistinct) {
+    if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
+    
+    if(vcount(gr) > nDistinct && sort(graph.coreness(gr), decreasing=TRUE)[nDistinct] > nDistinct-1) {
+        edges <- E(gr)
+        edgeOrder <- order(edges$nWeight, edges$sWeight)
+        lastUpper <- length(edgeOrder)
+        lastLower <- 0
+        breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
+        subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
+        coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
+        while(coreness[nDistinct] != nDistinct-1 && coreness[nDistinct+1 != nDistinct-1]) { # At least nDistinct must have nDistinct-1 neighbors
+            if(coreness[nDistinct] > nDistinct-1) {
+                lastLower <- breakPoint
+            } else {
+                lastUpper <- breakPoint
+            }
+            breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
+            subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
+            coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
+            if(lastLower == lastUpper) break
+        }
+        gr <- subgr
+        cliques <- maximal.cliques(gr, subset=which(graph.coreness(gr)==max(coreness)))
+    } else {
+        cliques <- maximal.cliques(gr)
+    }
+    
+    edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
+    
     cliques[lengths(cliques) == 1] <- NULL
     cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
         edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
