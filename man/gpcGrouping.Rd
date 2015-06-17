@@ -14,7 +14,7 @@ gpcGrouping(object, ...)
 \arguments{
 \item{object}{A pgVirtual subclass}
 
-\item{...}{parameters passed on to the community detection algorithm.}
+\item{...}{parameters passed on.}
 
 \item{kmerSize}{The size of the kmer's used for the comparison. If two values
 are given and the 'tree' argument is missing, the second value is used for
