@@ -257,92 +257,67 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
     
     chosenCliques
 }
-neighborSplitting2 <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLengthDif, ...) {
-    if(length(geneGroup$genes) == 1) return(list(geneGroup$genes))
-    
-    nMat <- neighborhoodSimilarity(geneGroup, ...)
-    seqs <- genes(pangenome, subset=geneGroup$genes)
-    sMat <- as.matrix(linearKernel(
-        getExRep(seqs, spectrumKernel(kmerSize)), 
-        sparse=T, 
-        diag=F, 
-        lowerLimit = lowerLimit))
-    if(!is.null(maxLengthDif)) {
-        if(maxLengthDif < 1) {
-            lMat <- outer(width(seqs), width(seqs), function(a,b) {abs(a-b)/pmax(a,b)}) < maxLengthDif
-        } else {
-            lMat <- outer(width(seqs), width(seqs), function(a,b) {abs(a-b)}) < maxLengthDif
-        }
-        sMat[!lMat] <- 0
-    }
-    dimnames(sMat) <- list(geneGroup$genes, geneGroup$genes)
-    dimnames(nMat) <- list(geneGroup$genes, geneGroup$genes)
-    nMat <- melt(nMat, varnames = c('from', 'to'), value.name = 'nWeight')
-    sMat <- melt(sMat, varnames = c('from', 'to'), value.name = 'sWeight')
-    aMat <- merge(nMat, sMat)
-    aMat <- aMat[aMat$nWeight != 0 & aMat$sWeight != 0,]
-    
-    gr <- graph.data.frame(aMat, directed=FALSE, vertices = geneGroup$genes)
-    cliques <- maximal.cliques(gr)
-    minWeights <- do.call(rbind, lapply(cliques, function(i) {
-        edges <- E(induced.subgraph(gr, i))
-        if(length(edges) != 0) {
-            c(min(edges$sWeight), min(edges$nWeight))
-        } else {
-            c(0, 0)
-        }
-    }))
-    verticeNames <- V(gr)$name
-    visitedVertices <- c()
-    chosenCliques <- list()
-    
-    while(TRUE) {
-        for(i in order(minWeights[, 1], minWeights[, 2], decreasing = TRUE)) {
-            vertices <- verticeNames[cliques[[i]]]
-            if(length(intersect(visitedVertices, vertices)) == 0) {
-                visitedVertices <- append(visitedVertices, vertices)
-                chosenCliques <- append(chosenCliques, list(as.integer(vertices)))
-                if(length(visitedVertices) == length(geneGroup$genes)) break
-            }
-        }
-        
-        missingVertices <- setdiff(as.character(geneGroup$genes), visitedVertices)
-        
-        if(length(missingVertices) != 0) {
-            gr <- induced.subgraph(gr, missingVertices)
-            cliques <- maximal.cliques(gr)
-            minWeights <- do.call(rbind, lapply(cliques, function(i) {
-                edges <- E(induced.subgraph(gr, i))
-                if(length(edges) != 0) {
-                    c(min(edges$sWeight), min(edges$nWeight))
-                } else {
-                    c(0, 0)
-                }
-            }))
-            verticeNames <- V(gr)$name
-        } else {
-            break
-        }
-    }
-    chosenCliques
-}
 #' Extract the \emph{best} clique from a graph
 #' 
-#' This function takes a graph with edge attributes sWeight and nWeight and find
-#' the best clique. The best clique is defined as the clique containing the edge
-#' with highest sWeight, and if there are multiple the clique of those with the
-#' highest nWeight edge. If there is still ties the largest of the cliques is
-#' chosen and if there is a tie there the first one is chosen.
+#' This function first reduce the density of the graph by removing the worst 
+#' edges until the k-core of the graph equals the maximum possible size of 
+#' cliques in the graph. After this reduction all largest cliques are detected
+#' and sorted by their minimum sWeight and nWeight edges. The clique with the
+#' highest minimum weights are returned.
 #' 
 #' @param gr An undirected igraph object with edge attributes nWeight and 
 #' sWeight
 #' 
+#' @param nDistinct The number of distinct members in the graph, i.e. the 
+#' maximum size of a clique in the graph
+#' 
 #' @return A character vector with the name of the vertices included in the 
 #' clique
 #' 
-#' @importFrom igraph get.edgelist edge.attributes neighborhood induced.subgraph largest.cliques degree vcount V E ecount
+#' @importFrom igraph degree vcount V graph.coreness E largest.cliques get.edgelist edge.attributes
 #' 
 #' @noRd
+#' 
+extractClique <- function(gr, nDistinct) {
+    if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
+    
+    if(vcount(gr) > nDistinct && sort(graph.coreness(gr), decreasing=TRUE)[nDistinct] > nDistinct-1) {
+        edges <- E(gr)
+        edgeOrder <- order(edges$nWeight, edges$sWeight)
+        lastUpper <- length(edgeOrder)
+        lastLower <- 0
+        breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
+        subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
+        coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
+        while(coreness[nDistinct] != nDistinct-1 && coreness[nDistinct+1 != nDistinct-1]) { # At least nDistinct must have nDistinct-1 neighbors
+            if(coreness[nDistinct] > nDistinct-1) {
+                lastLower <- breakPoint
+            } else {
+                lastUpper <- breakPoint
+            }
+            breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
+            subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
+            coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
+            if(lastLower == lastUpper) break
+        }
+        gr <- subgr
+    }
+    cliques <- largest.cliques(gr)
+    
+    edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
+    
+    cliques[lengths(cliques) == 1] <- NULL
+    cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
+        edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
+        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]))
+    }))
+    bestClique <- which(cliqueStat[,1] == max(cliqueStat[,1]))
+    if(length(bestClique) != 1) {
+        bestClique <- bestClique[which.max(cliqueStat[bestClique, 2])]
+    }
+    V(gr)$name[cliques[[bestClique]]]
+}
+#' @importFrom igraph get.edgelist edge.attributes neighborhood induced.subgraph largest.cliques degree vcount V E ecount
 #' 
 extractClique2 <- function(gr, nDistinct) {
     if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
@@ -369,50 +344,30 @@ extractClique2 <- function(gr, nDistinct) {
     }
     V(gr)$name[cliques[[bestClique]]]
 }
-#' @importFrom igraph degree vcount V graph.coreness E largest.cliques get.edgelist edge.attributes
+#' Extract the neighborhood of each gene in multiple gene groups
 #' 
-extractClique <- function(gr, nDistinct) {
-    if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
-    
-    if(vcount(gr) > nDistinct && sort(graph.coreness(gr), decreasing=TRUE)[nDistinct] > nDistinct-1) {
-        edges <- E(gr)
-        edgeOrder <- order(edges$nWeight, edges$sWeight)
-        lastUpper <- length(edgeOrder)
-        lastLower <- 0
-        breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
-        subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
-        coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
-        while(coreness[nDistinct] != nDistinct-1 && coreness[nDistinct+1 != nDistinct-1]) { # At least nDistinct must have nDistinct-1 neighbors
-            if(coreness[nDistinct] > nDistinct-1) {
-                lastLower <- breakPoint
-            } else {
-                lastUpper <- breakPoint
-            }
-            breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
-            subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
-            coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
-            if(lastLower == lastUpper) break
-        }
-        gr <- subgr
-        #cliques <- maximal.cliques(gr, subset=which(graph.coreness(gr)==max(coreness)))
-    } else {
-        #cliques <- maximal.cliques(gr)
-    }
-    cliques <- largest.cliques(gr)
-    
-    edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
-    
-    cliques[lengths(cliques) == 1] <- NULL
-    cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
-        edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
-        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]))
-    }))
-    bestClique <- which(cliqueStat[,1] == max(cliqueStat[,1]))
-    if(length(bestClique) != 1) {
-        bestClique <- bestClique[which.max(cliqueStat[bestClique, 2])]
-    }
-    V(gr)$name[cliques[[bestClique]]]
-}
+#' This function finds the gene group membership of the flanking genes for each
+#' gene in one or several gene groups.
+#' 
+#' @param groups The index of the groups for which the neighborhood of their
+#' members must be found
+#' 
+#' @param currentGrouping The current group membership of the genes (often the 
+#' result of seqToGeneGroup(pg))
+#' 
+#' @param pg A pgVirtual subclass object
+#' 
+#' @param vicinity The distance from the gene to extract group membership from
+#' 
+#' @return A list of list of lists. The elements of the outermost list are the 
+#' gene groups queried the elements of the middle list are the genes in the 
+#' group and the elements of the innermost list are 'up' and 'down' containing
+#' the up- and downstream gene groups of each gene respectively.
+#' 
+#' @importFrom dplyr %>% group_by arrange do
+#' 
+#' @noRd
+#' 
 trailGroups2 <- function(groups, currentGrouping, pg, vicinity) {
     genes <- which(currentGrouping %in% groups)
     info <- geneLocation(pg)
@@ -447,6 +402,20 @@ trailGroups2 <- function(groups, currentGrouping, pg, vicinity) {
     info <- split(info, currentGrouping[genes])
     info[match(as.character(groups), names(info))]
 }
+#' Determine which gene groups contains paralogues
+#' 
+#' This function simply investigates whether or not each group contain multiple 
+#' genes from the same organism
+#' 
+#' @param pangenome A pgVirtual subclass object
+#' 
+#' @return A logical vector indicating if each gene group in the pangenome 
+#' contains paralogues
+#' 
+#' @importFrom dplyr %>% group_by summarise
+#' 
+#' @noRd
+#' 
 anyParalogues <- function(pangenome) {
     groups <- data.frame(organism=seqToOrg(pangenome), geneGroup=seqToGeneGroup(pangenome))
     groups <- groups %>%
@@ -454,6 +423,28 @@ anyParalogues <- function(pangenome) {
         summarise(paralogues=anyDuplicated(organism)!=0)
     groups$paralogues
 }
+#' Test if a gene group qualifies for splitting
+#' 
+#' This function investigates several aspects of the gene group along with the
+#' status of its neighboring gene groups to decide whether or not it is fit for
+#' splitting.
+#' 
+#' @param group The gene group - currently unused
+#' 
+#' @param neighbors The neighborhood of each gene in the group as a list of 
+#' lists. Each inner list have an 'up' and 'down' element with the index of the
+#' upstream and downstream neighbors respectively.
+#' 
+#' @param hasParalogues logical. Does the group contain several genes from the 
+#' same organism.
+#' 
+#' @param pending A logical vector with the current status of splitting for all
+#' gene groups
+#' 
+#' @return TRUE if the gene group is fit for splitting and FALSE if not
+#' 
+#' @noRd
+#' 
 qualifies <- function(group, neighbors, hasParalogues, pending) {
     if(!hasParalogues) return(TRUE)
     down <- lapply(neighbors, `[[`, i='down')
