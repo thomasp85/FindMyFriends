@@ -956,6 +956,9 @@ transformSim <- function(similarity, low, rescale, transform) {
 #' @noRd
 #' 
 getPgMatrix <- function(object) {
+    if(!hasGeneGroups(object)) {
+        return(matrix(nrow=0, ncol=nOrganisms(object), dimnames = list(NULL, orgNames(object))))
+    }
     matRes <- matrix(0, ncol=nOrganisms(object), nrow=nGeneGroups(object), dimnames=list(groupNames(object), orgNames(object)))
     pgmat <- acast(data.frame(seqToOrg=seqToOrg(object), seqToGeneGroup=seqToGeneGroup(object)), seqToGeneGroup~seqToOrg, length, value.var='seqToOrg')
     matRes[as.integer(rownames(pgmat)), as.integer(colnames(pgmat))] <- pgmat

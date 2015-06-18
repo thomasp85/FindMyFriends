@@ -183,17 +183,18 @@ setMethod(
 setMethod(
     'removeGene', c('pgInMem', 'missing', 'missing', 'missing', 'numeric'),
     function(object, name, organism, group, ind) {
-        #browser()
-        
-        currentGroups <- unique(seqToGeneGroup(object))
         currentOrgs <- unique(seqToOrg(object))
-        object@seqToGeneGroup <- object@seqToGeneGroup[-ind]
         object@seqToOrg <- object@seqToOrg[-ind]
-        removedGroups <- currentGroups[!currentGroups %in% unique(object@seqToGeneGroup)]
         removedOrgs <- currentOrgs[!currentOrgs %in% unique(object@seqToOrg)]
-        if(length(removedGroups) != 0) {
-            object@seqToGeneGroup <- removeIndex(object@seqToGeneGroup, removedGroups)
-            groupInfo(object) <- groupInfo(object)[-removedGroups, , drop=FALSE]
+        if(hasGeneGroups(object)) {
+            currentGroups <- unique(seqToGeneGroup(object))
+            object@seqToGeneGroup <- object@seqToGeneGroup[-ind]
+            removedGroups <- currentGroups[!currentGroups %in% unique(object@seqToGeneGroup)]
+            
+            if(length(removedGroups) != 0) {
+                object@seqToGeneGroup <- removeIndex(object@seqToGeneGroup, removedGroups)
+                groupInfo(object) <- groupInfo(object)[-removedGroups, , drop=FALSE]
+            }
         }
         if(length(removedOrgs) != 0) {
             object@seqToOrg <- removeIndex(object@seqToOrg, removedOrgs)
