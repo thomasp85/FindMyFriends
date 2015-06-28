@@ -704,8 +704,9 @@ getSeqInfo <- function(format, desc) {
     } else {
         stop('Wrong input. Must be NULL, data.frame, list, function or character')
     }
+    row.names(seqInfo) <- NULL
     
-    if(nrow(seqInfo) != length(desc) || !all(names(seqInfo) %in% c('contig', 'start', 'end', 'strand'))) {
+    if(nrow(seqInfo) != length(desc) || !all(c('contig', 'start', 'end', 'strand') %in% names(seqInfo))) {
         stop('Bad sequenceInfo formatting. Rows must match number of genes and columns must be at least \'contig\', \'start\', \'end\' and \'strand\'')
     }
     seqInfo
