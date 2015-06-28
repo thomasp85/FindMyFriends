@@ -291,7 +291,11 @@ setMethod(
 setMethod(
     'hasParalogueLinks', 'pgVirtual',
     function(object) {
-        !any(is.na(groupInfo(object)$paralogue))
+        if(hasGeneGroups(object)) {
+            !any(is.na(groupInfo(object)$paralogue))
+        } else {
+            FALSE
+        }
     }
 )
 
