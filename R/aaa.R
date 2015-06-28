@@ -663,7 +663,7 @@ rbindMat <- function(x, ..., fill=NA) {
 prodigalParse <- function(desc) {
     info <- do.call(rbind, strsplit(desc, ' # '))[,-5]
     info[, 1] <- sub('_\\d+$', '', info[,1])
-    info <- data.frame(contig=info[, 1], start=as.integer(info[,2]), end=as.integer(info[,3]), strand=as.integer(info[,4], stringsAsFactors=FALSE))
+    info <- data.frame(contig=info[, 1], start=as.integer(info[,2]), end=as.integer(info[,3]), strand=as.integer(info[,4]), stringsAsFactors=FALSE)
     info
 }
 #' Extracts and check validity of location information
