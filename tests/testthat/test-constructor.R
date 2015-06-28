@@ -19,6 +19,6 @@ test_that("Defaults are getting assigned", {
 
 test_that("Basic structure is sane", {
     expect_equal(length(pangenome(genomeFiles, TRUE)), length(genomeFiles))
-    expect_equal(nGenes(pangenome(genomeFiles, TRUE)), 6802)
+    expect_equal(nGenes(pangenome(genomeFiles, TRUE)), 13649)
     expect_named(orgInfo(pangenome(genomeFiles, TRUE)), 'nGenes')
 })
