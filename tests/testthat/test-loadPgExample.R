@@ -15,4 +15,70 @@ pgLMLocPara <- .loadPgExample(lowMem=TRUE, geneLoc=TRUE, withNeighborhoodSplit=T
 
 test_that("test object are correct class", {
     expect_is(pgFull, 'pgFull')
+    expect_is(pgFullLoc, 'pgFull')
+    expect_is(pgFullGr, 'pgFull')
+    expect_is(pgFullLocGr, 'pgFull')
+    expect_is(pgFullPara, 'pgFull')
+    expect_is(pgFullLocPara, 'pgFull')
+    expect_is(pgLM, 'pgLM')
+    expect_is(pgLMLoc, 'pgLM')
+    expect_is(pgLMGr, 'pgLM')
+    expect_is(pgLMLocGr, 'pgLM')
+    expect_is(pgLMPara, 'pgLM')
+    expect_is(pgLMLocPara, 'pgLM')
+    expect_is(pgFullLoc, 'pgFullLoc')
+    expect_is(pgFullLocGr, 'pgFullLoc')
+    expect_is(pgFullLocPara, 'pgFullLoc')
+    expect_is(pgLMLoc, 'pgLMLoc')
+    expect_is(pgLMLocGr, 'pgLMLoc')
+    expect_is(pgLMLocPara, 'pgLMLoc')
+})
+test_that("test object contain the correct information", {
+    expect_false(hasGeneGroups(pgFull))
+    expect_false(hasGeneInfo(pgFull))
+    expect_false(hasParalogueLinks(pgFull))
+    
+    expect_false(hasGeneGroups(pgLM))
+    expect_false(hasGeneInfo(pgLM))
+    expect_false(hasParalogueLinks(pgLM))
+    
+    expect_false(hasGeneGroups(pgFullLoc))
+    expect_true(hasGeneInfo(pgFullLoc))
+    expect_false(hasParalogueLinks(pgFullLoc))
+    
+    expect_false(hasGeneGroups(pgLMLoc))
+    expect_true(hasGeneInfo(pgLMLoc))
+    expect_false(hasParalogueLinks(pgLMLoc))
+    
+    expect_true(hasGeneGroups(pgFullGr))
+    expect_false(hasGeneInfo(pgFullGr))
+    expect_false(hasParalogueLinks(pgFullGr))
+    
+    expect_true(hasGeneGroups(pgLMGr))
+    expect_false(hasGeneInfo(pgLMGr))
+    expect_false(hasParalogueLinks(pgLMGr))
+    
+    expect_true(hasGeneGroups(pgFullLocGr))
+    expect_true(hasGeneInfo(pgFullLocGr))
+    expect_false(hasParalogueLinks(pgFullLocGr))
+    
+    expect_true(hasGeneGroups(pgLMLocGr))
+    expect_true(hasGeneInfo(pgLMLocGr))
+    expect_false(hasParalogueLinks(pgLMLocGr))
+    
+    expect_true(hasGeneGroups(pgFullPara))
+    expect_false(hasGeneInfo(pgFullPara))
+    expect_true(hasParalogueLinks(pgFullPara))
+    
+    expect_true(hasGeneGroups(pgFullLocPara))
+    expect_true(hasGeneInfo(pgFullLocPara))
+    expect_true(hasParalogueLinks(pgFullLocPara))
+    
+    expect_true(hasGeneGroups(pgLMPara))
+    expect_false(hasGeneInfo(pgLMPara))
+    expect_true(hasParalogueLinks(pgLMPara))
+    
+    expect_true(hasGeneGroups(pgLMLocPara))
+    expect_true(hasGeneInfo(pgLMLocPara))
+    expect_true(hasParalogueLinks(pgLMLocPara))
 })
