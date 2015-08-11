@@ -206,7 +206,7 @@ neighborhoodSimilarity <- function(geneGroup, minFlank=1, forceParalogues=TRUE) 
 #' index.
 #' 
 #' @importFrom kebabs linearKernel getExRep spectrumKernel
-#' @importFrom igraph graph.adjacency maximal.cliques induced.subgraph E V
+#' @importFrom igraph graph_from_data_frame components induced_subgraph gsize gorder
 #' 
 #' @noRd
 #' 
@@ -235,22 +235,22 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
     aMat <- merge(nMat, sMat)
     aMat <- aMat[aMat$nWeight != 0 & aMat$sWeight != 0,]
     
-    gr <- graph.data.frame(aMat, directed=FALSE, vertices = geneGroup$genes)
+    gr <- graph_from_data_frame(aMat, directed=FALSE, vertices = geneGroup$genes)
     
     chosenCliques <- list()
     
-    unconnected <- clusters(gr)
+    unconnected <- components(gr)
     
     for(i in seq_len(unconnected$no)) {
         members <- which(unconnected$membership == i)
-        subgr <- induced.subgraph(gr, members)
+        subgr <- induced_subgraph(gr, members)
         
-        while(ecount(subgr) != 0) {
+        while(gsize(subgr) != 0) {
             clique <- extractClique(subgr, length(unique(geneGroup$organism[members])))
             subgr <- subgr - clique
             chosenCliques <- append(chosenCliques, list(as.integer(clique)))
         }
-        if(vcount(subgr) != 0) {
+        if(gorder(subgr) != 0) {
             chosenCliques <- append(chosenCliques, as.list(as.integer(V(subgr)$name)))
         }
     }
@@ -274,37 +274,37 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
 #' @return A character vector with the name of the vertices included in the 
 #' clique
 #' 
-#' @importFrom igraph degree vcount V graph.coreness E largest.cliques get.edgelist edge.attributes
+#' @importFrom igraph degree gorder V coreness E largest_cliques as_edgelist edge_attr
 #' 
 #' @noRd
 #' 
 extractClique <- function(gr, nDistinct) {
-    if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
+    if(all(degree(gr) == gorder(gr)-1)) return(V(gr)$name)
     
-    if(vcount(gr) > nDistinct && sort(graph.coreness(gr), decreasing=TRUE)[nDistinct] > nDistinct-1) {
+    if(gorder(gr) > nDistinct && sort(coreness(gr), decreasing=TRUE)[nDistinct] > nDistinct-1) {
         edges <- E(gr)
         edgeOrder <- order(edges$nWeight, edges$sWeight)
         lastUpper <- length(edgeOrder)
         lastLower <- 0
         breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
         subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
-        coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
-        while(coreness[nDistinct] != nDistinct-1 && coreness[nDistinct+1 != nDistinct-1]) { # At least nDistinct must have nDistinct-1 neighbors
-            if(coreness[nDistinct] > nDistinct-1) {
+        grCoreness <- sort(coreness(subgr), decreasing = TRUE)
+        while(grCoreness[nDistinct] != nDistinct-1 && grCoreness[nDistinct+1 != nDistinct-1]) { # At least nDistinct must have nDistinct-1 neighbors
+            if(grCoreness[nDistinct] > nDistinct-1) {
                 lastLower <- breakPoint
             } else {
                 lastUpper <- breakPoint
             }
             breakPoint <- lastLower + floor((lastUpper-lastLower)/2)
             subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
-            coreness <- sort(graph.coreness(subgr), decreasing = TRUE)
+            grCoreness <- sort(coreness(subgr), decreasing = TRUE)
             if(lastLower == lastUpper) break
         }
         gr <- subgr
     }
-    cliques <- largest.cliques(gr)
+    cliques <- largest_cliques(gr)
     
-    edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
+    edgelist <- cbind(as_edgelist(gr, names=FALSE), data.frame(edge_attr(gr)))
     
     cliques[lengths(cliques) == 1] <- NULL
     cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
@@ -317,22 +317,22 @@ extractClique <- function(gr, nDistinct) {
     }
     V(gr)$name[cliques[[bestClique]]]
 }
-#' @importFrom igraph get.edgelist edge.attributes neighborhood induced.subgraph largest.cliques degree vcount V E ecount
+#' @importFrom igraph as_edgelist edge_attr max_cliques degree gorder V E gsize
 #' 
 extractClique2 <- function(gr, nDistinct) {
-    if(all(degree(gr) == vcount(gr)-1)) return(V(gr)$name)
+    if(all(degree(gr) == gorder(gr)-1)) return(V(gr)$name)
     
-    maxEdges <- ceiling(vcount(gr)/nDistinct)*nDistinct*(nDistinct-1)/2
-    currentECount <- ecount(gr)
+    maxEdges <- ceiling(gorder(gr)/nDistinct)*nDistinct*(nDistinct-1)/2
+    currentECount <- gsize(gr)
     if(currentECount > maxEdges) {
         edges <- E(gr)
         badEdges <- order(edges$nWeight, edges$sWeight)[seq_len(currentECount - maxEdges)]
         gr <- gr - E(gr)[badEdges]
     }
     
-    edgelist <- cbind(get.edgelist(gr, names=FALSE), data.frame(edge.attributes(gr)))
+    edgelist <- cbind(as_edgelist(gr, names=FALSE), data.frame(edge_attr(gr)))
     
-    cliques <- maximal.cliques(gr)
+    cliques <- max_cliques(gr)
     cliques[lengths(cliques) == 1] <- NULL
     cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
         edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique

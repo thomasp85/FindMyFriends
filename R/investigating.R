@@ -103,7 +103,7 @@ setMethod(
 #' @describeIn pcGraph Panchromosome creation for all pgVirtualLoc subclasses
 #' 
 #' @importFrom dplyr %>% group_by arrange mutate transmute ungroup filter summarise
-#' @importFrom igraph graph.data.frame
+#' @importFrom igraph graph_from_data_frame
 #' 
 setMethod(
     'pcGraph', 'pgVirtualLoc',
@@ -126,7 +126,7 @@ setMethod(
         vertices <- gInfo %>%
             group_by(geneGroup) %>%
             summarise(nMembers=n(), organisms=list(organism), strands=list(strand))
-        graph.data.frame(as.data.frame(edges), FALSE, as.data.frame(vertices))
+        graph_from_data_frame(as.data.frame(edges), FALSE, as.data.frame(vertices))
     }
 )
 #' @describeIn variableRegions Variable region detection for all pgVirtualLoc
@@ -234,7 +234,7 @@ setMethod(
 #' 
 #' @importFrom Biostrings unlist
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
-#' @importFrom igraph graph.adjacency V E plot.igraph
+#' @importFrom igraph graph_from_adjacency_matrix V E plot.igraph
 #' 
 setMethod(
     'plotGroup', 'pgVirtual',
@@ -245,7 +245,7 @@ setMethod(
         sim <- linearKernel(getExRep(groupGenes, spectrumKernel(kmerSize), sparse = T), sparse = T, diag = F)
         sim <- transformSim(sim, lowerLimit, rescale, transform)
         
-        gr <- graph.adjacency(sim, 'lower', weighted=TRUE)
+        gr <- graph_from_adjacency_matrix(sim, 'lower', weighted=TRUE)
         V(gr)$color <- 'steelblue'
         V(gr)$frame.color <- NA
         V(gr)$label.family <- 'sans'
@@ -316,7 +316,7 @@ trailGroups <- function(genes, pg, vicinity) {
 #' @return An igraph object
 #' 
 #' @importFrom dplyr %>% group_by summarise
-#' @importFrom igraph graph.data.frame
+#' @importFrom igraph graph_from_data_frame
 #' 
 #' @noRd
 #' 
@@ -327,7 +327,7 @@ trailsToGraph <- function(trails) {
     edges <- edges %>%
         group_by(from, to) %>%
         summarise(weight=length(from))
-    graph.data.frame(edges)
+    graph_from_data_frame(edges)
 }
 
 #' Scale a vector of values between a low and a high
@@ -364,25 +364,25 @@ scaleRange <- function(x, low, high) {
 #' 
 #' @return A list of vectors with each vector holding the members of a cycle
 #' 
-#' @importFrom igraph V degree graph.neighborhood graph.bfs neighbors
+#' @importFrom igraph V degree make_ego_graph bfs neighbors
 #' 
 #' @noRd
 #' 
 locateCycles <- function(graph, maxLength=4) {
     potentialSplits <- V(graph)$name[degree(graph) > 2]
-    smallGr <- graph.neighborhood(graph, order=maxLength, nodes=potentialSplits)
+    smallGr <- make_ego_graph(graph, order=maxLength, nodes=potentialSplits)
     cycles <- lapply(1:length(potentialSplits), function(i) {
-        tree <- graph.bfs(smallGr[[i]], potentialSplits[i], father = TRUE)
+        tree <- bfs(smallGr[[i]], potentialSplits[i], father = TRUE)
         endPoints <- tree$order[!tree$order %in% tree$father]
         loops <- endPoints[degree(smallGr[[i]], endPoints) > 1]
         cycles <- list()
         if(length(loops) > 0) {
             for(j in loops) {
-                wayback <- V(smallGr[[i]])$name[getRoute(j, tree$father)]
+                wayback <- V(smallGr[[i]])$name[getRoute(j, as.numeric(tree$father))]
                 links <- neighbors(smallGr[[i]], j)
                 links <- links[links != tree$father[j]]
                 for(k in links) {
-                    altWayback <- V(smallGr[[i]])$name[getRoute(k, tree$father)]
+                    altWayback <- V(smallGr[[i]])$name[getRoute(k, as.numeric(tree$father))]
                     if(wayback[2] != altWayback[2]) {  # Check if they return to root by different nodes
                         cycle <- unique(c(wayback, altWayback))
                         if(length(cycles) != 0) {
@@ -410,7 +410,7 @@ locateCycles <- function(graph, maxLength=4) {
 #' 
 #' @return A list of the same format as cycles, but possibly with fewer elements
 #' 
-#' @importFrom igraph clusters
+#' @importFrom igraph components
 #' 
 #' @noRd
 #' 
@@ -424,7 +424,7 @@ mergeCycles <- function(cycles) {
             }
         }
     }
-    cycleGroups <- clusters(graph.adjacency(adjMat, 'lower'))$membership
+    cycleGroups <- components(graph.adjacency(adjMat, 'lower'))$membership
     lapply(split(cycles, cycleGroups), function(cycle) {unique(unlist(cycle))})
 }
 #' Gather statistics for small cycles
@@ -454,7 +454,7 @@ mergeCycles <- function(cycles) {
 #'  \item{graph}{The subgraph of the panchromosome representing the region}
 #' }
 #' 
-#' @importFrom igraph V induced.subgraph degree are.connected
+#' @importFrom igraph V induced_subgraph degree are_adjacent
 #' 
 #' @noRd
 #' 
@@ -466,13 +466,13 @@ summarizeCycles <- function(cycles, graph) {
             n[!n %in% cycle]
         }, gr=graph, cycle=cycle)
         flank <- cycle[lengths(outsideNeighbors) != 0]
-        cycleGraph <- induced.subgraph(graph, cycle)
+        cycleGraph <- induced_subgraph(graph, cycle)
         cyclic <- all(degree(cycleGraph) <= 2)
         if(length(flank) == 1) {
             type <- 'end'
         } else if(length(flank) > 2) {
             type <- 'hub'
-        } else if(are.connected(cycleGraph, flank[1], flank[2])) {
+        } else if(are_adjacent(cycleGraph, flank[1], flank[2])) {
             type <- 'ins/del'
         } else if(cyclic) {
             type <- 'frameshift'

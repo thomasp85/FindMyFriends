@@ -327,7 +327,7 @@ weaveChunks <- function(squares, split) {
 #' @importFrom filehash dbExists dbFetch dbInsert
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
 #' @importFrom BiocParallel bpworkers
-#' @importFrom igraph clusters graph.adjacency
+#' @importFrom igraph components graph_from_adjacency_matrix
 #' 
 #' @noRd
 #' 
@@ -375,7 +375,7 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, p
     } else {
         sim <- lkParallel(erRep, pParam, nSplits=bpworkers(pParam), diag=FALSE, lowerLimit=lowerLimit)
     }
-    members <- clusters(graph.adjacency(sim, mode='lower', weighted=T, diag=FALSE))$membership
+    members <- components(graph_from_adjacency_matrix(sim, mode='lower', weighted=T, diag=FALSE))$membership
     newGroups <- lapply(split(groups, members), unlist)
     if(!missing(cacheDB)) {
         dbInsert(cacheDB, key, newGroups)
@@ -403,16 +403,11 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, p
 #' @param lowerLimit The lower limit of the cosine similarity in order for it to
 #' be reported.
 #' 
-#' @param algorithm The community detection algorithm from igraph to use for 
-#' grouping of genes.
-#' 
 #' @param pParam A BiocParallelParam subclass
 #' 
 #' @param Approximate number of subtrees to create
 #' 
 #' @param cacheDB A subclass of filehash to use for result cahcing
-#' 
-#' @param ... Arguments to pass on to algorithm
 #' 
 #' @return A list grouping gene indexes in pangenome
 #' 
@@ -420,7 +415,7 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, p
 #' 
 #' @noRd
 #' 
-recurseCompPar <- function(pangenome, tree, er, kmerSize, lowerLimit, algorithm, pParam, nSplits, cacheDB, ...) {
+recurseCompPar <- function(pangenome, tree, er, kmerSize, lowerLimit, pParam, nSplits, cacheDB) {
     if(missing(er)) {
         args <- list(pangenome=pangenome, kmerSize=kmerSize, lowerLimit=lowerLimit, algorithm=algorithm)
     } else {

@@ -117,12 +117,12 @@ setMethod(
 #' 
 #' @return An integer vector with an element for each vertice
 #' 
-#' @importFrom igraph graph.adjacency
+#' @importFrom igraph graph_from_adjacency_matrix
 #' 
 #' @noRd
 #' 
 igGroup <- function(similarity, algorithm, ...) {
-    graph <- graph.adjacency(similarity, mode='lower', weighted=TRUE, diag=FALSE)
+    graph <- graph_from_adjacency_matrix(similarity, mode='lower', weighted=TRUE, diag=FALSE)
     igMembers(graph, algorithm, ...)
 }
 
@@ -139,15 +139,15 @@ igGroup <- function(similarity, algorithm, ...) {
 #' 
 #' @return An integer vector with an element for each vertice
 #' 
-#' @importFrom igraph membership infomap.community edge.betweenness.community fastgreedy.community label.propagation.community leading.eigenvector.community multilevel.community optimal.community spinglass.community walktrap.community
+#' @importFrom igraph membership cluster_edge_betweenness cluster_fast_greedy cluster_infomap cluster_label_prop cluster_leading_eigen cluster_louvain cluster_optimal cluster_spinglass cluster_walktrap
 #' 
 #' @noRd
 #' 
 igMembers <- function(graph, algorithm, ...) {
     algParam <- list(...)
     algParam$graph <- graph
-    if(!grepl(pattern = '.community', x = algorithm)) {
-        algorithm <- paste0(algorithm, '.community')
+    if(!grepl(pattern = 'cluster_', x = algorithm)) {
+        algorithm <- paste0('cluster_', algorithm)
     }
     community <- do.call(algorithm, algParam)
     membership(community)
@@ -170,15 +170,15 @@ igMembers <- function(graph, algorithm, ...) {
 #' @return An igraph object containing all groups as disconnected subgraphs
 #' 
 #' @importFrom kebabs linearKernel
-#' @importFrom igraph get.data.frame graph.adjacency graph.data.frame
+#' @importFrom igraph as_data_frame graph_from_adjacency_matrix graph_from_data_frame
 #' 
 #' @noRd
 #' 
 groupToGraph <- function(pangenome, groups, er, lowerLimit) {
     edges <- lapply(groups, function(members, er, lowerLimit) {
         sim <- linearKernel(er, selx=members, sparse=TRUE, diag=FALSE, lowerLimit=lowerLimit)
-        get.data.frame(graph.adjacency(sim, mode='lower', weighted=TRUE, diag=FALSE))
+        as_data_frame(graph_from_adjacency_matrix(sim, mode='lower', weighted=TRUE, diag=FALSE))
     }, er=er, lowerLimit=lowerLimit)
     edges <- do.call(rbind, edges)
-    graph.data.frame(edges, directed=FALSE, vertices=data.frame(name=geneNames(pangenome)))
+    graph_from_data_frame(edges, directed=FALSE, vertices=data.frame(name=geneNames(pangenome)))
 }
