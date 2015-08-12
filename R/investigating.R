@@ -87,14 +87,14 @@ setMethod(
         info <- as.data.frame(bind_rows(info))
         
         rownames(info) <- orgNames(object)[as.integer(names(orgs))]
-        info$nGeneGroups <- apply(pgMatrix(object)[, rownames(info)], 2, function(x) sum(x!=0))
+        info$nGeneGroups <- apply(pgMatrix(object)[, rownames(info), drop=FALSE], 2, function(x) sum(x!=0))
         if(hasParalogueLinks(object)) {
             links <- split(1:nGeneGroups(object), groupInfo(object)$paralogue)
-            parMat <- apply(pgMatrix(object)[, rownames(info)], 2, function(x) {
+            parMat <- apply(pgMatrix(object)[, rownames(info), drop=FALSE], 2, function(x) {
                 sapply(links, function(i) sum(x[i]))
             })
         } else {
-            parMat <- pgMatrix(object)[, rownames(info)]
+            parMat <- pgMatrix(object)[, rownames(info), drop=FALSE]
         }
         info$nParalogues <- apply(parMat > 1, 2, sum)
         info
