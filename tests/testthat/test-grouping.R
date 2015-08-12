@@ -12,7 +12,7 @@ test_that("Manual grouping works", {
 
 test_that("Graph grouping works", {
     set.seed(1)
-    gr <- erdos.renyi.game(100, 0.015)
+    gr <- igraph::erdos.renyi.game(100, 0.015)
     members <- igMembers(gr, 'infomap')
     expect_equal(100, length(members))
     expect_is(members, 'numeric')
