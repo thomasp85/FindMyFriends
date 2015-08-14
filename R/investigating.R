@@ -311,7 +311,7 @@ trailGroups <- function(genes, pg, vicinity) {
 #' 
 #' This function take trails/paths and convert it into a graph representation.
 #' 
-#' @param trails A list of paths though gene groups.
+#' @param trails A list of paths through gene groups.
 #' 
 #' @return An igraph object
 #' 
@@ -346,7 +346,7 @@ trailsToGraph <- function(trails) {
 #' @noRd
 #' 
 scaleRange <- function(x, low, high) {
-    if(length(unique(x)) == 1) return(rep(mean(low, high), length(x)))
+    if(length(unique(x)) == 1) return(rep(mean(c(low, high)), length(x)))
     x <- (x-min(x))/diff(range(x))
     x*(high-low) + low
 }
@@ -410,7 +410,7 @@ locateCycles <- function(graph, maxLength=4) {
 #' 
 #' @return A list of the same format as cycles, but possibly with fewer elements
 #' 
-#' @importFrom igraph components
+#' @importFrom igraph components graph_from_adjacency_matrix
 #' 
 #' @noRd
 #' 
@@ -424,7 +424,7 @@ mergeCycles <- function(cycles) {
             }
         }
     }
-    cycleGroups <- components(graph.adjacency(adjMat, 'lower'))$membership
+    cycleGroups <- components(graph_from_adjacency_matrix(adjMat, 'lower'))$membership
     lapply(split(cycles, cycleGroups), function(cycle) {unique(unlist(cycle))})
 }
 #' Gather statistics for small cycles
@@ -506,7 +506,7 @@ summarizeCycles <- function(cycles, graph) {
 #' 
 getRoute <- function(start, fathers) {
     nextV <- fathers[start]
-    while(nextV != 0) {
+    while(!is.na(nextV)) {
         start <- c(nextV, start)
         nextV <- fathers[nextV]
     }
