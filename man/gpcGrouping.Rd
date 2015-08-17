@@ -16,6 +16,9 @@ gpcGrouping(object, ...)
 
 \item{...}{parameters passed on.}
 
+\item{lowMem}{logical. Should low memory footprint be ensured over
+computation speed}
+
 \item{kmerSize}{The size of the kmer's used for the comparison. If two values
 are given and the 'tree' argument is missing, the second value is used for
 tree generation. If only one value is given it is recycled.}
