@@ -1,5 +1,5 @@
 language: r
-sudo: required
+sudo: false
 bioc_required: true
 r_check_args: '--as-cran --no-examples'
 r_github_packages:
