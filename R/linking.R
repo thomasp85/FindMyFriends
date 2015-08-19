@@ -36,20 +36,12 @@ setMethod(
     function(object, lowMem, kmerSize, lowerLimit, rescale, transform, pParam, nSplits, algorithm, ...) {
         .fillDefaults(defaults(object))
         
-        if(lowMem) {
-            if(missing(pParam)) {
-                pParam <- SerialParam()
-                nSplits <- length(object)
-            }
-            sim <- lkParallelLM(object, kmerSize, pParam, nSplits, lowerLimit=lowerLimit)
+        gRep <- getRep(object, 'random')
+        er <- getExRep(gRep, spectrumKernel(kmerSize), sparse = TRUE)
+        if(missing(pParam)) {
+            sim <- linearKernel(er, sparse=TRUE, diag=FALSE, lowerLimit=lowerLimit)
         } else {
-            gRep <- getRep(object, 'random')
-            er <- getExRep(gRep, spectrumKernel(kmerSize), sparse = TRUE)
-            if(missing(pParam)) {
-                sim <- linearKernel(er, sparse=TRUE, diag=FALSE, lowerLimit=lowerLimit)
-            } else {
-                sim <- lkParallel(er, pParam, nSplits, lowerLimit=lowerLimit)
-            }
+            sim <- lkParallel(er, pParam, nSplits, lowerLimit=lowerLimit)
         }
         sim <- transformSim(sim, lowerLimit, rescale, transform)
         members <- igGroup(sim, algorithm, ...)
