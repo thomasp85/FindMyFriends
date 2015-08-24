@@ -112,5 +112,6 @@ defaultArgs <- list(
     minFlank=0,
     forceParalogues=TRUE,
     rescale=TRUE,
-    transform=FALSE
+    transform=FALSE,
+    maxLengthDif=0.1
 )

@@ -25,7 +25,7 @@ NULL
 #' 
 setMethod(
     'neighborhoodSplit', 'pgVirtualLoc',
-    function(object, flankSize, minFlank, forceParalogues, kmerSize, lowerLimit, maxLengthDif=0.1) {
+    function(object, flankSize, minFlank, forceParalogues, kmerSize, lowerLimit, maxLengthDif) {
         .fillDefaults(defaults(object))
         
         pending <- rep(TRUE, nGeneGroups(object))
