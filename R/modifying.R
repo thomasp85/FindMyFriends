@@ -165,6 +165,7 @@ setMethod(
         index <- unlist(mapply(function(o, i) {
             which(seqToOrg(object)==o)[i]
         }, o=organism, i=ind))
+        index <- index[!is.na(index)]
         if(length(index) == 0) {
             warning('No genes match criteria')
             object
@@ -213,6 +214,7 @@ setMethod(
         index <- unlist(mapply(function(g, i) {
             which(seqToGeneGroup(object)==g)[i]
         }, g=group, i=ind))
+        index <- index[!is.na(index)]
         if(length(index) == 0) {
             warning('No genes match criteria')
             object
