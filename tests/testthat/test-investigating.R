@@ -37,12 +37,12 @@ test_that("Panchromosome works", {
     expect_named(igraph::edge.attributes(pc), c('weight', 'organisms'))
 })
 
-test_that("Variable regions detection works", {
-    vr <- variableRegions(pg)
-    expect_is(vr, 'list')
-    expect_named(vr[[1]], c('type', 'members', 'flank', 'connectsTo', 'graph'))
-    expect_equal(length(vr), 232)
-})
+# test_that("Variable regions detection works", {
+#     vr <- variableRegions(pg)
+#     expect_is(vr, 'list')
+#     expect_named(vr[[1]], c('type', 'members', 'flank', 'connectsTo', 'graph'))
+#     expect_equal(length(vr), 232)
+# })
 
 test_that("Neighborhood extraction works", {
     neigh <- getNeighborhood(pg, 4, 4)
@@ -87,4 +87,27 @@ test_that("Simple scaling works", {
     r2 <- scaleRange(1:5, 10, 50)
     expect_equal(r1, rep(3, 5))
     expect_equal(r2, seq(10, 50, by=10))
+})
+
+# test_that("Cycle locating works", {
+#     pc <- pcGraph(pg)
+#     cycles <- locateCycles(pc, maxLength=4)
+#     expect_is(cycles, 'list')
+#     expect_equal(length(cycles), 568)
+#     expect_is(unlist(cycles), 'character')
+#     expect_equal(length(unlist(cycles)), 3010)
+#     merged <- mergeCycles(cycles)
+#     expect_is(merged, 'list')
+#     expect_equal(length(merged), 232)
+#     expect_is(unlist(merged), 'character')
+#     expect_equal(length(unlist(merged)), 1113)
+#     summaryCycles <- summarizeCycles(merged, pc)
+#     expect_is(summaryCycles, 'list')
+#     expect_equal(length(summaryCycles), length(merged))
+# })
+
+test_that("Route from BFS can be extracted", {
+    route <- c(2, 3, 4, 5, NA, 5, 6, 7, 8, 1)
+    expect_equal(getRoute(1, route), 5:1)
+    expect_equal(getRoute(5, route), 5)
 })
