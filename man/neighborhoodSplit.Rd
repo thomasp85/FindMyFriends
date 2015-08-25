@@ -9,7 +9,7 @@
 neighborhoodSplit(object, ...)
 
 \S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize, minFlank,
-  forceParalogues, kmerSize, lowerLimit, maxLengthDif = 0.1)
+  forceParalogues, kmerSize, lowerLimit, maxLengthDif)
 }
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
