@@ -1,7 +1,7 @@
 language: r
 sudo: required
 bioc_required: true
-r_check_args: '--as-cran --no-examples --no-tests'
+r_check_args: '--as-cran --no-examples'
 r_github_packages:
   - jimhester/covr
 after_success:
