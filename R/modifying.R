@@ -100,7 +100,7 @@ setMethod(
         }
     }
 )
-#' @describeIn removeGene Remove gene based on gene and organism naem
+#' @describeIn removeGene Remove gene based on gene and organism name
 #' 
 setMethod(
     'removeGene', c('pgVirtual', 'character', 'character', 'missing', 'missing'),

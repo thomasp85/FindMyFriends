@@ -88,7 +88,7 @@ to the gene index. See examples for details of the different possibilities.
 \itemize{
 \item \code{object = pgVirtual,name = character,organism = missing,group = missing,ind = missing}: Remove gene based on gene name
 
-\item \code{object = pgVirtual,name = character,organism = character,group = missing,ind = missing}: Remove gene based on gene and organism naem
+\item \code{object = pgVirtual,name = character,organism = character,group = missing,ind = missing}: Remove gene based on gene and organism name
 
 \item \code{object = pgVirtual,name = character,organism = numeric,group = missing,ind = missing}: Remove gene based on gene name and organism index
 
