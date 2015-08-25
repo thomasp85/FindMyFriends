@@ -106,7 +106,7 @@ setMethod(
     'removeGene', c('pgVirtual', 'character', 'character', 'missing', 'missing'),
     function(object, name, organism, group, ind) {
         index <- match(organism, orgNames(object))
-        removeGene(object, name=name, organims=index)
+        removeGene(object, name=name, organism=index)
     }
 )
 #' @describeIn removeGene Remove gene based on gene name and organism index
