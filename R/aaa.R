@@ -274,7 +274,7 @@ getChunks <- function(size, nSplits) {
 #' @return A sparse matrix with combined results
 #' 
 #' @importFrom dplyr %>% arrange group_by do
-#' @importFrom Matrix Matrix rBind cBind
+#' @importFrom Matrix Matrix
 #' 
 #' @noRd
 #' 
@@ -292,10 +292,10 @@ weaveChunks <- function(squares, split) {
                 mat <- list()
             }
             mat <- append(mat, squares[.$origInd])
-            do.call(rBind, mat)
+            do.call(rbind, mat)
         })
     
-    do.call(cBind, res$cols)
+    do.call(cbind, res$cols)
 }
 
 #' Recursively calculate and merge pangenomes
