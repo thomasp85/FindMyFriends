@@ -338,14 +338,14 @@ setMethod(
 #' @noRd
 #' 
 mergeInfo <- function(data, sep) {
-    as.data.frame(lapply(data, function(x) {
+    as.data.frame(lapply(data, function(x, sep) {
         info <- unique(unlist(x))
         if(missing(sep)) {
-            list(info)
+            I(list(info))
         } else {
             paste(info, collapse=sep)
         }
-    }), stringsAsFactors=FALSE)
+    }, sep=sep), stringsAsFactors=FALSE)
 }
 #' Select the row with the largest group
 #' 
