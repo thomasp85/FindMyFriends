@@ -33,7 +33,7 @@ Imports:
 Suggests:
     testthat,
     knitr,
-    XML
+    reutils
 Collate:
     'FindMyFriends-package.R'
     'RcppExports.R'

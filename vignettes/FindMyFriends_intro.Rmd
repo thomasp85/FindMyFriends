@@ -127,41 +127,15 @@ Metadata about the organisms can be added and queried using the `addOrgInfo`
 method. For instance we might add some taxonomy data.
 
 ```{r, echo=TRUE, eval=TRUE}
-library(XML)
-# Get uid' from accession number
-entrezURL <- paste0('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/',
-                    'esearch.fcgi?db=nuccore&term=', 
-                    orgNames(mycoPan))
-uids <- sapply(entrezURL, function(url) {
-    results <- xmlParse(url)
-    uid <- xpathSApply(results, '//eSearchResult/IdList/Id', xmlValue)
-    free(results)
-    uid
+library(reutils)
+orgMeta <- lapply(orgNames(mycoPan), function(name) {
+    uid <- esearch(name)
+    taxuid <- elink(uid, dbTo = 'taxonomy')
+    reutils::content(esummary(taxuid), as='parsed')
 })
-# Get taxid from uid
-entrezURL <- paste0('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/',
-                    'esummary.fcgi?db=nuccore&id=',
-                    paste(uids, collapse=','))
-results <- xmlParse(entrezURL)
-taxids <- xpathSApply(results, '//eSummaryResult/DocSum/Item[@Name="TaxId"]', xmlValue)
-free(results)
-# Get taxonomy information
-entrezURL <- paste0('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/',
-                    'esummary.fcgi?db=taxonomy&id=',
-                    paste(taxids, collapse=','))
-results <- xmlParse(entrezURL)
-values <- xpathSApply(results, '//eSummaryResult/DocSum/Item', xmlValue)
-types <- xpathSApply(results, '//eSummaryResult/DocSum/Item/@Name')
-free(results)
-taxonomy <- data.frame(
-    Name=values[types=='ScientificName'],
-    Genus=values[types=='Genus'],
-    Species=values[types=='Species'],
-    stringsAsFactors=FALSE)
+orgMeta <- do.call(rbind, orgMeta)
 
-head(taxonomy)
-
-mycoPan <- addOrgInfo(mycoPan, taxonomy)
+mycoPan <- addOrgInfo(mycoPan, orgMeta)
 head(orgInfo(mycoPan))
 ```
 
@@ -473,7 +447,7 @@ plot(panchromosome,
 
 This graph structure can be used for other things than random line drawing 
 though. Often local regions of high variability can point to insertion/deletion
-events, frameshifts, problem with the gene grouping (god forbid) or general
+events, frameshifts, problems with the gene grouping (god forbid) or general
 regions of high chromosomal plasticity. These regions can of course be detected
 in FindMyFriends and investigated accordingly.
 
@@ -506,13 +480,7 @@ At certain computationally heavy steps it is possible to use parallelization
 based on the BiocParallel package interface. If a subclass of BiocParallelParam 
 is supplied to either `kmerSimilarity`, `gpcGrouping`, `orgTree` or `kmerLink` 
 the computations will be split out according to the supplied parameter. All of
-these, save for gpcGrouping, are embarrassingly parallel and thus easy to
-distribute evenly. gpcGrouping on the other hand is recursive and based on an
-uneven tree. At the moment the paralellization works by cutting the tree into
-subtrees and distributing these trees to the different workers. It is difficult
-though to ensure an even distribution of computational load and workers will
-often sit idle while waiting for others to finish. A better implementation will
-maybe be investigated in the future.
+these are embarrassingly parallel and thus easy to distribute evenly.
 
 ### Caching
 When analysing huge number of organisms the computations can easily go on for
