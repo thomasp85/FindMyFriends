@@ -1,5 +1,6 @@
 language: r
-os: osx
+os:
+  - osx
 sudo: required
 bioc_required: true
 r_check_args: '--as-cran --no-examples'
