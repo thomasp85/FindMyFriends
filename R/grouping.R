@@ -7,7 +7,8 @@ NULL
 #' @param similarity A similarity matrix with rows and columns corresponding to
 #' the genes in the pangenome.
 #' 
-#' @param algorithm A string naming the algorithm. See \code{\link[igraph]{communities}}
+#' @param algorithm A string naming the algorithm. See 
+#' \code{\link[igraph]{communities}}
 #' for an overview. The trailing '.community' can be omitted from the name. 
 #' Default is 'infomap', which is also the recommended.
 #' 
@@ -59,21 +60,23 @@ setMethod(
         args$object <- NULL
         args$pangenome <- object
         
-        if(!missing(cacheDB)) {
-            if(!inherits(cacheDB, 'filehash')) {
-                if(suppressMessages(dbCreate(cacheDB, type='RDS'))) {
-                    cacheDB <- dbInit(cacheDB, type='RDS')
+        if (!missing(cacheDB)) {
+            if (!inherits(cacheDB, 'filehash')) {
+                if (suppressMessages(dbCreate(cacheDB, type = 'RDS'))) {
+                    cacheDB <- dbInit(cacheDB, type = 'RDS')
                 } else {
                     stop('Failed to create cache databse')
                 }
             }
             args$cacheDB <- cacheDB
         }
-        if(missing(tree)) {
-            tree <- orgTree(object, type='kmer', kmerSize=rep(kmerSize, length=2)[2], dist='euclidean', clust='ward.D2')
+        if (missing(tree)) {
+            tree <- orgTree(object, type = 'kmer', 
+                            kmerSize = rep(kmerSize, length = 2)[2], 
+                            dist = 'euclidean', clust = 'ward.D2')
         }
         args$tree <- as.dendrogram(tree)
-        if(!lowMem) {
+        if (!lowMem) {
             args$kmerSize <- NULL
             args$er <- getExRep(genes(object), spectrumKernel(kmerSize))
         }
@@ -95,7 +98,7 @@ setMethod(
 setMethod(
     'manualGrouping', c('pgVirtual', 'list'),
     function(object, groups) {
-        groups <- groups[order(sapply(groups, length), decreasing=TRUE)]
+        groups <- groups[order(sapply(groups, length), decreasing = TRUE)]
         members <- rep(1:length(groups), sapply(groups, length))
         members[unlist(groups)] <- as.integer(members)
         
@@ -125,7 +128,8 @@ setMethod(
 #' @noRd
 #' 
 igGroup <- function(similarity, algorithm, ...) {
-    graph <- graph_from_adjacency_matrix(similarity, mode='lower', weighted=TRUE, diag=FALSE)
+    graph <- graph_from_adjacency_matrix(similarity, mode = 'lower', 
+                                         weighted = TRUE, diag = FALSE)
     igMembers(graph, algorithm, ...)
 }
 
@@ -149,7 +153,7 @@ igGroup <- function(similarity, algorithm, ...) {
 igMembers <- function(graph, algorithm, ...) {
     algParam <- list(...)
     algParam$graph <- graph
-    if(!grepl(pattern = 'cluster_', x = algorithm)) {
+    if (!grepl(pattern = 'cluster_', x = algorithm)) {
         algorithm <- paste0('cluster_', algorithm)
     }
     community <- do.call(algorithm, algParam)
@@ -179,9 +183,13 @@ igMembers <- function(graph, algorithm, ...) {
 #' 
 groupToGraph <- function(pangenome, groups, er, lowerLimit) {
     edges <- lapply(groups, function(members, er, lowerLimit) {
-        sim <- linearKernel(er, selx=members, sparse=TRUE, diag=FALSE, lowerLimit=lowerLimit)
-        as_data_frame(graph_from_adjacency_matrix(sim, mode='lower', weighted=TRUE, diag=FALSE))
-    }, er=er, lowerLimit=lowerLimit)
+        sim <- linearKernel(er, selx = members, sparse = TRUE, diag = FALSE, 
+                            lowerLimit = lowerLimit)
+        as_data_frame(graph_from_adjacency_matrix(sim, mode = 'lower', 
+                                                  weighted = TRUE, 
+                                                  diag = FALSE))
+    }, er = er, lowerLimit = lowerLimit)
     edges <- do.call(rbind, edges)
-    graph_from_data_frame(edges, directed=FALSE, vertices=data.frame(name=geneNames(pangenome)))
+    graph_from_data_frame(edges, directed = FALSE, 
+                          vertices = data.frame(name = geneNames(pangenome)))
 }

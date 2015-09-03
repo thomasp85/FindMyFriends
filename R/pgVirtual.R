@@ -80,71 +80,93 @@ NULL
 #' 
 setClass(
     'pgVirtual',
-    contains='VIRTUAL',
-    slots=list(
-        .settings='list'
+    contains = 'VIRTUAL',
+    slots = list(
+        .settings = 'list'
     ),
     validity = function(object) {
         # Test for methods
-        if(!hasMethod('seqToOrg', class(object))) {
-            return('The method "seqToOrg" must be implemented for ', class(object))
+        if (!hasMethod('seqToOrg', class(object))) {
+            return('The method "seqToOrg" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('seqToGeneGroup', class(object))) {
-            return('The method "seqToGeneGroup" must be implemented for ', class(object))
+        if (!hasMethod('seqToGeneGroup', class(object))) {
+            return('The method "seqToGeneGroup" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('genes', c(class(object), 'missing'))) {
-            return('The method "genes" must be implemented for ', class(object), ', with signature "', class(object),', missing"')
+        if (!hasMethod('genes', c(class(object), 'missing'))) {
+            return('The method "genes" must be implemented for ', 
+                   class(object), 
+                   ', with signature "', 
+                   class(object),
+                   ', missing"')
         }
-        if(!hasMethod('genes', c(class(object), 'character'))) {
-            return('The method "genes" must be implemented for ', class(object), ', with signature "', class(object),', character"')
+        if (!hasMethod('genes', c(class(object), 'character'))) {
+            return('The method "genes" must be implemented for ', 
+                   class(object), 
+                   ', with signature "', 
+                   class(object),
+                   ', character"')
         }
-        if(!hasMethod('geneNames', class(object))) {
-            return('The method "geneNames" must be implemented for ', class(object))
+        if (!hasMethod('geneNames', class(object))) {
+            return('The method "geneNames" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('geneNames<-', class(object))) {
-            return('The method "geneNames<-" must be implemented for ', class(object))
+        if (!hasMethod('geneNames<-', class(object))) {
+            return('The method "geneNames<-" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('geneWidth', class(object))) {
-            return('The method "geneWidth" must be implemented for ', class(object))
+        if (!hasMethod('geneWidth', class(object))) {
+            return('The method "geneWidth" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('orgNames', class(object))) {
-            return('The method "orgNames" must be implemented for ', class(object))
+        if (!hasMethod('orgNames', class(object))) {
+            return('The method "orgNames" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('orgNames<-', class(object))) {
-            return('The method "orgNames<-" must be implemented for ', class(object))
+        if (!hasMethod('orgNames<-', class(object))) {
+            return('The method "orgNames<-" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('groupNames', class(object))) {
-            return('The method "groupNames" must be implemented for ', class(object))
+        if (!hasMethod('groupNames', class(object))) {
+            return('The method "groupNames" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('groupNames<-', class(object))) {
-            return('The method "groupNames<-" must be implemented for ', class(object))
+        if (!hasMethod('groupNames<-', class(object))) {
+            return('The method "groupNames<-" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('orgInfo', class(object))) {
-            return('The method "orgInfo" must be implemented for ', class(object))
+        if (!hasMethod('orgInfo', class(object))) {
+            return('The method "orgInfo" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('orgInfo<-', class(object))) {
-            return('The method "orgInfo<-" must be implemented for ', class(object))
+        if (!hasMethod('orgInfo<-', class(object))) {
+            return('The method "orgInfo<-" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('groupInfo', class(object))) {
-            return('The method "groupInfo" must be implemented for ', class(object))
+        if (!hasMethod('groupInfo', class(object))) {
+            return('The method "groupInfo" must be implemented for ', 
+                   class(object))
         }
-        if(!hasMethod('groupInfo<-', class(object))) {
-            return('The method "groupInfo<-" must be implemented for ', class(object))
+        if (!hasMethod('groupInfo<-', class(object))) {
+            return('The method "groupInfo<-" must be implemented for ', 
+                   class(object))
         }
         
         # Test for object sanity
-        if(length(object) != 0) {
+        if (length(object) != 0) {
             minOrg <- max(seqToOrg(object))
             oNames <- orgNames(object)
             oInfo <- orgInfo(object)
-            if(length(oNames) != nrow(oInfo) || length(oNames) < minOrg) {
+            if (length(oNames) != nrow(oInfo) || length(oNames) < minOrg) {
                 return('Organism indexing mismatch')
             }
-            if(hasGeneGroups(object)){
+            if (hasGeneGroups(object)){
                 minGroup <- max(seqToGeneGroup(object))
                 gNames <- groupNames(object)
                 gInfo <- groupInfo(object)
-                if(length(gNames) != nrow(gInfo) || length(gNames) < minGroup) {
+                if (length(gNames) != nrow(gInfo) || 
+                    length(gNames) < minGroup) {
                     return('Gene group indexing mismatch')
                 }
             }
@@ -152,7 +174,7 @@ setClass(
         return(TRUE)
     },
     prototype = list(
-        .settings = list(translated=FALSE)
+        .settings = list(translated = FALSE)
     )
 )
 
@@ -171,7 +193,9 @@ setMethod(
 setMethod(
     'defaults<-', 'pgVirtual',
     function(object, value) {
-        if('translated' %in% names(value)) stop('Translational status cannot be redefined')
+        if ('translated' %in% names(value)) {
+            stop('Translational status cannot be redefined')
+        }
         value$translated <- translated(object)
         object@.settings <- value
         object
@@ -196,14 +220,18 @@ setMethod(
 setMethod(
     'show', 'pgVirtual',
     function(object) {
-        cat('An object of class ', class(object), '\n\n', sep='')
-        cat('The pangenome consists of', nGenes(object), 'genes from', nOrganisms(object), 'organisms\n')
-        if(hasGeneGroups(object)) {
+        cat('An object of class ', class(object), '\n\n', sep = '')
+        cat('The pangenome consists of', 
+            nGenes(object), 
+            'genes from', 
+            nOrganisms(object), 
+            'organisms\n')
+        if (hasGeneGroups(object)) {
             cat(nGeneGroups(object), 'gene groups defined\n\n')
         } else {
             cat('Gene groups not yet defined\n\n')
         }
-        if(translated(object)) {
+        if (translated(object)) {
             cat('Genes are translated\n')
         } else {
             cat('Genes are untranslated\n')
@@ -259,17 +287,32 @@ setMethod(
         seqToOrg <- seqToOrg(object)
         groups <- split(seqToOrg, seqToGeneGroup)
         nOrgs <- nOrganisms(object)
-        groupInfoCalc <- do.call(rbind, lapply(groups, function(group) {
+        groupInfoCalc <- do.call(rbind, lapply(groups, function(group, nOrgs) {
             nOrg <- length(unique(group))
             data.frame(
-                group=if(nOrg==nOrgs) 'Core' else if(nOrg==1) 'Singleton' else 'Accessory',
-                nOrg=nOrg,
-                nGenes=length(group),
-                stringsAsFactors=FALSE
+                group = if (nOrg == nOrgs) {
+                    'Core'
+                } else if (nOrg == 1) {
+                    'Singleton'
+                } else {
+                    'Accessory'
+                },
+                nOrg = nOrg,
+                nGenes = length(group),
+                stringsAsFactors = FALSE
             )
-        }))
-        groupInfo <- data.frame(description=NA, group=NA, paralogue=NA, GO=NA, EC=NA, nOrg=rep(0, max(seqToGeneGroup)), nGenes=rep(0, max(seqToGeneGroup)))
-        groupInfo[as.integer(names(groups)), c('group', 'nOrg', 'nGenes')] <- groupInfoCalc
+        }, nOrgs = nOrgs))
+        groupInfo <- data.frame(
+            description = NA, 
+            group = NA, 
+            paralogue = NA, 
+            GO = NA, 
+            EC = NA, 
+            nOrg = rep(0, max(seqToGeneGroup)), 
+            nGenes = rep(0, max(seqToGeneGroup))
+        )
+        groupInfo[as.integer(names(groups)), 
+                  c('group', 'nOrg', 'nGenes')] <- groupInfoCalc
         rownames(groupInfo) <- as.character(1:nrow(groupInfo))
         groupInfo(object) <- groupInfo
         object
@@ -291,7 +334,7 @@ setMethod(
 setMethod(
     'hasParalogueLinks', 'pgVirtual',
     function(object) {
-        if(hasGeneGroups(object)) {
+        if (hasGeneGroups(object)) {
             !any(is.na(groupInfo(object)$paralogue))
         } else {
             FALSE
@@ -359,15 +402,19 @@ setMethod(
         switch(
             method,
             random = {
-                ind <- sapply(ind, function(x) {x[sample(length(x), size=1)]})
+                ind <- sapply(ind, function(x) {x[sample(length(x), size = 1)]})
                 genes(object, subset=ind)
             },
             longest = {
-                ind <- sapply(ind, function(x, width) {x[which.max(width[x])]}, width=geneWidth(object))
+                ind <- sapply(ind, function(x, width) {
+                    x[which.max(width[x])]
+                }, width = geneWidth(object))
                 genes(object, subset=ind)
             },
             shortest = {
-                ind <- sapply(ind, function(x, width) {x[which.min(width[x])]}, width=geneWidth(object))
+                ind <- sapply(ind, function(x, width) {
+                    x[which.min(width[x])]
+                }, width = geneWidth(object))
                 genes(object, subset=ind)
             },
             stop('Unknown method: ', method)
@@ -385,37 +432,54 @@ setMethod(
 #' 
 setMethod(
     'plotStat', 'pgVirtual',
-    function(object, sort=TRUE, color, ...) {
+    function(object, sort = TRUE, color, ...) {
         data <- orgInfo(object)
-        lev <- if(sort) orgNames(object)[order(data$nGenes)] else orgNames(object)
+        lev <- if (sort) {
+            orgNames(object)[order(data$nGenes)]
+        } else {
+            orgNames(object)
+        }
         data$organism <- factor(orgNames(object), levels = lev)
         p <- ggplot() + theme_bw() + scale_y_continuous('# genes')
-        p <- p + theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
-        if(missing(color)) {
-            p <- p + geom_bar(aes(x=organism, y=nGenes), stat='identity', data=data)
+        p <- p + theme(axis.text.x = element_text(angle = 45, 
+                                                  vjust = 1, 
+                                                  hjust = 1))
+        if (missing(color)) {
+            p <- p + geom_bar(aes(x = organism, y = nGenes), stat = 'identity', 
+                              data = data)
         } else {
-            p <- p + geom_bar(aes_string(x='organism', y='nGenes', fill=color), stat='identity', data=data)
-            if(length(list(...)) != 0) {
+            p <- p + geom_bar(aes_string(x = 'organism', y = 'nGenes', 
+                                         fill = color), 
+                              stat = 'identity', data = data)
+            if (length(list(...)) != 0) {
                 p <- p + scale_fill_brewer(...)
             }
         }
-        if(hasGeneGroups(object)) {
+        if (hasGeneGroups(object)) {
             groupNames <- c('Singleton', 'Accessory', 'Core')
             groups <- table(groupInfo(object)$group)
-            groups <- data.frame(nGenes=groups[], group=factor(names(groups), levels=groupNames))
+            groups <- data.frame(nGenes = groups[], 
+                                 group = factor(names(groups), 
+                                                levels = groupNames))
             groups <- groups[order(groups$group),]
             labPos <- groups$nGenes/2 + cumsum(c(0, groups$nGenes[-nrow(groups)]))
             p1 <- ggplot() + theme_bw()
-            p1 <- p1 + theme(axis.title=element_blank(), 
-                             axis.text.y=element_blank(), 
-                             axis.ticks.y=element_blank(),
-                             axis.line=element_blank(),
-                             panel.grid=element_blank(),
-                             panel.border=element_blank())
-            p1 <- p1 + geom_bar(aes(x=factor(1), fill=group, weight=nGenes), data=groups, width=1)
-            p1 <- p1 + scale_fill_manual('Group', breaks=groupNames, values=c('goldenrod', 'forestgreen', 'firebrick'), drop=F)
-            p1 <- p1 + coord_polar(theta='y')
-            p1 <- p1 + scale_y_continuous(breaks=labPos, labels=groups$nGenes)
+            p1 <- p1 + theme(axis.title = element_blank(), 
+                             axis.text.y = element_blank(), 
+                             axis.ticks.y = element_blank(),
+                             axis.line = element_blank(),
+                             panel.grid = element_blank(),
+                             panel.border = element_blank())
+            p1 <- p1 + geom_bar(aes(x = factor(1), 
+                                    fill = group, weight = nGenes), 
+                                data = groups, width = 1)
+            p1 <- p1 + scale_fill_manual('Group', breaks = groupNames, 
+                                         values = c('goldenrod', 'forestgreen', 
+                                                    'firebrick'), 
+                                         drop = FALSE)
+            p1 <- p1 + coord_polar(theta = 'y')
+            p1 <- p1 + scale_y_continuous(breaks = labPos, 
+                                          labels = groups$nGenes)
             
             p <- rbindGtable(ggplotGrob(p1), ggplotGrob(p))
             gtable:::plot.gtable(p)
@@ -434,29 +498,38 @@ setMethod(
 #' 
 setMethod(
     'plotEvolution', 'pgVirtual',
-    function(object, ordering='bootstrap', times=10) {
-        if(length(ordering) != 1) {
-            if(inherits(ordering, 'character')) {
+    function(object, ordering = 'bootstrap', times = 10) {
+        if (length(ordering) != 1) {
+            if (inherits(ordering, 'character')) {
                 ordering <- match(ordering, orgNames(object))
             }
         }
         evol <- switch(
             as.character(ordering[1]),
-            bootstrap=evolBoot(object, times=times),
-            random=evolMan(object, sample(length(object))),
-            none=evolMan(object, seq(length(object))),
+            bootstrap = evolBoot(object, times = times),
+            random = evolMan(object, sample(length(object))),
+            none = evolMan(object, seq(length(object))),
             evolMan(object, ordering)
         )
-        p <- ggplot(evol, aes(x=org, y=size, color=group, group=group)) + theme_bw()
+        p <- ggplot(evol, aes(x = org, 
+                              y = size, 
+                              color = group, 
+                              group = group)) + theme_bw()
         p <- p + scale_color_manual('',
-                                    values=c(Singleton='goldenrod', Accessory='forestgreen', Core='firebrick', Total='steelblue'), 
-                                    breaks=c('Singleton', 'Accessory', 'Core', 'Total'))
+                                    values = c(Singleton = 'goldenrod', 
+                                               Accessory = 'forestgreen', 
+                                               Core = 'firebrick', 
+                                               Total = 'steelblue'), 
+                                    breaks = c('Singleton', 
+                                               'Accessory', 
+                                               'Core', 
+                                               'Total'))
         p <- p + scale_y_continuous('# Gene groups')
-        if(ordering[1] == 'bootstrap') {
-            p <- p + geom_smooth(size=1.5)
+        if (ordering[1] == 'bootstrap') {
+            p <- p + geom_smooth(size = 1.5)
             p <- p + scale_x_continuous('# Organisms')
         } else {
-            p <- p + geom_line(size=1.5)
+            p <- p + geom_line(size = 1.5)
             p <- p + scale_x_discrete('Organism added')
         }
         p
@@ -481,32 +554,37 @@ setMethod(
 #' 
 setMethod(
     'plotSimilarity', 'pgVirtual',
-    function(object, type='pangenome', ordering='auto', kmerSize, pParam, chunkSize=100) {
+    function(object, type = 'pangenome', ordering = 'auto', kmerSize, pParam, 
+             chunkSize = 100) {
         .fillDefaults(defaults(object))
         
         sim <- switch(
             type,
-            pangenome=pgSim(object),
-            kmer=kmerSim(object, kmerSize, chunkSize, pParam)
+            pangenome = pgSim(object),
+            kmer = kmerSim(object, kmerSize, chunkSize, pParam)
         )
-        if(ordering[1] == 'auto') {
-            dist <- as.dist(sqrt(1-sim))
-            ordering <- hclust(dist, method='ward.D2')$order
-        } else if(ordering[1] == 'none') {
+        if (ordering[1] == 'auto') {
+            dist <- as.dist(sqrt(1 - sim))
+            ordering <- hclust(dist, method = 'ward.D2')$order
+        } else if (ordering[1] == 'none') {
             ordering <- seq(length(object))
-        } else if(inherits(ordering, 'character')) {
+        } else if (inherits(ordering, 'character')) {
             ordering <- match(ordering, orgNames(object))
         }
-        sim <- melt(sim, varnames=c('org1', 'org2'), value.name='Similarity')
-        sim$org1 <- factor(sim$org1, levels=orgNames(object)[ordering])
-        sim$org2 <- factor(sim$org2, levels=rev(orgNames(object)[ordering]))
-        p <- ggplot(sim, aes(x=org1, y=org2, fill=Similarity)) + theme_bw()
-        p <- p + theme(axis.text.x=element_text(angle=45, hjust=1, vjust=1))
+        sim <- melt(sim, varnames = c('org1', 'org2'), 
+                    value.name = 'Similarity')
+        sim$org1 <- factor(sim$org1, levels = orgNames(object)[ordering])
+        sim$org2 <- factor(sim$org2, levels = rev(orgNames(object)[ordering]))
+        p <- ggplot(sim, aes(x = org1, y = org2, fill = Similarity)) + 
+            theme_bw()
+        p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 1, 
+                                                  vjust = 1))
         p <- p + geom_raster()
-        p <- p + scale_x_discrete('Organism', expand=c(0,0))
-        p <- p + scale_y_discrete('Organism', expand=c(0,0))
+        p <- p + scale_x_discrete('Organism', expand = c(0,0))
+        p <- p + scale_y_discrete('Organism', expand = c(0,0))
         p <- p + coord_fixed()
-        p <- p + scale_fill_distiller(palette=7, guide='colorbar', limits=c(0,1))
+        p <- p + scale_fill_distiller(palette = 7, guide = 'colorbar', 
+                                      limits = c(0,1))
         p
     }
 )
@@ -535,47 +613,63 @@ setMethod(
 #' 
 setMethod(
     'plotTree', 'pgVirtual',
-    function(object, type='pangenome', circular=FALSE, info, kmerSize, dist, clust, pParam, chunkSize=100) {
+    function(object, type = 'pangenome', circular = FALSE, info, kmerSize, dist, 
+             clust, pParam, chunkSize = 100) {
         .fillDefaults(defaults(object))
         
-        tree <- orgTree(object, type, kmerSize, dist, clust, chunkSize=100, pParam)
+        tree <- orgTree(object, type, kmerSize, dist, clust, chunkSize = 100, 
+                        pParam)
         data <- dendro_data(tree)
-        if(!missing(info)) {
-            infoDat <- data.frame(x=label(data)$x-0.5, xend=label(data)$x+0.5, y=label(data)$y, yend=label(data)$y)
+        if (!missing(info)) {
+            infoDat <- data.frame(x = label(data)$x - 0.5, 
+                                  xend = label(data)$x + 0.5, 
+                                  y = label(data)$y, 
+                                  yend = label(data)$y)
             orgOrder <- match(label(data)$label, orgNames(object))
-            if(length(info) == 1) {
-                if(!any(names(orgInfo(object)) == info)) {
+            if (length(info) == 1) {
+                if (!any(names(orgInfo(object)) == info)) {
                     stop('info doesn\'t match any org info')
                 }
                 infoDat[[info]] <- orgInfo(object)[orgOrder, info]
             } else {
-                infoDat[['.PLCHLDR']] <-info[orgOrder]
+                infoDat[['.PLCHLDR']] <- info[orgOrder]
                 info <- '.PLCHLDR'
             }
         }
-        if(circular) {
+        if (circular) {
             data$segments$y <- -data$segments$y
             data$segments$yend <- -data$segments$yend
         }
-        p <- ggplot(data$segments, aes(x=x, xend=xend, y=y, yend=yend)) + theme_bw()
-        p <- p + theme(axis.title=element_blank(), 
-                       axis.text.y=element_blank(), 
-                       axis.ticks.y=element_blank(),
-                       axis.line=element_blank(),
-                       panel.grid=element_blank(),
-                       panel.border=element_blank())
+        p <- ggplot(data$segments, 
+                    aes(x = x, xend = xend, y = y, yend = yend)) + theme_bw()
+        p <- p + theme(axis.title = element_blank(), 
+                       axis.text.y = element_blank(), 
+                       axis.ticks.y = element_blank(),
+                       axis.line = element_blank(),
+                       panel.grid = element_blank(),
+                       panel.border = element_blank())
         p <- p + geom_segment()
-        if(!missing(info)) {
-            p <- p + geom_segment(aes_string(color=info), data=infoDat, size=I(4))
-            if(info == '.PLCHLDR') p <- p + theme(legend.title=element_blank())
+        if (!missing(info)) {
+            p <- p + geom_segment(aes_string(color = info), data = infoDat, 
+                                  size = I(4))
+            if (info == '.PLCHLDR') {
+                p <- p + theme(legend.title = element_blank())
+            }
         }
-        if(circular) {
+        if (circular) {
             p <- p + coord_polar()
-            p <- p + scale_x_continuous(breaks=data$labels$x, labels=data$labels$label, limit=c(0.5, max(label(data)$x)+0.5))
+            p <- p + scale_x_continuous(breaks = data$labels$x, 
+                                        labels = data$labels$label, 
+                                        limit = c(0.5, 
+                                                  max(label(data)$x) + 0.5))
         } else {
-            p <- p + scale_x_continuous(breaks=data$labels$x, labels=data$labels$label)
-            p <- p + scale_y_continuous(expand=c(0,0))
-            p <- p + theme(axis.text.x=element_text(angle=45, hjust=1, vjust=1), axis.ticks.x=element_blank())
+            p <- p + scale_x_continuous(breaks = data$labels$x, 
+                                        labels = data$labels$label)
+            p <- p + scale_y_continuous(expand = c(0,0))
+            p <- p + theme(axis.text.x = element_text(angle = 45, 
+                                                      hjust = 1, 
+                                                      vjust = 1), 
+                           axis.ticks.x = element_blank())
         }
         p
     }
@@ -603,11 +697,11 @@ evolBoot <- function(pangenome, times=10) {
     mat <- pgMatrix(pangenome)
     res <- lapply(seq(size), function(n) {
         res1 <- lapply(seq(times), function(i) {
-            ind <- sample(size, size=n, replace=TRUE)
-            subMat <- mat[, ind, drop=FALSE]
-            data.frame(panGroups(subMat), stringsAsFactors=FALSE)
+            ind <- sample(size, size = n, replace = TRUE)
+            subMat <- mat[, ind, drop = FALSE]
+            data.frame(panGroups(subMat), stringsAsFactors = FALSE)
         })
-        data.frame(org=n, do.call(rbind, res1), stringsAsFactors=FALSE)
+        data.frame(org = n, do.call(rbind, res1), stringsAsFactors = FALSE)
     })
     do.call(rbind, res)
 }
@@ -627,10 +721,12 @@ evolBoot <- function(pangenome, times=10) {
 #' 
 evolMan <- function(pangenome, order) {
     mat <- pgMatrix(pangenome)
-    res <- lapply(seq(along=order), function(i) {
+    res <- lapply(seq(along = order), function(i) {
         ind <- order[1:i]
-        subMat <- mat[, ind, drop=FALSE]
-        data.frame(org = factor(orgNames(pangenome)[order[i]]), panGroups(subMat), stringsAsFactors=FALSE)
+        subMat <- mat[, ind, drop = FALSE]
+        data.frame(org = factor(orgNames(pangenome)[order[i]]), 
+                   panGroups(subMat), 
+                   stringsAsFactors = FALSE)
     })
     res <- do.call(rbind, res)
     levels(res$org) <- orgNames(pangenome)[order]
@@ -652,13 +748,12 @@ evolMan <- function(pangenome, order) {
 panGroups <- function(mat) {
     mat[] <- mat != 0
     nGenes <- apply(mat, 1, sum)
-    data.frame(group=c('Singleton', 'Accessory', 'Core', 'Total'),
-               size=c(sum(nGenes == 1),
-                      sum(nGenes > 1 & nGenes < ncol(mat)),
-                      sum(nGenes == ncol(mat)),
-                      sum(nGenes != 0)),
-               stringsAsFactors=FALSE
-               )
+    data.frame(group = c('Singleton', 'Accessory', 'Core', 'Total'),
+               size = c(sum(nGenes == 1),
+                        sum(nGenes > 1 & nGenes < ncol(mat)),
+                        sum(nGenes == ncol(mat)),
+                        sum(nGenes != 0)),
+               stringsAsFactors = FALSE)
 }
 #' Calculate pangenomebased organism similarity
 #' 
@@ -674,7 +769,7 @@ panGroups <- function(mat) {
 #' @noRd
 #' 
 pgSim <- function(pangenome) {
-    if(!hasGeneGroups(pangenome)) stop('Gene groups must be defined')
+    if (!hasGeneGroups(pangenome)) stop('Gene groups must be defined')
     panSim(pgMatrix(pangenome))
 }
 #' Calculate pangenome-based organism distance
@@ -691,6 +786,6 @@ pgSim <- function(pangenome) {
 #' @noRd
 #' 
 pgDist <- function(pangenome, method) {
-    if(!hasGeneGroups(pangenome)) stop('Gene groups must be defined')
-    dist(t(pgMatrix(pangenome)), method=method)
+    if (!hasGeneGroups(pangenome)) stop('Gene groups must be defined')
+    dist(t(pgMatrix(pangenome)), method = method)
 }

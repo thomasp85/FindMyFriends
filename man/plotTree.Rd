@@ -35,6 +35,9 @@ dist() are allowed as well as 'cosine' for type='kmer'}
 
 \item{chunkSize}{Number of organisms to process at a time}
 }
+\value{
+This function is called for its side effects
+}
 \description{
 This method plots a dendrogram of the relationship between the organisms in
 the pangenome. It does not tries to by phylogenetic in any way but merely

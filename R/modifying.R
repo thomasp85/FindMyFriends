@@ -36,13 +36,18 @@
 #' 
 setMethod(
     'addGenomes', c('pgVirtual', 'pgVirtual'),
-    function(object, newSet, kmerSize, lowerLimit, algorithm, flankSize, gpcParam, nsParam, klParam, pParam, nSplits, ...) {
+    function(object, newSet, kmerSize, lowerLimit, algorithm, flankSize, 
+             gpcParam, nsParam, klParam, pParam, nSplits, ...) {
         .fillDefaults(defaults(object))
         
-        if(class(object) != class(newSet)) stop('pangenome and newSet must be of the same class')
-        if(translated(object) != translated(newSet)) stop('Translational status of pangenome and newSet must match')
+        if (class(object) != class(newSet)) {
+            stop('pangenome and newSet must be of the same class')
+        }
+        if (translated(object) != translated(newSet)) {
+            stop('Translational status of pangenome and newSet must match')
+        }
         
-        if(!hasGeneGroups(newSet)) {
+        if (!hasGeneGroups(newSet)) {
             defaults(newSet) <- defaults(object)
             gpcParam$object <- newSet
             newSet <- do.call(gpcGrouping, gpcParam)
@@ -54,32 +59,37 @@ setMethod(
         
         fullSet <- c(getRep(object, 'random'), getRep(newSet, 'random'))
         er <- getExRep(fullSet, spectrumKernel(kmerSize))
-        if(missing(pParam)) {
-            sim <- linearKernel(er, sparse=TRUE, diag=FALSE, lowerLimit=lowerLimit)
+        if (missing(pParam)) {
+            sim <- linearKernel(er, sparse = TRUE, diag = FALSE, 
+                                lowerLimit = lowerLimit)
         } else {
-            sim <- lkParallel(er, pParam, nSplits, lowerLimit=lowerLimit)
+            sim <- lkParallel(er, pParam, nSplits, lowerLimit = lowerLimit)
         }
         similarGroups <- igGroup(sim, algorithm, ...)
         
         members <- switch(
             hasGeneInfo(object),
-            'TRUE' = mergeNeighborhood(object, newSet, flankSize, similarGroups, sim),
+            'TRUE' = mergeNeighborhood(object, newSet, flankSize, similarGroups, 
+                                       sim),
             'FALSE' = mergeLargest(object, similarGroups)
         )
         
         newGroups <- max(members) - nGeneGroups(object)
-        newInfo <- bind_rows(groupInfo(object), data.frame(description=rep(NA, newGroups)))
-        newPG <- mergePangenomes(object, newSet, c(seqToGeneGroup(object), members), newInfo)
+        newInfo <- bind_rows(groupInfo(object), 
+                             data.frame(description = rep(NA, newGroups)))
+        newPG <- mergePangenomes(object, newSet, 
+                                 c(seqToGeneGroup(object), members), 
+                                 newInfo)
         newMat <- pgMatrix(newPG)
         newInfo$group <- apply(newMat, 1, function(x) {
-            if(all(x!=0)) return('Core')
-            if(sum(x!=0) == 1) return('Singleton')
+            if (all(x != 0)) return('Core')
+            if (sum(x != 0) == 1) return('Singleton')
             return('Accessory')
         })
-        newInfo$nOrg <- apply(newMat!=0, 1, sum)
+        newInfo$nOrg <- apply(newMat != 0, 1, sum)
         newInfo$nGenes <- apply(newMat, 1, sum)
         groupInfo(newPG) <- newInfo
-        if(hasParalogueLinks(object)) {
+        if (hasParalogueLinks(object)) {
             klParam$object <- newPG
             newPG <- do.call(kmerLink, klParam)
         }
@@ -92,11 +102,11 @@ setMethod(
     'removeGene', c('pgVirtual', 'character', 'missing', 'missing', 'missing'),
     function(object, name, organism, group, ind) {
         index <- which(geneNames(object) %in% name)
-        if(length(index) == 0) {
+        if (length(index) == 0) {
             warning('No genes match criteria')
             object
         } else {
-            removeGene(object, ind=index)
+            removeGene(object, ind = index)
         }
     }
 )
@@ -106,7 +116,7 @@ setMethod(
     'removeGene', c('pgVirtual', 'character', 'character', 'missing', 'missing'),
     function(object, name, organism, group, ind) {
         index <- match(organism, orgNames(object))
-        removeGene(object, name=name, organism=index)
+        removeGene(object, name = name, organism = index)
     }
 )
 #' @describeIn removeGene Remove gene based on gene name and organism index
@@ -115,13 +125,13 @@ setMethod(
     'removeGene', c('pgVirtual', 'character', 'numeric', 'missing', 'missing'),
     function(object, name, organism, group, ind) {
         index <- unlist(mapply(function(n, o) {
-            which(n==geneNames(object) & o==seqToOrg(object))
-        }, n=name, o=organism))
-        if(length(index) == 0) {
+            which(n == geneNames(object) & o == seqToOrg(object))
+        }, n = name, o = organism))
+        if (length(index) == 0) {
             warning('No genes match criteria')
             object
         } else {
-            removeGene(object, ind=index)
+            removeGene(object, ind = index)
         }
     }
 )
@@ -131,7 +141,7 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'character', 'missing', 'missing'),
     function(object, name, organism, group, ind) {
         index <- match(organism, orgNames(object))
-        removeGene(object, organism=index)
+        removeGene(object, organism = index)
     }
 )
 #' @describeIn removeGene Remove gene based on organism index
@@ -140,11 +150,11 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'numeric', 'missing', 'missing'),
     function(object, name, organism, group, ind) {
         index <- which(seqToOrg(object) %in% organism)
-        if(length(index) == 0) {
+        if (length(index) == 0) {
             warning('No genes match criteria')
             object
         } else {
-            removeGene(object, ind=index)
+            removeGene(object, ind = index)
         }
     }
 )
@@ -154,7 +164,7 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'character', 'missing', 'numeric'),
     function(object, name, organism, group, ind) {
         index <- match(organism, orgNames(object))
-        removeGene(object, organism=index, ind=ind)
+        removeGene(object, organism = index, ind = ind)
     }
 )
 #' @describeIn removeGene Remove gene based on organism and gene index
@@ -163,14 +173,14 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'numeric', 'missing', 'numeric'),
     function(object, name, organism, group, ind) {
         index <- unlist(mapply(function(o, i) {
-            which(seqToOrg(object)==o)[i]
-        }, o=organism, i=ind))
+            which(seqToOrg(object) == o)[i]
+        }, o = organism, i = ind))
         index <- index[!is.na(index)]
-        if(length(index) == 0) {
+        if (length(index) == 0) {
             warning('No genes match criteria')
             object
         } else {
-            removeGene(object, ind=index)
+            removeGene(object, ind = index)
         }
     }
 )
@@ -180,7 +190,7 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'missing', 'character', 'missing'),
     function(object, name, organism, group, ind) {
         index <- match(group, groupNames(object))
-        removeGene(object, group=index)
+        removeGene(object, group = index)
     }
 )
 #' @describeIn removeGene Remove gene based on gene group index
@@ -189,11 +199,11 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'missing', 'numeric', 'missing'),
     function(object, name, organism, group, ind) {
         index <- which(seqToGeneGroup(object) %in% group)
-        if(length(index) == 0) {
+        if (length(index) == 0) {
             warning('No genes match criteria')
             object
         } else {
-            removeGene(object, ind=index)
+            removeGene(object, ind = index)
         }
     }
 )
@@ -203,7 +213,7 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'missing', 'character', 'numeric'),
     function(object, name, organism, group, ind) {
         index <- match(group, groupNames(object))
-        removeGene(object, group=index, ind=ind)
+        removeGene(object, group = index, ind = ind)
     }
 )
 #' @describeIn removeGene Remove gene based on gene group and gene index
@@ -212,14 +222,14 @@ setMethod(
     'removeGene', c('pgVirtual', 'missing', 'missing', 'numeric', 'numeric'),
     function(object, name, organism, group, ind) {
         index <- unlist(mapply(function(g, i) {
-            which(seqToGeneGroup(object)==g)[i]
-        }, g=group, i=ind))
+            which(seqToGeneGroup(object) == g)[i]
+        }, g = group, i = ind))
         index <- index[!is.na(index)]
-        if(length(index) == 0) {
+        if (length(index) == 0) {
             warning('No genes match criteria')
             object
         } else {
-            removeGene(object, ind=index)
+            removeGene(object, ind = index)
         }
     }
 )
@@ -237,12 +247,14 @@ setMethod(
 setMethod(
     'collapseParalogues', 'pgVirtual',
     function(object, combineInfo='merge', ...) {
-        if(!hasParalogueLinks(object)) stop('Paralogues must be detected before collapsing')
+        if (!hasParalogueLinks(object)) {
+            stop('Paralogues must be detected before collapsing')
+        }
         paralogues <- split(1:nGeneGroups(object), groupInfo(object)$paralogue)
         groups <- split(1:nGenes(object), seqToGeneGroup(object))
         newGroups <- lapply(paralogues, function(x) {unlist(groups[x])})
         newInfo <- lapply(paralogues, function(x) {
-            if(inherits(combineInfo, 'function')) {
+            if (inherits(combineInfo, 'function')) {
                 combineInfo(groupInfo(object)[x,], ...)
             } else {
                 switch(
@@ -272,20 +284,20 @@ setMethod(
 setMethod(
     'addGroupInfo', 'pgVirtual',
     function(object, info, key) {
-        if(missing(key)) {
+        if (missing(key)) {
             key <- 1:nGeneGroups(object)
-        } else if(inherits(key, 'character')) {
+        } else if (inherits(key, 'character')) {
             keyInfo <- info[[key[1]]]
-            info <- info[, names(info) != key[1], drop=FALSE]
-            if(is.numeric(keyInfo)) {
+            info <- info[, names(info) != key[1], drop = FALSE]
+            if (is.numeric(keyInfo)) {
                 key <- keyInfo
             } else {
                 key <- match(keyInfo, groupNames(object))
             }
         }
-        if(!is.numeric(key)) stop('key must be convertible to an index')
-        for(i in names(info)) {
-            if(i %in% c('nGenes', 'nOrg', 'group')) next
+        if (!is.numeric(key)) stop('key must be convertible to an index')
+        for (i in names(info)) {
+            if (i %in% c('nGenes', 'nOrg', 'group')) next
             object <- setGroupInfo(object, i, info[[i]], key)
         }
         object
@@ -302,20 +314,20 @@ setMethod(
 setMethod(
     'addOrgInfo', 'pgVirtual',
     function(object, info, key) {
-        if(missing(key)) {
+        if (missing(key)) {
             key <- 1:nOrganisms(object)
-        } else if(inherits(key, 'character')) {
+        } else if (inherits(key, 'character')) {
             keyInfo <- info[[key[1]]]
-            info <- info[, names(info) != key[1], drop=FALSE]
-            if(is.numeric(keyInfo)) {
+            info <- info[, names(info) != key[1], drop = FALSE]
+            if (is.numeric(keyInfo)) {
                 key <- keyInfo
             } else {
                 key <- match(keyInfo, orgNames(object))
             }
         }
-        if(!is.numeric(key)) stop('key must be convertible to an index')
-        for(i in names(info)) {
-            if(i %in% c('nGenes')) next
+        if (!is.numeric(key)) stop('key must be convertible to an index')
+        for (i in names(info)) {
+            if (i %in% c('nGenes')) next
             object <- setOrgInfo(object, i, info[[i]], key)
         }
         object
@@ -340,12 +352,12 @@ setMethod(
 mergeInfo <- function(data, sep) {
     as.data.frame(lapply(data, function(x, sep) {
         info <- unique(unlist(x))
-        if(missing(sep)) {
+        if (missing(sep)) {
             I(list(info))
         } else {
-            paste(info, collapse=sep)
+            paste(info, collapse = sep)
         }
-    }, sep=sep), stringsAsFactors=FALSE)
+    }, sep = sep), stringsAsFactors = FALSE)
 }
 #' Select the row with the largest group
 #' 
@@ -360,7 +372,7 @@ mergeInfo <- function(data, sep) {
 #' 
 largestInfo <- function(data) {
     largest <- which.max(data$nGenes)
-    data[largest, , drop=FALSE]
+    data[largest, , drop = FALSE]
 }
 #' Convert row-column pairs into vector indexes
 #' 
@@ -378,7 +390,7 @@ largestInfo <- function(data) {
 #' @noRd
 #' 
 pairToIndex <- function(row, col, nrow) {
-    nrow*(col-1)+row
+    nrow*(col - 1) + row
 }
 #' Remove a range of indexes
 #' 
@@ -397,8 +409,8 @@ pairToIndex <- function(row, col, nrow) {
 #' 
 removeIndex <- function(x, index) {
     index <- sort(index, decreasing = TRUE)
-    for(i in 1:length(index)) {
-        x[x > index[i]] <- x[x > index[i]]-1
+    for (i in 1:length(index)) {
+        x[x > index[i]] <- x[x > index[i]] - 1
     }
     as.integer(x)
 }
@@ -514,20 +526,23 @@ mergeNeighborhood <- function(pangenome, newPG, flankSize, members, similarities
 #' @noRd
 #' 
 mergeLargest <- function(pangenome, members) {
-    newMembers <- members[(nGeneGroups(pangenome)+1):length(members)]
+    newMembers <- members[(nGeneGroups(pangenome) + 1):length(members)]
     oldMembers <- members[1:nGeneGroups(pangenome)]
     groupSizes <- groupInfo(pangenome)$nGenes
     mergedMembers <- sapply(newMembers, function(x) {
         links <- which(oldMembers == x)
-        if(length(links) == 0) {
+        if (length(links) == 0) {
             NA
-        } else if(length(links) == 1) {
+        } else if (length(links) == 1) {
             links
         } else {
             links[which.max(groupSizes[links])]
         }
     })
-    newGroups <- split(which(is.na(mergedMembers)), newMembers[is.na(mergedMembers)])
-    mergedMembers[unlist(newGroups)] <- rep(1:length(newGroups), sapply(newGroups, length))+nGeneGroups(pangenome)
+    newGroups <- split(which(is.na(mergedMembers)), 
+                       newMembers[is.na(mergedMembers)])
+    mergedMembers[unlist(newGroups)] <- 
+        rep(1:length(newGroups), 
+            sapply(newGroups, length)) + nGeneGroups(pangenome)
     mergedMembers
 }

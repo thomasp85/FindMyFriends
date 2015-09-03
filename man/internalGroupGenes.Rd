@@ -38,4 +38,5 @@ FindMyFriends
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
 }
+\keyword{internal}
 

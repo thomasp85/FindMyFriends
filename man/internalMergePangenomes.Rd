@@ -48,4 +48,5 @@ This method is for internal use only and should not be called directly. Use
 For internal use only. Required for extending the class system of
 FindMyFriends.
 }
+\keyword{internal}
 

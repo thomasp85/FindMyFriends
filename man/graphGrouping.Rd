@@ -18,7 +18,8 @@ graphGrouping(object, ...)
 \item{similarity}{A similarity matrix with rows and columns corresponding to
 the genes in the pangenome.}
 
-\item{algorithm}{A string naming the algorithm. See \code{\link[igraph]{communities}}
+\item{algorithm}{A string naming the algorithm. See
+\code{\link[igraph]{communities}}
 for an overview. The trailing '.community' can be omitted from the name.
 Default is 'infomap', which is also the recommended.}
 }

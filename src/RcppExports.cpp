@@ -16,28 +16,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// readFasta
-List readFasta(CharacterVector files, List indexes);
-RcppExport SEXP FindMyFriends_readFasta(SEXP filesSEXP, SEXP indexesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< CharacterVector >::type files(filesSEXP);
-    Rcpp::traits::input_parameter< List >::type indexes(indexesSEXP);
-    __result = Rcpp::wrap(readFasta(files, indexes));
-    return __result;
-END_RCPP
-}
-// test
-List test();
-RcppExport SEXP FindMyFriends_test() {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    __result = Rcpp::wrap(test());
-    return __result;
-END_RCPP
-}
 // panSim
 NumericMatrix panSim(NumericMatrix pg);
 RcppExport SEXP FindMyFriends_panSim(SEXP pgSEXP) {

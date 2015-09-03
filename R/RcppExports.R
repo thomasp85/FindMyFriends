@@ -5,14 +5,6 @@ nSeqs <- function(files) {
     .Call('FindMyFriends_nSeqs', PACKAGE = 'FindMyFriends', files)
 }
 
-readFasta <- function(files, indexes) {
-    .Call('FindMyFriends_readFasta', PACKAGE = 'FindMyFriends', files, indexes)
-}
-
-test <- function() {
-    .Call('FindMyFriends_test', PACKAGE = 'FindMyFriends')
-}
-
 panSim <- function(pg) {
     .Call('FindMyFriends_panSim', PACKAGE = 'FindMyFriends', pg)
 }

@@ -27,19 +27,20 @@ NULL
 #' 
 setClass(
     'pgVirtualLoc',
-    contains=c('VIRTUAL'),
+    contains = c('VIRTUAL'),
     validity = function(object) {
-        if(!hasMethod('geneLocation', class(object))) {
-            return('The method "geneLocation" must be implemented for ', class(object))
+        if (!hasMethod('geneLocation', class(object))) {
+            return('The method "geneLocation" must be implemented for ', 
+                   class(object))
         }
         gL <- geneLocation(object)
-        if(nrow(gL) != nGenes(object)) {
+        if (nrow(gL) != nGenes(object)) {
             return('Sequence and geneLocation length differ')
         }
-        if(!all(c('contig', 'start', 'end', 'strand') %in% names(gL))) {
+        if (!all(c('contig', 'start', 'end', 'strand') %in% names(gL))) {
             return('Missing columns in geneLocation')
         }
-        if(!all(unique(gL$strand)) %in% c(-1, 1)) {
+        if (!all(unique(gL$strand)) %in% c(-1, 1)) {
             return('Strand must be coded with -1 and 1')
         }
         return(TRUE)

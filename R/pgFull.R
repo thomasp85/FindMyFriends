@@ -25,12 +25,12 @@ NULL
 #' 
 setClass(
     'pgFull',
-    contains='pgInMem',
+    contains = 'pgInMem',
     slots = list(
-        sequences='XStringSet'
+        sequences = 'XStringSet'
     ),
     validity = function(object) {
-        if(length(object@sequences) != length(object@seqToOrg)) {
+        if (length(object@sequences) != length(object@seqToOrg)) {
             return('Sequence and index length differ')
         }
         return(TRUE)
@@ -47,7 +47,7 @@ setClass(
 setMethod(
     'genes', c('pgFull', 'missing'),
     function(object, split, subset) {
-        if(missing(subset)) {
+        if (missing(subset)) {
             object@sequences
         } else {
             object@sequences[subset]
@@ -59,26 +59,28 @@ setMethod(
 setMethod(
     'genes', c('pgFull', 'character'),
     function(object, split, subset) {
-        if(!split %in% c('organism', 'group', 'paralogue', 'paralog')) {
+        if (!split %in% c('organism', 'group', 'paralogue', 'paralog')) {
             stop('Can only split by organism, gene group or paralogue link')
         }
-        if(split == 'organism') {
+        if (split == 'organism') {
             ans <- splitStringSet(object@sequences, object@seqToOrg)
             names(ans) <- orgNames(object)[as.integer(names(ans))]
-        } else if(split == 'group') {
-            if(!hasGeneGroups(object)) {
+        } else if (split == 'group') {
+            if (!hasGeneGroups(object)) {
                 stop('No gene groups created')
             }
             ans <- splitStringSet(object@sequences, object@seqToGeneGroup)
             names(ans) <- groupNames(object)[as.integer(names(ans))]
-        } else if(split %in% c('paralogue', 'paralog')) {
-            if(!hasParalogueLinks(object)) {
+        } else if (split %in% c('paralogue', 'paralog')) {
+            if (!hasParalogueLinks(object)) {
                 stop('No paralogue links created')
             }
-            ans <- splitStringSet(object@sequences, paralogueInd(object@seqToGeneGroup, groupInfo(object)$paralogue))
+            ans <- splitStringSet(object@sequences, 
+                                  paralogueInd(object@seqToGeneGroup, 
+                                               groupInfo(object)$paralogue))
             names(ans) <- 1:length(ans)
         }
-        if(missing(subset)) {
+        if (missing(subset)) {
             ans
         } else {
             ans[subset]
@@ -117,7 +119,9 @@ setMethod(
 setMethod(
     'mergePangenomes', c('pgFull', 'pgFull'),
     function(pg1, pg2, geneGrouping, groupInfo) {
-        if(class(pg1) != class(pg2)) stop('pangenomes must be instances of the same class')
+        if (class(pg1) != class(pg2)) {
+            stop('pangenomes must be instances of the same class')
+        }
         pg <- callNextMethod()
         new(
             class(pg1),

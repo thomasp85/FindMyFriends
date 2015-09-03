@@ -62,9 +62,9 @@ setGeneric("defaults<-", function(object, value) {
 #' 
 #' @export
 #' 
-setGeneric(
-    'nOrganisms', def = function(object) {standardGeneric('nOrganisms')}
-)
+setGeneric( 'nOrganisms', def = function(object) {
+    standardGeneric('nOrganisms')
+})
 #' Get the total number of genes in a pangenome
 #' 
 #' This method returns the total number of genes in a pangenome (i.e. the sum
@@ -80,9 +80,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'nGenes', def = function(object) {standardGeneric('nGenes')}
-)
+setGeneric('nGenes', def = function(object) {
+    standardGeneric('nGenes')
+})
 #' Get the number of gene groups in a pangenome
 #' 
 #' This method gives the number of different gene groups in the object.
@@ -97,9 +97,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'nGeneGroups', def = function(object) {standardGeneric('nGeneGroups')}
-)
+setGeneric('nGeneGroups', def = function(object) {
+    standardGeneric('nGeneGroups')
+})
 #' Check whether gene groups are defined
 #' 
 #' This method checks whether any grouping of genes has been done on the 
@@ -121,9 +121,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'hasGeneGroups', def = function(object) {standardGeneric('hasGeneGroups')}
-)
+setGeneric('hasGeneGroups', def = function(object) {
+    standardGeneric('hasGeneGroups')
+})
 #' Checks whether linking of paralogues has been done
 #' 
 #' This method checks for the existance of paralogue links in the object.
@@ -144,9 +144,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'hasParalogueLinks', def = function(object) {standardGeneric('hasParalogueLinks')}
-)
+setGeneric('hasParalogueLinks', def = function(object) {
+    standardGeneric('hasParalogueLinks')
+})
 #' Checks for existance of gene location information
 #' 
 #' This method checks whether gene location information is present in the 
@@ -168,9 +168,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'hasGeneInfo', def = function(object) {standardGeneric('hasGeneInfo')}
-)
+setGeneric('hasGeneInfo', def = function(object) {
+    standardGeneric('hasGeneInfo')
+})
 #' Get gene location for all genes
 #' 
 #' This method returns the gene location of all genes as a data.frame with each
@@ -194,9 +194,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'geneLocation', def = function(object) {standardGeneric('geneLocation')}
-)
+setGeneric('geneLocation', def = function(object) {
+    standardGeneric('geneLocation')
+})
 #' Check the sequence type of the pangenome
 #' 
 #' This method checks whether the genes in the pangenome are on translated
@@ -221,9 +221,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'translated', def = function(object) {standardGeneric('translated')}
-)
+setGeneric('translated', def = function(object) {
+    standardGeneric('translated')
+})
 #' Extract gene sequences from a pangenome
 #' 
 #' This method is used to extract the genomic sequences that is the basis for
@@ -265,9 +265,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'genes', def = function(object, split, subset) {standardGeneric('genes')}
-)
+setGeneric('genes', def = function(object, split, subset) {
+    standardGeneric('genes')
+})
 #' Get a representative sequence for each gene group
 #' 
 #' This method returns a representative sequence for each of the gene groups
@@ -291,9 +291,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'getRep', def = function(object, method) {standardGeneric('getRep')}
-)
+setGeneric('getRep', def = function(object, method) {
+    standardGeneric('getRep')
+})
 #' Get and set the names of the genes in the pangenome
 #' 
 #' These methods lets you query and change the naming of genes in your 
@@ -317,18 +317,18 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'geneNames', def = function(object) {standardGeneric('geneNames')}
-)
+setGeneric('geneNames', def = function(object) {
+    standardGeneric('geneNames')
+})
 #' @rdname geneNames
 #' 
 #' @param value A character vector with new names
 #' 
 #' @export
 #' 
-setGeneric(
-    'geneNames<-', def = function(object, value) {standardGeneric('geneNames<-')}
-)
+setGeneric('geneNames<-', def = function(object, value) {
+    standardGeneric('geneNames<-')
+})
 #' Get the sequence length of each gene
 #' 
 #' This method extracts the width (i.e. number of residues) of each gene in
@@ -347,9 +347,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'geneWidth', def = function(object) {standardGeneric('geneWidth')}
-)
+setGeneric('geneWidth', def = function(object) {
+    standardGeneric('geneWidth')
+})
 #' Get and set the names of organisms in the pangenome
 #' 
 #' These methods lets you manipulate the naming of organisms in the pangenome.
@@ -371,18 +371,18 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'orgNames', def = function(object) {standardGeneric('orgNames')}
-)
+setGeneric('orgNames', def = function(object) {
+    standardGeneric('orgNames')
+})
 #' @rdname orgNames
 #' 
 #' @param value A vector with new names - will be coerced to characters
 #' 
 #' @export
 #' 
-setGeneric(
-    'orgNames<-', def = function(object, value) {standardGeneric('orgNames<-')}
-)
+setGeneric('orgNames<-', def = function(object, value) {
+    standardGeneric('orgNames<-')
+})
 #' Get and set the names of gene groups in the pangenome
 #' 
 #' These methods lets you manipulate the naming of gene groups in the 
@@ -405,18 +405,18 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'groupNames', def = function(object) {standardGeneric('groupNames')}
-)
+setGeneric('groupNames', def = function(object) {
+    standardGeneric('groupNames')
+})
 #' @rdname groupNames
 #' 
 #' @param value A vector with new names - will be coerced to characters
 #' 
 #' @export
 #' 
-setGeneric(
-    'groupNames<-', def = function(object, value) {standardGeneric('groupNames<-')}
-)
+setGeneric('groupNames<-', def = function(object, value) {
+    standardGeneric('groupNames<-')
+})
 #' Get and set information about organisms
 #' 
 #' These methods lets you access the information stored about each organism and
@@ -441,18 +441,18 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'orgInfo', def = function(object) {standardGeneric('orgInfo')}
-)
+setGeneric('orgInfo', def = function(object) {
+    standardGeneric('orgInfo')
+})
 #' @rdname orgInfo
 #' 
 #' @param value A data.frame with a row for each organism
 #' 
 #' @export
 #' 
-setGeneric(
-    'orgInfo<-', def = function(object, value) {standardGeneric('orgInfo<-')}
-)
+setGeneric('orgInfo<-', def = function(object, value) {
+    standardGeneric('orgInfo<-')
+})
 #' Get and set information about gene group
 #' 
 #' These methods lets you access the information stored about each gene group 
@@ -484,18 +484,18 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'groupInfo', def = function(object) {standardGeneric('groupInfo')}
-)
+setGeneric('groupInfo', def = function(object) {
+    standardGeneric('groupInfo')
+})
 #' @rdname groupInfo
 #' 
 #' @param value A data.frame with a row for each group
 #' 
 #' @export
 #' 
-setGeneric(
-    'groupInfo<-', def = function(object, value) {standardGeneric('groupInfo<-')}
-)
+setGeneric('groupInfo<-', def = function(object, value) {
+    standardGeneric('groupInfo<-')
+})
 #' Get the pangenome matrix
 #' 
 #' This method lets you extract the pangenome matrix of the pangenome. It is not
@@ -515,9 +515,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'pgMatrix', def = function(object) {standardGeneric('pgMatrix')}
-)
+setGeneric('pgMatrix', def = function(object) {
+    standardGeneric('pgMatrix')
+})
 #' Use igraph to create gene grouping from a similarity matrix
 #' 
 #' This method takes a similarity matrix based on all genes in the pangenome,
@@ -546,9 +546,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'graphGrouping', def = function(object, ...) {standardGeneric('graphGrouping')}
-)
+setGeneric('graphGrouping', def = function(object, ...) {
+    standardGeneric('graphGrouping')
+})
 #' Guided Pairwise Comparison  grouping of genes
 #' 
 #' This algorithm recursively builds up a pangenome by merging subpangenomes. 
@@ -576,9 +576,9 @@ setGeneric(
 #'   
 #' @export
 #' 
-setGeneric(
-    'gpcGrouping', def = function(object, ...) {standardGeneric('gpcGrouping')}
-)
+setGeneric('gpcGrouping', def = function(object, ...) {
+    standardGeneric('gpcGrouping')
+})
 #' Define gene grouping manually
 #' 
 #' In cases where results from other algorithms are wished to be imported into
@@ -611,9 +611,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'manualGrouping', def = function(object, groups) {standardGeneric('manualGrouping')}
-)
+setGeneric('manualGrouping', def = function(object, groups) {
+    standardGeneric('manualGrouping')
+})
 #' Calculate a similarity matrix based on kmers
 #' 
 #' This method takes a pangenome and calculate a similarity matrix based on 
@@ -636,9 +636,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'kmerSimilarity', def = function(object, ...) {standardGeneric('kmerSimilarity')}
-)
+setGeneric('kmerSimilarity', def = function(object, ...) {
+    standardGeneric('kmerSimilarity')
+})
 #' Split gene groups by neighborhood synteny
 #' 
 #' This function evaluates already created gene groups and splits the members 
@@ -671,9 +671,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'neighborhoodSplit', def = function(object, ...) {standardGeneric('neighborhoodSplit')}
-)
+setGeneric('neighborhoodSplit', def = function(object, ...) {
+    standardGeneric('neighborhoodSplit')
+})
 #' Link gene groups by homology
 #' 
 #' This method allows the user to define a secondary grouping of genes be 
@@ -699,9 +699,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'kmerLink', def = function(object, ...) {standardGeneric('kmerLink')}
-)
+setGeneric('kmerLink', def = function(object, ...) {
+    standardGeneric('kmerLink')
+})
 #' Add new organisms to an existing pangenome
 #' 
 #' This method allows new genomes to be added to an already processed pangenome,
@@ -722,11 +722,9 @@ setGeneric(
 #' from newSet and possible new gene groups from genes with no orthologues in 
 #' the original pangenome.
 #' 
-#' @noRd
-#' 
-setGeneric(
-    'addGenomes', def = function(object, newSet, ...) {standardGeneric('addGenomes')}
-)
+setGeneric('addGenomes', def = function(object, newSet, ...) {
+    standardGeneric('addGenomes')
+})
 #' Remove genes from a pangenome
 #' 
 #' This method makes it possible to safely remove genes from a pangenome using a
@@ -773,9 +771,10 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'removeGene', def = function(object, name, organism, group, ind, ...) {standardGeneric('removeGene')}
-)
+setGeneric('removeGene', def = function(object, name, organism, group, ind, 
+                                        ...) {
+    standardGeneric('removeGene')
+})
 #' Merge paralogue gene groups into new gene groups
 #' 
 #' This method allows for merging of paralogue gene groups defined using 
@@ -802,9 +801,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'collapseParalogues', def = function(object, ...) {standardGeneric('collapseParalogues')}
-)
+setGeneric('collapseParalogues', def = function(object, ...) {
+    standardGeneric('collapseParalogues')
+})
 #' Safely add group info
 #' 
 #' This method allows for adding of group metadata by specifying the name of the
@@ -833,9 +832,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'addGroupInfo', def = function(object, ...) {standardGeneric('addGroupInfo')}
-)
+setGeneric('addGroupInfo', def = function(object, ...) {
+    standardGeneric('addGroupInfo')
+})
 #' Safely add organisms info
 #' 
 #' This method allows for adding of organism metadata by specifying the name of
@@ -866,9 +865,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'addOrgInfo', def = function(object, ...) {standardGeneric('addOrgInfo')}
-)
+setGeneric('addOrgInfo', def = function(object, ...) {
+    standardGeneric('addOrgInfo')
+})
 #' Calculate statistics about each gene group
 #' 
 #' This method calculates a range of statistics and positional information
@@ -906,9 +905,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'groupStat', def = function(object, ...) {standardGeneric('groupStat')}
-)
+setGeneric('groupStat', def = function(object, ...) {
+    standardGeneric('groupStat')
+})
 #' Calculate statistics about each organism
 #' 
 #' This method, much like {code{\link{groupStat}}} calculates different 
@@ -930,9 +929,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'orgStat', def = function(object, ...) {standardGeneric('orgStat')}
-)
+setGeneric('orgStat', def = function(object, ...) {
+    standardGeneric('orgStat')
+})
 #' Calculate the panchromosome graph
 #' 
 #' This method creates a graph representation of the panchromosome - The 
@@ -953,9 +952,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'pcGraph', def = function(object) {standardGeneric('pcGraph')}
-)
+setGeneric('pcGraph', def = function(object) {
+    standardGeneric('pcGraph')
+})
 #' Detect regions of high variability in the panchromosome
 #' 
 #' This method analyses the panchromosome and detects regions of local 
@@ -997,9 +996,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'variableRegions', def = function(object, ...) {standardGeneric('variableRegions')}
-)
+setGeneric('variableRegions', def = function(object, ...) {
+    standardGeneric('variableRegions')
+})
 #' Extract a graph representation of a gene group neighborhood
 #' 
 #' This method creates a graph representation of the imidiate neighborhood of
@@ -1027,9 +1026,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'getNeighborhood', def = function(object, ...) {standardGeneric('getNeighborhood')}
-)
+setGeneric('getNeighborhood', def = function(object, ...) {
+    standardGeneric('getNeighborhood')
+})
 #' Plot (very) basic statistics on the pangenome
 #' 
 #' This method plots the number of genes in each organism and, if gene groups
@@ -1039,6 +1038,8 @@ setGeneric(
 #' 
 #' @param ... Parameters passed on to color scale.
 #' 
+#' @return This function is called for its side effects
+#' 
 #' @examples 
 #' testPG <- .loadPgExample(withGroups=TRUE)
 #' 
@@ -1047,9 +1048,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'plotStat', def = function(object, ...) {standardGeneric('plotStat')}
-)
+setGeneric('plotStat', def = function(object, ...) {
+    standardGeneric('plotStat')
+})
 #' Plot the neighborhood of a gene group
 #' 
 #' This method plots the neighborhood extracted using 
@@ -1072,9 +1073,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'plotNeighborhood', def = function(object, ...) {standardGeneric('plotNeighborhood')}
-)
+setGeneric('plotNeighborhood', def = function(object, ...) {
+    standardGeneric('plotNeighborhood')
+})
 #' Plot the similarities of genes within a group
 #' 
 #' This method plots a gene group with genes as vertices and cosine similarities
@@ -1094,9 +1095,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'plotGroup', def = function(object, ...) {standardGeneric('plotGroup')}
-)
+setGeneric('plotGroup', def = function(object, ...) {
+    standardGeneric('plotGroup')
+})
 #' Plot the evolution in gene groups
 #' 
 #' This method constructs a plot showing how the number of singleton, accessory
@@ -1106,6 +1107,8 @@ setGeneric(
 #' @param object A pgVirtual subclass
 #' 
 #' @param ... Parameters to be passed on
+#' 
+#' @return This function is called for its side effects
 #' 
 #' @examples 
 #' testPG <- .loadPgExample(withGroups=TRUE)
@@ -1118,9 +1121,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'plotEvolution', def = function(object, ...) {standardGeneric('plotEvolution')}
-)
+setGeneric('plotEvolution', def = function(object, ...) {
+    standardGeneric('plotEvolution')
+})
 #' Create a heatplot with similarities between all organisms
 #' 
 #' This method creates a heatplot showing the similarity between all organisms
@@ -1130,6 +1133,8 @@ setGeneric(
 #' @param object A pgVirtual subclass
 #' 
 #' @param ... Parameters to be passed on.
+#' 
+#' @return This function is called for its side effects
 #' 
 #' @examples 
 #' testPG <- .loadPgExample(withGroups=TRUE)
@@ -1144,9 +1149,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'plotSimilarity', def = function(object, ...) {standardGeneric('plotSimilarity')}
-)
+setGeneric('plotSimilarity', def = function(object, ...) {
+    standardGeneric('plotSimilarity')
+})
 #' Plot a dendrogram of the organisms in a pangenome
 #' 
 #' This method plots a dendrogram of the relationship between the organisms in
@@ -1157,6 +1162,8 @@ setGeneric(
 #' @param object A pgVirtual subclass
 #' 
 #' @param ... Parameters to be passed on.
+#' 
+#' @return This function is called for its side effects
 #' 
 #' @examples 
 #' testPG <- .loadPgExample(withGroups=TRUE)
@@ -1170,9 +1177,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'plotTree', def = function(object, ...) {standardGeneric('plotTree')}
-)
+setGeneric('plotTree', def = function(object, ...) {
+    standardGeneric('plotTree')
+})
 #' Add gene grouping to pangenome
 #' 
 #' This is an internal function, not meant to be called directly. For adding
@@ -1195,12 +1202,13 @@ setGeneric(
 #' @rdname internalGroupGenes
 #' @name internal-groupGenes
 #' @aliases groupGenes
+#' @keywords internal
 #' 
 #' @export
 #' 
-setGeneric(
-    'groupGenes', def = function(object, ...) {standardGeneric('groupGenes')}
-)
+setGeneric('groupGenes', def = function(object, ...) {
+    standardGeneric('groupGenes')
+})
 #' Get gene-to-organism relationship
 #' 
 #' This method returns the organism membership for each gene in the pangenome as
@@ -1223,10 +1231,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'seqToOrg', def = function(object) {standardGeneric('seqToOrg')}
-)
-
+setGeneric('seqToOrg', def = function(object) {
+    standardGeneric('seqToOrg')
+})
 #' Get gene-to-genegroup relationship
 #' 
 #' This method returns the group membership for each gene in the pangenome as
@@ -1250,9 +1257,9 @@ setGeneric(
 #' 
 #' @export
 #' 
-setGeneric(
-    'seqToGeneGroup', def = function(object) {standardGeneric('seqToGeneGroup')}
-)
+setGeneric('seqToGeneGroup', def = function(object) {
+    standardGeneric('seqToGeneGroup')
+})
 #' Add metadata to the pangenome
 #' 
 #' These methods are only for internal use and not relevant for regular users.
@@ -1278,19 +1285,20 @@ setGeneric(
 #' @rdname internalMetadata
 #' @name internal-metadata
 #' @aliases setGroupInfo
+#' @keywords internal
 #' 
 #' @export
 #' 
-setGeneric(
-    'setGroupInfo', def = function(object, ...) {standardGeneric('setGroupInfo')}
-)
+setGeneric('setGroupInfo', def = function(object, ...) {
+    standardGeneric('setGroupInfo')
+})
 #' @rdname internalMetadata
 #' 
 #' @export
 #' 
-setGeneric(
-    'setOrgInfo', def = function(object, ...) {standardGeneric('setOrgInfo')}
-)
+setGeneric('setOrgInfo', def = function(object, ...) {
+    standardGeneric('setOrgInfo')
+})
 #' Merge information from two pangenomes
 #' 
 #' This method is for internal use only and should not be called directly. Use
@@ -1316,9 +1324,10 @@ setGeneric(
 #' @rdname internalMergePangenomes
 #' @name internal-mergePangenomes
 #' @aliases mergePangenomes
+#' @keywords internal
 #' 
 #' @export
 #' 
-setGeneric(
-    'mergePangenomes', def = function(pg1, pg2, ...) {standardGeneric('mergePangenomes')}
-)
+setGeneric('mergePangenomes', def = function(pg1, pg2, ...) {
+    standardGeneric('mergePangenomes')
+})

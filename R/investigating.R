@@ -12,8 +12,8 @@ NULL
 #' 
 setMethod(
     'groupStat', 'pgVirtual',
-    function(object, vicinity=1) {
-        if(hasGeneInfo(object)) {
+    function(object, vicinity = 1) {
+        if (hasGeneInfo(object)) {
             gInfo <- geneLocation(object)
             gInfo$width <- geneWidth(object)
         } else {
@@ -23,11 +23,12 @@ setMethod(
         gInfo$organism <- orgNames(object)[seqToOrg(object)]
         gInfo$geneGroup <- groupNames(object)[seqToGeneGroup(object)]
         
-        if(hasGeneInfo(object)) {
+        if (hasGeneInfo(object)) {
             info <- gInfo %>% 
                 group_by(organism, contig) %>%
                 arrange(start, end) %>%
-                mutate(backward=collectNeighbors(geneGroup, 'b', vicinity), forward=collectNeighbors(geneGroup, 'f', vicinity)) %>%
+                mutate(backward = collectNeighbors(geneGroup, 'b', vicinity), 
+                       forward = collectNeighbors(geneGroup, 'f', vicinity)) %>%
                 ungroup() %>%
                 group_by(geneGroup)
         } else {
@@ -35,15 +36,15 @@ setMethod(
                 group_by(geneGroup)
         }
         info <- info %>%
-            do(groupInfo={
+            do(groupInfo = {
                 list(
-                    maxOrg=max(table(.$organism)),
-                    minLength=min(.$width),
-                    maxLength=max(.$width),
-                    sdLength=sd(.$width),
-                    genes=.$gene,
-                    backward=if(is.null(.$backward)) NA else .$backward, 
-                    forward=if(is.null(.$forward)) NA else .$forward
+                    maxOrg = max(table(.$organism)),
+                    minLength = min(.$width),
+                    maxLength = max(.$width),
+                    sdLength = sd(.$width),
+                    genes = .$gene,
+                    backward = if (is.null(.$backward)) NA else .$backward, 
+                    forward = if (is.null(.$forward)) NA else .$forward
                 )
             }) %>%
             arrange(match(geneGroup, groupNames(object)))
@@ -62,24 +63,27 @@ setMethod(
 #' 
 setMethod(
     'orgStat', 'pgVirtual',
-    function(object, subset, getFrequency=FALSE) {
-        if(missing(subset)) {
+    function(object, subset, getFrequency = FALSE) {
+        if (missing(subset)) {
             subset <- 1:length(object)
-        } else if(inherits(subset, 'character')) {
+        } else if (inherits(subset, 'character')) {
             subset <- match(subset, orgNames(object))
         }
-        orgs <- split(which(seqToOrg(object) %in% subset), seqToOrg(object)[seqToOrg(object) %in% subset])
+        orgs <- split(which(seqToOrg(object) %in% subset), 
+                      seqToOrg(object)[seqToOrg(object) %in% subset])
         info <- lapply(orgs, function(org) {
             stat <- data.frame(
                 nGenes = length(org),
                 minLength = min(geneWidth(object)[org]),
                 maxLength = max(geneWidth(object)[org]),
                 sdLength = sd(geneWidth(object)[org]),
-                stringsAsFactors=FALSE,
-                check.names=FALSE
+                stringsAsFactors = FALSE,
+                check.names = FALSE
             )
-            if(getFrequency) {
-                cbind(stat, t(apply(alphabetFrequency(genes(object, subset=org)), 2, sum)))
+            if (getFrequency) {
+                cbind(stat, 
+                      t(apply(alphabetFrequency(genes(object, subset = org)), 
+                              2, sum)))
             } else {
                 stat
             }
@@ -87,14 +91,22 @@ setMethod(
         info <- as.data.frame(bind_rows(info))
         
         rownames(info) <- orgNames(object)[as.integer(names(orgs))]
-        info$nGeneGroups <- apply(pgMatrix(object)[, rownames(info), drop=FALSE], 2, function(x) sum(x!=0))
-        if(hasParalogueLinks(object)) {
+        info$nGeneGroups <- apply(
+            pgMatrix(object)[, rownames(info), drop = FALSE], 
+            2, 
+            function(x) sum(x != 0)
+        )
+        if (hasParalogueLinks(object)) {
             links <- split(1:nGeneGroups(object), groupInfo(object)$paralogue)
-            parMat <- apply(pgMatrix(object)[, rownames(info), drop=FALSE], 2, function(x) {
-                sapply(links, function(i) sum(x[i]))
-            })
+            parMat <- apply(
+                pgMatrix(object)[, rownames(info), drop = FALSE], 
+                2, 
+                function(x) {
+                    sapply(links, function(i) sum(x[i]))
+                }
+            )
         } else {
-            parMat <- pgMatrix(object)[, rownames(info), drop=FALSE]
+            parMat <- pgMatrix(object)[, rownames(info), drop = FALSE]
         }
         info$nParalogues <- apply(parMat > 1, 2, sum)
         info
@@ -102,7 +114,7 @@ setMethod(
 )
 #' @describeIn pcGraph Panchromosome creation for all pgVirtualLoc subclasses
 #' 
-#' @importFrom dplyr %>% group_by arrange mutate transmute ungroup filter summarise
+#' @importFrom dplyr %>% group_by arrange mutate transmute ungroup filter summarise n
 #' @importFrom igraph graph_from_data_frame
 #' 
 setMethod(
@@ -116,17 +128,21 @@ setMethod(
         edges <- gInfo %>% 
             group_by(organism, contig) %>%
             arrange(start, end) %>%
-            mutate(up=c(geneGroup[-1], NA), reverse=geneGroup < up) %>%
-            transmute(from=ifelse(reverse, geneGroup, up), to=ifelse(reverse, up, geneGroup)) %>%
+            mutate(up = c(geneGroup[-1], NA), reverse = geneGroup < up) %>%
+            transmute(from = ifelse(reverse, geneGroup, up), 
+                      to = ifelse(reverse, up, geneGroup)) %>%
             ungroup() %>%
             filter(!is.na(from) & !is.na(to)) %>%
             group_by(from, to) %>%
-            summarise(weight=n(), organisms=list(unique(organism)))
+            summarise(weight = n(), organisms = list(unique(organism)))
         
         vertices <- gInfo %>%
             group_by(geneGroup) %>%
-            summarise(nMembers=n(), organisms=list(organism), strands=list(strand))
-        graph_from_data_frame(as.data.frame(edges), FALSE, as.data.frame(vertices))
+            summarise(nMembers = n(), 
+                      organisms = list(organism), 
+                      strands = list(strand))
+        graph_from_data_frame(as.data.frame(edges), FALSE, 
+                              as.data.frame(vertices))
     }
 )
 #' @describeIn variableRegions Variable region detection for all pgVirtualLoc
@@ -171,20 +187,22 @@ setMethod(
 #' 
 setMethod(
     'getNeighborhood', 'pgVirtualLoc',
-    function(object, group, vicinity=4) {
-        if(inherits(group, 'character')) {
+    function(object, group, vicinity = 4) {
+        if (inherits(group, 'character')) {
             group <- which(groupNames(object) == group)
-            if(length(group) != 1) {
+            if (length(group) != 1) {
                 stop('Bad group name')
             }
         }
         groupGenes <- which(seqToGeneGroup(object) == group)
-        neighborhoods <- trailGroups(groupGenes, pg=object, vicinity=vicinity)
-        neighborhoods <- lapply(neighborhoods, function(x) groupNames(object)[x])
+        neighborhoods <- trailGroups(groupGenes, pg = object, 
+                                     vicinity = vicinity)
+        neighborhoods <- lapply(neighborhoods, 
+                                function(x) groupNames(object)[x])
         graph <- trailsToGraph(neighborhoods)
         groupName <- groupNames(object)[group]
         V(graph)$centerGroup <- FALSE
-        V(graph)$centerGroup[V(graph)$name==groupName] <- TRUE
+        V(graph)$centerGroup[V(graph)$name == groupName] <- TRUE
         graph
     }
 )
@@ -200,7 +218,7 @@ setMethod(
 #' 
 setMethod(
     'plotNeighborhood', 'pgVirtualLoc',
-    function(object, group, vicinity=4, ...) {
+    function(object, group, vicinity = 4, ...) {
         gr <- getNeighborhood(object, group, vicinity)
         V(gr)$color <- 'steelblue'
         V(gr)$color[V(gr)$centerGroup] <- 'forestgreen'
@@ -242,10 +260,12 @@ setMethod(
         .fillDefaults(defaults(object))
         
         groupGenes <- unlist(genes(object, 'group', group))
-        sim <- linearKernel(getExRep(groupGenes, spectrumKernel(kmerSize), sparse = T), sparse = T, diag = F)
+        sim <- linearKernel(getExRep(groupGenes, spectrumKernel(kmerSize), 
+                                     sparse = TRUE), 
+                            sparse = TRUE, diag = FALSE)
         sim <- transformSim(sim, lowerLimit, rescale, transform)
         
-        gr <- graph_from_adjacency_matrix(sim, 'lower', weighted=TRUE)
+        gr <- graph_from_adjacency_matrix(sim, 'lower', weighted = TRUE)
         V(gr)$color <- 'steelblue'
         V(gr)$frame.color <- NA
         V(gr)$label.family <- 'sans'
@@ -280,21 +300,22 @@ setMethod(
 #' 
 trailGroups <- function(genes, pg, vicinity) {
     info <- geneLocation(pg)
-    locations <- unique(paste(seqToOrg(pg)[genes], info$contig[genes], sep='>'))
+    locations <- unique(paste(seqToOrg(pg)[genes], info$contig[genes], 
+                              sep = '>'))
     info$gene <- 1:nrow(info)
     info$group <- seqToGeneGroup(pg)
     info$organism <- seqToOrg(pg)
     info <- info %>%
-        filter(paste(organism, contig, sep='>') %in% locations) %>%
+        filter(paste(organism, contig, sep = '>') %in% locations) %>%
         group_by(organism, contig) %>%
         arrange(start, end) %>%
-        do(trail={
+        do(trail = {
             geneInd <- which(.$gene %in% genes)
             res <- lapply(geneInd, function(x) {
                 trailSeq <- x + c(-1, 1)*vicinity
-                if(trailSeq[1] < 1) trailSeq[1] <- 1
-                if(trailSeq[2] > nrow(.)) trailSeq[2] <- nrow(.)
-                if(.$strand[x] == -1) {
+                if (trailSeq[1] < 1) trailSeq[1] <- 1
+                if (trailSeq[2] > nrow(.)) trailSeq[2] <- nrow(.)
+                if (.$strand[x] == -1) {
                     rev(.$group[trailSeq[1]:trailSeq[2]])
                 } else {
                     .$group[trailSeq[1]:trailSeq[2]]
@@ -303,7 +324,7 @@ trailGroups <- function(genes, pg, vicinity) {
             names(res) <- .$gene[geneInd]
             res
         })
-    info <- unlist(info$trail, recursive=FALSE)
+    info <- unlist(info$trail, recursive = FALSE)
     info[match(names(info), as.character(genes))]
 }
 
@@ -322,11 +343,11 @@ trailGroups <- function(genes, pg, vicinity) {
 #' 
 trailsToGraph <- function(trails) {
     trails <- unlist(lapply(trails, function(x) c(x, NA)))
-    edges <- data.frame(from=trails[-length(trails)], to=trails[-1])
+    edges <- data.frame(from = trails[-length(trails)], to = trails[-1])
     edges <- edges[!is.na(edges$from) & !is.na(edges$to),]
     edges <- edges %>%
         group_by(from, to) %>%
-        summarise(weight=length(from))
+        summarise(weight = length(from))
     graph_from_data_frame(edges)
 }
 
@@ -346,9 +367,9 @@ trailsToGraph <- function(trails) {
 #' @noRd
 #' 
 scaleRange <- function(x, low, high) {
-    if(length(unique(x)) == 1) return(rep(mean(c(low, high)), length(x)))
-    x <- (x-min(x))/diff(range(x))
-    x*(high-low) + low
+    if (length(unique(x)) == 1) return(rep(mean(c(low, high)), length(x)))
+    x <- (x - min(x))/diff(range(x))
+    x*(high - low) + low
 }
 #' Detect small cycles in a graph
 #' 
@@ -370,25 +391,30 @@ scaleRange <- function(x, low, high) {
 #' 
 locateCycles <- function(graph, maxLength=4) {
     potentialSplits <- V(graph)$name[degree(graph) > 2]
-    smallGr <- make_ego_graph(graph, order=maxLength, nodes=potentialSplits)
+    smallGr <- make_ego_graph(graph, order = maxLength, nodes = potentialSplits)
     cycles <- lapply(1:length(potentialSplits), function(i) {
         tree <- bfs(smallGr[[i]], potentialSplits[i], father = TRUE)
         endPoints <- tree$order[!tree$order %in% tree$father]
         loops <- endPoints[degree(smallGr[[i]], endPoints) > 1]
         cycles <- list()
-        if(length(loops) > 0) {
-            for(j in loops) {
-                wayback <- V(smallGr[[i]])$name[getRoute(j, as.numeric(tree$father))]
+        if (length(loops) > 0) {
+            for (j in loops) {
+                route <- getRoute(j, as.numeric(tree$father))
+                wayback <- V(smallGr[[i]])$name[route]
                 links <- neighbors(smallGr[[i]], j)
                 links <- links[links != tree$father[j]]
-                for(k in links) {
-                    altWayback <- V(smallGr[[i]])$name[getRoute(k, as.numeric(tree$father))]
-                    if(wayback[2] != altWayback[2]) {  # Check if they return to root by different nodes
+                for (k in links) {
+                    altRoute <- getRoute(k, as.numeric(tree$father))
+                    altWayback <- V(smallGr[[i]])$name[altRoute]
+                    if (wayback[2] != altWayback[2]) {  # Check if they return to root by different nodes
                         cycle <- unique(c(wayback, altWayback))
-                        if(length(cycles) != 0) {
-                            overlap <- sapply(cycles, function(x,y) {length(intersect(x,y))>1}, y=cycle)
-                            if(any(overlap)) {
-                                cycle <- unique(c(unlist(cycles[overlap]), cycle))
+                        if (length(cycles) != 0) {
+                            overlap <- sapply(cycles, function(x,y) {
+                                length(intersect(x,y)) > 1
+                            }, y = cycle)
+                            if (any(overlap)) {
+                                cycle <- unique(c(unlist(cycles[overlap]), 
+                                                  cycle))
                                 cycles <- cycles[!overlap]
                             }
                         }
@@ -399,7 +425,7 @@ locateCycles <- function(graph, maxLength=4) {
         }
         cycles
     })
-    unlist(cycles, recursive=FALSE)
+    unlist(cycles, recursive = FALSE)
 }
 #' Merge small cycles into clusters
 #' 
@@ -416,15 +442,16 @@ locateCycles <- function(graph, maxLength=4) {
 #' 
 mergeCycles <- function(cycles) {
     cycles <- unique(lapply(cycles, sort))
-    adjMat <- matrix(0, ncol=length(cycles), nrow=length(cycles))
-    for(i in 1:(length(cycles)-1)) {
-        for(j in (i+1):length(cycles)) {
-            if(length(intersect(cycles[[i]], cycles[[j]])) > 1) {
+    adjMat <- matrix(0, ncol = length(cycles), nrow = length(cycles))
+    for (i in 1:(length(cycles) - 1)) {
+        for (j in (i + 1):length(cycles)) {
+            if (length(intersect(cycles[[i]], cycles[[j]])) > 1) {
                 adjMat[j, i] <- 1
             }
         }
     }
-    cycleGroups <- components(graph_from_adjacency_matrix(adjMat, 'lower'))$membership
+    gr <- graph_from_adjacency_matrix(adjMat, 'lower')
+    cycleGroups <- components(gr)$membership
     lapply(split(cycles, cycleGroups), function(cycle) {unique(unlist(cycle))})
 }
 #' Gather statistics for small cycles
@@ -464,17 +491,17 @@ summarizeCycles <- function(cycles, graph) {
         outsideNeighbors <- lapply(cycle, function(v, gr, cycle) {
             n <- graphNames[neighbors(gr, v)]
             n[!n %in% cycle]
-        }, gr=graph, cycle=cycle)
+        }, gr = graph, cycle = cycle)
         flank <- cycle[lengths(outsideNeighbors) != 0]
         cycleGraph <- induced_subgraph(graph, cycle)
         cyclic <- all(degree(cycleGraph) <= 2)
-        if(length(flank) == 1) {
+        if (length(flank) == 1) {
             type <- 'end'
-        } else if(length(flank) > 2) {
+        } else if (length(flank) > 2) {
             type <- 'hub'
-        } else if(are_adjacent(cycleGraph, flank[1], flank[2])) {
+        } else if (are_adjacent(cycleGraph, flank[1], flank[2])) {
             type <- 'ins/del'
-        } else if(cyclic) {
+        } else if (cyclic) {
             type <- 'frameshift'
         } else {
             type <- 'plastic'
@@ -482,13 +509,13 @@ summarizeCycles <- function(cycles, graph) {
         isFlank <- V(cycleGraph)$name %in% flank
         V(cycleGraph)$flank <- isFlank
         list(
-            type=type,
-            members=cycle,
-            flank=flank,
-            connectsTo=outsideNeighbors[lengths(outsideNeighbors) != 0],
-            graph=cycleGraph
+            type = type,
+            members = cycle,
+            flank = flank,
+            connectsTo = outsideNeighbors[lengths(outsideNeighbors) != 0],
+            graph = cycleGraph
         )
-    }, graph=graph)
+    }, graph = graph)
 }
 #' Convert breath first search into paths
 #' 
@@ -506,7 +533,7 @@ summarizeCycles <- function(cycles, graph) {
 #' 
 getRoute <- function(start, fathers) {
     nextV <- fathers[start]
-    while(!is.na(nextV)) {
+    while (!is.na(nextV)) {
         start <- c(nextV, start)
         nextV <- fathers[nextV]
     }

@@ -16,14 +16,16 @@ NULL
 #' 
 setClass(
     'pgLMLoc',
-    contains=c('pgLM', 'pgInMemLoc')
+    contains = c('pgLM', 'pgInMemLoc')
 )
 #' @rdname internalMergePangenomes
 #' 
 setMethod(
     'mergePangenomes', c('pgLMLoc', 'pgLMLoc'),
     function(pg1, pg2, geneGrouping, groupInfo) {
-        if(class(pg1) != class(pg2)) stop('pangenomes must be instances of the same class')
+        if (class(pg1) != class(pg2)) {
+            stop('pangenomes must be instances of the same class')
+        }
         pg <- callNextMethod()
         new(
             class(pg1),

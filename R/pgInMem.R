@@ -47,26 +47,26 @@ NULL
 #' 
 setClass(
     'pgInMem',
-    contains=c('VIRTUAL', 'pgVirtual'),
-    slots=list(
-        seqToOrg='integer',
-        seqToGeneGroup='integer',
-        matrix='matrix',
-        groupInfo='data.frame',
-        orgInfo='data.frame'
+    contains = c('VIRTUAL', 'pgVirtual'),
+    slots = list(
+        seqToOrg = 'integer',
+        seqToGeneGroup = 'integer',
+        matrix = 'matrix',
+        groupInfo = 'data.frame',
+        orgInfo = 'data.frame'
     ),
     validity = function(object) {
         pgDims <- dim(object@matrix)
-        if(length(object@seqToOrg) != 0) {
-            if(max(object@seqToOrg) > pgDims[2]) {
+        if (length(object@seqToOrg) != 0) {
+            if (max(object@seqToOrg) > pgDims[2]) {
                 return('Reference to non-existing organism')
             }
         }
-        if(length(object@seqToGeneGroup) != 0) {
-            if(length(object@seqToOrg) != length(object@seqToGeneGroup)) {
+        if (length(object@seqToGeneGroup) != 0) {
+            if (length(object@seqToOrg) != length(object@seqToGeneGroup)) {
                 return('Gene indexes of different length')
             }
-            if(max(object@seqToGeneGroup) > pgDims[1]) {
+            if (max(object@seqToGeneGroup) > pgDims[1]) {
                 return('Reference to non-existing gene group')
             }
         }
@@ -75,7 +75,7 @@ setClass(
     prototype = list(
         seqToOrg = integer(),
         seqToGeneGroup = integer(),
-        pangenome = matrix(0L, nrow=0, ncol=0)
+        pangenome = matrix(0L, nrow = 0, ncol = 0)
     )
 )
 
@@ -186,28 +186,31 @@ setMethod(
         currentOrgs <- unique(seqToOrg(object))
         object@seqToOrg <- object@seqToOrg[-ind]
         removedOrgs <- currentOrgs[!currentOrgs %in% unique(object@seqToOrg)]
-        if(hasGeneGroups(object)) {
+        if (hasGeneGroups(object)) {
             currentGroups <- unique(seqToGeneGroup(object))
             object@seqToGeneGroup <- object@seqToGeneGroup[-ind]
-            removedGroups <- currentGroups[!currentGroups %in% unique(object@seqToGeneGroup)]
+            keptGroups <- currentGroups %in% unique(object@seqToGeneGroup)
+            removedGroups <- currentGroups[!keptGroups]
             
-            if(length(removedGroups) != 0) {
-                object@seqToGeneGroup <- removeIndex(object@seqToGeneGroup, removedGroups)
-                groupInfo(object) <- groupInfo(object)[-removedGroups, , drop=FALSE]
+            if (length(removedGroups) != 0) {
+                object@seqToGeneGroup <- removeIndex(object@seqToGeneGroup, 
+                                                     removedGroups)
+                groupInfo(object) <- groupInfo(object)[-removedGroups, , 
+                                                       drop = FALSE]
             }
         }
-        if(length(removedOrgs) != 0) {
+        if (length(removedOrgs) != 0) {
             object@seqToOrg <- removeIndex(object@seqToOrg, removedOrgs)
-            orgInfo(object) <- orgInfo(object)[-removedOrgs, , drop=FALSE]
+            orgInfo(object) <- orgInfo(object)[-removedOrgs, , drop = FALSE]
         }
         object@matrix <- getPgMatrix(object)
-        if(inherits(object, 'pgInMemLoc')) {
-            object@geneLocation <- object@geneLocation[-ind, , drop=FALSE]
+        if (inherits(object, 'pgInMemLoc')) {
+            object@geneLocation <- object@geneLocation[-ind, , drop = FALSE]
         }
-        if(inherits(object, 'pgFull')) {
+        if (inherits(object, 'pgFull')) {
             object@sequences <- object@sequences[-ind]
         } else {
-            object@seqIndex <- object@seqIndex[-ind, , drop=FALSE]
+            object@seqIndex <- object@seqIndex[-ind, , drop = FALSE]
         }
         orgInfo(object)$nGenes <- 0
         nGenesOrg <- sapply(split(1:nGenes(object), seqToOrg(object)), length)
@@ -220,10 +223,10 @@ setMethod(
 setMethod(
     'setGroupInfo', 'pgInMem',
     function(object, name, info, key) {
-        if(is.factor(info)) info <- as.character(info)
-        if(is.null(object@groupInfo[[name]])){
+        if (is.factor(info)) info <- as.character(info)
+        if (is.null(object@groupInfo[[name]])) {
             object@groupInfo[[name]] <- NA
-        } else if(is.factor(object@groupInfo[[name]])) {
+        } else if (is.factor(object@groupInfo[[name]])) {
             object@groupInfo[[name]] <- as.character(object@groupInfo[[name]])
         }
         object@groupInfo[[name]][key] <- info
@@ -235,10 +238,10 @@ setMethod(
 setMethod(
     'setOrgInfo', 'pgInMem',
     function(object, name, info, key) {
-        if(is.factor(info)) info <- as.character(info)
-        if(is.null(object@orgInfo[[name]])){
+        if (is.factor(info)) info <- as.character(info)
+        if (is.null(object@orgInfo[[name]])) {
             object@orgInfo[[name]] <- NA
-        } else if(is.factor(object@orgInfo[[name]])) {
+        } else if (is.factor(object@orgInfo[[name]])) {
             object@orgInfo[[name]] <- as.character(object@orgInfo[[name]])
         }
         object@orgInfo[[name]][key] <- info
@@ -252,8 +255,10 @@ setMethod(
 setMethod(
     'mergePangenomes', c('pgInMem', 'pgInMem'),
     function(pg1, pg2, geneGrouping, groupInfo) {
-        if(class(pg1) != class(pg2)) stop('pangenomes must be instances of the same class')
-        pg1@seqToOrg <- c(pg1@seqToOrg, nOrganisms(pg1)+pg2@seqToOrg)
+        if (class(pg1) != class(pg2)) {
+            stop('pangenomes must be instances of the same class')
+        }
+        pg1@seqToOrg <- c(pg1@seqToOrg, nOrganisms(pg1) + pg2@seqToOrg)
         pg1@seqToGeneGroup <- geneGrouping
         pg1@orgInfo <- bind_rows(pg1@orgInfo, pg2@orgInfo)
         pg1@groupInfo <- groupInfo

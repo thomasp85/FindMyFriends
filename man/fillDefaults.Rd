@@ -9,6 +9,9 @@
 \arguments{
 \item{def}{A named list of default values}
 }
+\value{
+This function is called for its side effects
+}
 \description{
 This function takes care of investigating the enclosing functions arguments
 and identifying the missing ones. If they are missing and a default is given

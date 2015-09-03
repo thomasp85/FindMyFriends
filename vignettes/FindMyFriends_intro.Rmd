@@ -203,7 +203,7 @@ but the Infomap algorithm in particular has recieved praise for its performance
 unfortunately not available in iGraph so a direct comparison to OrthoMCL is not
 possible, but a recent article comparing different community detection 
 algorithms indicated better performance using infomap 
-([Aldecoa & Marín, 2013](http://www.nature.com/srep/2013/130717/srep02216/full/srep02216.html)).
+([Aldecoa & Marin, 2013](http://www.nature.com/srep/2013/130717/srep02216/full/srep02216.html)).
 
 ### Guided Pairwise Comparison
 While using a kmer based approach instead of blast yields a huge speed 

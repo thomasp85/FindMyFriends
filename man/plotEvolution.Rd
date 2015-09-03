@@ -21,6 +21,9 @@ one of 'bootstrap', 'random' or 'none'.}
 
 \item{times}{The number of sampling for ordering='bootstrap'}
 }
+\value{
+This function is called for its side effects
+}
 \description{
 This method constructs a plot showing how the number of singleton, accessory
 and core gene groups evolve as the size of the pangenome increases. Different

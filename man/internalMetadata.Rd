@@ -41,4 +41,5 @@ For internal use only. Use \code{\link{addGroupInfo}} and
 \code{\link{addOrgInfo}} instead. Required for extending the class system of
 FindMyFriends.
 }
+\keyword{internal}
 

@@ -23,27 +23,33 @@ NULL
 #' 
 setClass(
     'pgLM',
-    contains='pgInMem',
+    contains = 'pgInMem',
     slots = list(
-        seqIndex='data.frame'
+        seqIndex = 'data.frame'
     ),
     validity = function(object) {
-        if(!all(names(object@seqIndex) %in% c('recno', 'fileno', 'offset', 'desc', 'seqlength', 'filepath'))) {
-            return('seqIndex must be a valid indexing data.frame for Biostrings')
+        if (!all(names(object@seqIndex) %in% c('recno', 
+                                               'fileno', 
+                                               'offset', 
+                                               'desc', 
+                                               'seqlength', 
+                                               'filepath'))) {
+            return('seqIndex must be a valid indexing data.frame for 
+                   Biostrings')
         }
-        if(length(object@seqToOrg) != nrow(object@seqIndex)) {
+        if (length(object@seqToOrg) != nrow(object@seqIndex)) {
             return('Gene indexes of different length')
         }
         return(TRUE)
     },
     prototype = list(
-        seqIndex=data.frame(
-            recno=integer(), 
-            fileno=integer(), 
-            offset=integer(), 
-            desc=character(), 
-            seqlength=integer(), 
-            filepath=character()
+        seqIndex = data.frame(
+            recno = integer(), 
+            fileno = integer(), 
+            offset = integer(), 
+            desc = character(), 
+            seqlength = integer(), 
+            filepath = character()
         )
     )
 )
@@ -55,14 +61,14 @@ setClass(
 setMethod(
     'genes', c('pgLM', 'missing'),
     function(object, split, subset) {
-        if(missing(subset)) {
-            if(translated(object)) {
+        if (missing(subset)) {
+            if (translated(object)) {
                 readAAStringSet(object@seqIndex)
             } else {
                 readDNAStringSet(object@seqIndex)
             }
         } else {
-            if(translated(object)) {
+            if (translated(object)) {
                 readAAStringSet(object@seqIndex[subset,]) 
             } else {
                 readDNAStringSet(object@seqIndex[subset,])
@@ -75,36 +81,37 @@ setMethod(
 setMethod(
     'genes', c('pgLM', 'character'),
     function(object, split, subset) {
-        if(!split %in% c('organism', 'group', 'paralogue', 'paralog')) {
+        if (!split %in% c('organism', 'group', 'paralogue', 'paralog')) {
             stop('Can only split by organism, gene group or paralogue link')
         }
-        if(split == 'organism') {
-            if(missing(subset)) subset <- 1:nOrganisms(object)
-            if(inherits(subset, 'character')) {
+        if (split == 'organism') {
+            if (missing(subset)) subset <- 1:nOrganisms(object)
+            if (inherits(subset, 'character')) {
                 subset <- match(subset, orgNames(object))
             }
             seqSubset <- which(object@seqToOrg %in% subset)
             ans <- genes(object, subset=seqSubset)
             ans <- splitStringSet(ans, object@seqToOrg[seqSubset])
             names(ans) <- orgNames(object)[as.integer(names(ans))]
-        } else if(split == 'group') {
-            if(!hasGeneGroups(object)) {
+        } else if (split == 'group') {
+            if (!hasGeneGroups(object)) {
                 stop('No gene groups created')
             }
-            if(missing(subset)) subset <- 1:nGeneGroups(object)
-            if(inherits(subset, 'character')) {
+            if (missing(subset)) subset <- 1:nGeneGroups(object)
+            if (inherits(subset, 'character')) {
                 subset <- match(subset, groupNames(object))
             }
             seqSubset <- which(object@seqToGeneGroup %in% subset)
             ans <- genes(object, subset=seqSubset)
             ans <- splitStringSet(ans, object@seqToGeneGroup[seqSubset])
             names(ans) <- groupNames(object)[as.integer(names(ans))]
-        } else if(split %in% c('paralogue', 'paralog')) {
-            if(!hasParalogueLinks(object)) {
+        } else if (split %in% c('paralogue', 'paralog')) {
+            if (!hasParalogueLinks(object)) {
                 stop('No paralogue links created')
             }
-            seqToPar <- paralogueInd(object@seqToGeneGroup, groupInfo(object)$paralogue)
-            if(missing(subset)) subset <- 1:max(seqToPar)
+            seqToPar <- paralogueInd(object@seqToGeneGroup, 
+                                     groupInfo(object)$paralogue)
+            if (missing(subset)) subset <- 1:max(seqToPar)
             seqSubset <- which(seqToPar %in% subset)
             ans <- genes(object, subset=seqSubset)
             ans <- splitStringSet(ans, seqToPar[seqSubset])
@@ -143,7 +150,9 @@ setMethod(
 setMethod(
     'mergePangenomes', c('pgLM', 'pgLM'),
     function(pg1, pg2, geneGrouping, groupInfo) {
-        if(class(pg1) != class(pg2)) stop('pangenomes must be instances of the same class')
+        if (class(pg1) != class(pg2)) {
+            stop('pangenomes must be instances of the same class')
+        }
         pg <- callNextMethod()
         new(
             class(pg1),

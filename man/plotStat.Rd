@@ -19,6 +19,9 @@ plotStat(object, ...)
 
 \item{color}{A metadata name to color the organisms by}
 }
+\value{
+This function is called for its side effects
+}
 \description{
 This method plots the number of genes in each organism and, if gene groups
 have been defined, the number of singleton, accessory and core gene groups.

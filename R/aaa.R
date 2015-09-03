@@ -1,5 +1,5 @@
 globalVariables(
-    names=c(
+    names = c(
         '.',
         'annot',
         'backward',
@@ -9,16 +9,26 @@ globalVariables(
         'from',
         'gene',
         'geneGroup',
+        'group',
+        'location',
         'n',
         'name',
         'ontology',
+        'org',
+        'org1',
+        'org2',
         'organism',
         'reverse',
+        'Similarity',
+        'size',
         'strand',
         'to',
-        'up'
+        'up',
+        'x',
+        'xend',
+        'y',
+        'yend')
     )
-)
 #' Load an example pangenome
 #' 
 #' This function loads an example pangenome at various stages of calculation,
@@ -60,26 +70,38 @@ globalVariables(
 #' 
 #' @rdname loadPgExample
 #' 
-.loadPgExample <- function(lowMem=FALSE, geneLoc=FALSE, withGroups=FALSE, withNeighborhoodSplit=FALSE, withParalogues=FALSE) {
+.loadPgExample <- function(lowMem = FALSE, geneLoc = FALSE, withGroups = FALSE, 
+                           withNeighborhoodSplit = FALSE, 
+                           withParalogues = FALSE) {
     location <- tempdir()
-    unzip(system.file('extdata', 'Mycoplasma.zip', package='FindMyFriends'),
-          exdir=location)
-    genomeFiles <- list.files(location, full.names=TRUE, pattern='*.fasta')
-    args <- list(paths=genomeFiles[1:5], translated=TRUE, lowMem=lowMem)
-    if(geneLoc || withNeighborhoodSplit) {
+    unzip(system.file('extdata', 'Mycoplasma.zip', package = 'FindMyFriends'),
+          exdir = location)
+    genomeFiles <- list.files(location, full.names = TRUE, pattern = '*.fasta')
+    args <- list(paths = genomeFiles[1:5], translated = TRUE, lowMem = lowMem)
+    if (geneLoc || withNeighborhoodSplit) {
         args$geneLocation <- 'prodigal'
     }
     obj <- do.call(pangenome, args)
-    if(withGroups || withNeighborhoodSplit) {
-        if(withNeighborhoodSplit) {
-            grFile <- system.file('extdata', 'examplePG', 'groupsNS.txt', package='FindMyFriends')
+    if (!(withGroups || withNeighborhoodSplit)) {
+        return(obj) # Nothing more to do
+    }
+    if (withNeighborhoodSplit) {
+        grFile <- 'groupsNS.txt'
+    } else {
+        grFile <- 'groupsWG.txt'
+    }
+    grFile <- system.file('extdata', 'examplePG', grFile, 
+                          package = 'FindMyFriends')
+    obj <- manualGrouping(obj, scan(grFile, what = integer(), quiet = TRUE))
+    if (withParalogues) {
+        if (withNeighborhoodSplit) {
+            pFile <- 'paraNS.txt'
         } else {
-            grFile <- system.file('extdata', 'examplePG', 'groupsWG.txt', package='FindMyFriends')
+            pFile <- 'paraWG.txt'
         }
-        obj <- manualGrouping(obj, scan(grFile, what=integer(), quiet=TRUE))
-        if(withParalogues) {
-            groupInfo(obj)$paralogue <- scan(system.file('extdata', 'examplePG', if(withNeighborhoodSplit) 'paraNS.txt' else 'paraWG.txt', package='FindMyFriends'), what=integer(), quiet=TRUE)
-        }
+        pFile <- system.file('extdata', 'examplePG', pFile, 
+                             package = 'FindMyFriends')
+        groupInfo(obj)$paralogue <- scan(pFile, what = integer(), quiet = TRUE)
     }
     obj
 }
@@ -91,6 +113,8 @@ globalVariables(
 #' this value is assigned to the enclosing functions environment
 #' 
 #' @param def A named list of default values
+#' 
+#' @return This function is called for its side effects
 #' 
 #' @examples 
 #' # Should only be called within methods/functions
@@ -138,12 +162,12 @@ globalVariables(
 #' 
 .fillDefaults <- function(def) {
     args <- as.list(sys.frame(-1))
-    for(i in names(args)) {
-        if(identical(args[[i]], quote(expr=)) && !is.null(def[[i]])) {
-            if(!is.null(def$verbose) && def$verbose) {
+    for (i in names(args)) {
+        if (identical(args[[i]], quote(expr = )) && !is.null(def[[i]])) {
+            if (!is.null(def$verbose) && def$verbose) {
                 message('Using object default ', i, '=', def[[i]])
             }
-            assign(i, def[[i]], envir=sys.frame(-1))
+            assign(i, def[[i]], envir = sys.frame(-1))
         }
     }
 }
@@ -175,17 +199,27 @@ globalVariables(
 lkParallel <- function(x, pParam, nSplits, diag = FALSE, lowerLimit = 0) {
     chunks <- getChunks(nrow(x), nSplits)
     
-    res <- bplapply(1:nrow(chunks$combs), function(i, x, chunks, combs, diag, lowerLimit) {
-        comb <- combs[i,]
-        if(comb$row == comb$col) {
-            interval <- chunks[comb$row, 1]:chunks[comb$row, 2]
-            linearKernel(x[interval,], sparse=TRUE, diag=diag, lowerLimit=lowerLimit)
-        } else {
-            intervalRow <- chunks[comb$row, 1]:chunks[comb$row, 2]
-            intervalCol <- chunks[comb$col, 1]:chunks[comb$col, 2]
-            linearKernel(x[intervalRow,], x[intervalCol, ], sparse=TRUE, lowerLimit=lowerLimit)
-        }
-    }, x=x, chunks=chunks$chunks, combs=chunks$combs, diag=diag, lowerLimit=lowerLimit, BPPARAM=pParam)
+    res <- bplapply(
+        1:nrow(chunks$combs), 
+        function(i, x, chunks, combs, diag, lowerLimit) {
+            comb <- combs[i,]
+            if (comb$row == comb$col) {
+                interval <- chunks[comb$row, 1]:chunks[comb$row, 2]
+                linearKernel(x[interval,], sparse = TRUE, diag = diag, 
+                             lowerLimit = lowerLimit)
+            } else {
+                intervalRow <- chunks[comb$row, 1]:chunks[comb$row, 2]
+                intervalCol <- chunks[comb$col, 1]:chunks[comb$col, 2]
+                linearKernel(x[intervalRow,], x[intervalCol, ], sparse = TRUE, 
+                             lowerLimit = lowerLimit)
+            }
+        }, 
+        x = x, 
+        chunks = chunks$chunks, 
+        combs = chunks$combs, 
+        diag = diag, 
+        lowerLimit = lowerLimit, 
+        BPPARAM = pParam)
     
     weaveChunks(res, chunks)
 }
@@ -216,22 +250,39 @@ lkParallel <- function(x, pParam, nSplits, diag = FALSE, lowerLimit = 0) {
 #' 
 #' @noRd
 #' 
-lkParallelLM <- function(pangenome, kmerSize, pParam, nSplits, diag = FALSE, lowerLimit = 0) {
+lkParallelLM <- function(pangenome, kmerSize, pParam, nSplits, diag = FALSE, 
+                         lowerLimit = 0) {
     chunks <- getChunks(nGenes(pangenome), nSplits)
     
-    res <- bplapply(1:nrow(chunks$combs), function(i, pangenome, kmerSize, chunks, combs, diag, lowerLimit) {
-        comb <- combs[i,]
-        if(comb$row == comb$col) {
-            interval <- chunks[comb$row, 1]:chunks[comb$row, 2]
-            x <- getExRep(genes(pangenome, subset=interval), spectrumKernel(kmerSize))
-            linearKernel(x, sparse=TRUE, diag=diag, lowerLimit=lowerLimit)
-        } else {
-            intervalRow <- chunks[comb$row, 1]:chunks[comb$row, 2]
-            intervalCol <- chunks[comb$col, 1]:chunks[comb$col, 2]
-            x <- getExRep(genes(pangenome, subset=c(intervalRow, intervalCol)), spectrumKernel(kmerSize))
-            linearKernel(x[1:length(intervalRow),], x[1:length(intervalCol) + length(intervalRow), ], sparse=TRUE, lowerLimit=lowerLimit)
-        }
-    }, pangenome=pangenome, kmerSize=kmerSize, chunks=chunks$chunks, combs=chunks$combs, diag=diag, lowerLimit=lowerLimit, BPPARAM=pParam)
+    res <- bplapply(
+        1:nrow(chunks$combs), 
+        function(i, pangenome, kmerSize, chunks, combs, diag, lowerLimit) {
+            comb <- combs[i,]
+            if (comb$row == comb$col) {
+                interval <- chunks[comb$row, 1]:chunks[comb$row, 2]
+                x <- getExRep(genes(pangenome, subset = interval), 
+                              spectrumKernel(kmerSize))
+                linearKernel(x, sparse = TRUE, diag = diag, 
+                             lowerLimit = lowerLimit)
+            } else {
+                intervalRow <- chunks[comb$row, 1]:chunks[comb$row, 2]
+                intervalCol <- chunks[comb$col, 1]:chunks[comb$col, 2]
+                x <- getExRep(genes(pangenome, 
+                                    subset = c(intervalRow, intervalCol)), 
+                              spectrumKernel(kmerSize))
+                linearKernel(x[1:length(intervalRow),], 
+                             x[1:length(intervalCol) + length(intervalRow), ], 
+                             sparse = TRUE, 
+                             lowerLimit = lowerLimit)
+            }
+        }, 
+        pangenome = pangenome, 
+        kmerSize = kmerSize, 
+        chunks = chunks$chunks, 
+        combs = chunks$combs, 
+        diag = diag, 
+        lowerLimit = lowerLimit, 
+        BPPARAM = pParam)
     
     weaveChunks(res, chunks)
 }
@@ -252,13 +303,14 @@ lkParallelLM <- function(pangenome, kmerSize, pParam, nSplits, diag = FALSE, low
 #' 
 getChunks <- function(size, nSplits) {
     chunkSize <- ceiling(size/nSplits)
-    from <- seq(from=1, to=size, by=chunkSize)
-    to <- c(from[-1]-1, size)
+    from <- seq(from = 1, to = size, by = chunkSize)
+    to <- c(from[-1] - 1, size)
     chunks <- cbind(from, to)
-    combs <- data.frame(rbind(t(combn(1:nrow(chunks), 2)), matrix(rep(1:nrow(chunks), 2), ncol=2)))
+    combs <- data.frame(rbind(t(combn(1:nrow(chunks), 2)), 
+                              matrix(rep(1:nrow(chunks), 2), ncol = 2)))
     names(combs) <- c('col', 'row')
     combs$origInd <- 1:nrow(combs)
-    list(combs=combs, chunks=chunks)
+    list(combs = combs, chunks = chunks)
 }
 #' Combine result from chunk vs chunk computations
 #' 
@@ -283,11 +335,13 @@ weaveChunks <- function(squares, split) {
         arrange(col) %>%
         group_by(col) %>%
         arrange(row) %>%
-        do(cols={
+        do(cols = {
             nCol <- ncol(squares[[.$origInd[1]]])
-            missingRows <- split$chunks[.$row[1], 1]-1
-            if(missingRows != 0) {
-                mat <- list(Matrix(0, ncol=nCol, nrow=missingRows, sparse=T))
+            missingRows <- split$chunks[.$row[1], 1] - 1
+            if (missingRows != 0) {
+                mat <- list(
+                    Matrix(0, ncol = nCol, nrow = missingRows, sparse = TRUE)
+                )
             } else {
                 mat <- list()
             }
@@ -331,53 +385,63 @@ weaveChunks <- function(squares, split) {
 #' 
 #' @noRd
 #' 
-recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, pParam) {
+recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, 
+                           pParam) {
     args <- mget(ls())
     args$tree <- NULL
     
-    if('pgGroups' %in% names(attributes(tree))) {
+    if ('pgGroups' %in% names(attributes(tree))) {
         return(attr(tree, 'pgGroups'))
     }
-    if(!missing(cacheDB)) {
+    if (!missing(cacheDB)) {
         key <- digest(tree)
-        if(dbExists(cacheDB, key)) {
+        if (dbExists(cacheDB, key)) {
             return(dbFetch(cacheDB, key))
         }
     }
-    if(is.leaf(tree)) {
+    if (is.leaf(tree)) {
         lab <- attr(tree, 'label')
         org <- which(orgNames(pangenome) == lab)
-        if(length(org) == 0) {
+        if (length(org) == 0) {
             org <- suppressWarnings(as.integer(lab))
-            if(org > length(pangenome) || is.na(org)) {
+            if (org > length(pangenome) || is.na(org)) {
                 stop('Invalid leaf label - no match')
             }
-        } else if(length(org) > 1) {
+        } else if (length(org) > 1) {
             stop('Invalid leaf label - multiple matches')
         }
         groups <- as.list(which(seqToOrg(pangenome) == org))
     } else {
-        group1 <- do.call(recurseCompare, append(args, list(tree=tree[[1]])))
-        group2 <- do.call(recurseCompare, append(args, list(tree=tree[[2]])))
+        group1 <- do.call(recurseCompare, append(args, list(tree = tree[[1]])))
+        group2 <- do.call(recurseCompare, append(args, list(tree = tree[[2]])))
         groups <- c(group1, group2)
     }
-    represent <- sapply(groups, function(x) {x[sample.int(length(x), size=1L)]})
+    represent <- sapply(groups, function(x) {
+        x[sample.int(length(x), size = 1L)]
+    })
     
-    if(length(unlist(groups)) > 1e6 || runif(1) < 0.01) gc() # Ensures always gc() when ngenes reaches 1mill
+    if (length(unlist(groups)) > 1e6 || runif(1) < 0.01) 
+        gc() # Ensures always gc() when ngenes reaches 1mill
     
-    if(missing(er)) {
-        erRep <- getExRep(genes(pangenome, subset=represent), spectrumKernel(kmerSize))
+    if (missing(er)) {
+        erRep <- getExRep(genes(pangenome, subset = represent), 
+                          spectrumKernel(kmerSize))
     } else {
         erRep <- er[represent,]
     }
-    if(missing(pParam)) {
-        sim <- linearKernel(erRep, sparse = TRUE, lowerLimit = lowerLimit, diag=FALSE)
+    if (missing(pParam)) {
+        sim <- linearKernel(erRep, sparse = TRUE, lowerLimit = lowerLimit, 
+                            diag = FALSE)
     } else {
-        sim <- lkParallel(erRep, pParam, nSplits=bpworkers(pParam), diag=FALSE, lowerLimit=lowerLimit)
+        sim <- lkParallel(erRep, pParam, nSplits = bpworkers(pParam), 
+                          diag = FALSE, lowerLimit = lowerLimit)
     }
-    members <- components(graph_from_adjacency_matrix(sim, mode='lower', weighted=T, diag=FALSE))$membership
+    gr <- graph_from_adjacency_matrix(sim, mode = 'lower', 
+                                      weighted = TRUE, 
+                                      diag = FALSE)
+    members <- components(gr)$membership
     newGroups <- lapply(split(groups, members), unlist)
-    if(!missing(cacheDB)) {
+    if (!missing(cacheDB)) {
         dbInsert(cacheDB, key, newGroups)
     }
     newGroups
@@ -415,24 +479,27 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, p
 #' 
 #' @noRd
 #' 
-recurseCompPar <- function(pangenome, tree, er, kmerSize, lowerLimit, pParam, nSplits, cacheDB) {
-    if(missing(er)) {
-        args <- list(pangenome=pangenome, kmerSize=kmerSize, lowerLimit=lowerLimit, algorithm=algorithm)
+recurseCompPar <- function(pangenome, tree, er, kmerSize, lowerLimit, pParam, 
+                           nSplits, cacheDB) {
+    args <- list(pangenome = pangenome, lowerLimit = lowerLimit)
+    if (missing(er)) {
+        args$kmerSize <- kmerSize
     } else {
-        args <- list(pangenome=pangenome, er=er, lowerLimit=lowerLimit, algorithm=algorithm)
+        args$er <- er
     }
-    if(!missing(cacheDB)) args$cacheDB <- cacheDB
-    args <- c(args, list(...))
+    if (!missing(cacheDB)) args$cacheDB <- cacheDB
     
     nTrees <- nSplits
-    if(attributes(tree)$members/4 > nTrees) nTrees <- floor(attributes(tree)$members/4)
+    if (attributes(tree)$members/4 > nTrees) {
+        nTrees <- floor(attributes(tree)$members/4)
+    }
     
-    while(nTrees > 4) {
+    while (nTrees > 4) {
         subtrees <- cutK(tree, nTrees)
         subRes <- bplapply(subtrees$lower, function(subtree, args) {
             args$tree <- subtree
             do.call(recurseCompare, args)
-        }, args=args, BPPARAM=pParam)
+        }, args = args, BPPARAM = pParam)
         tree <- fillTree(subtrees$upper, subRes)
         nTrees <- floor(attributes(tree)$members/4)
     }
@@ -453,7 +520,7 @@ recurseCompPar <- function(pangenome, tree, er, kmerSize, lowerLimit, pParam, nS
 #' @noRd
 #' 
 fillTree <- function(upper, lowerRes) {
-    if(is.leaf(upper)) {
+    if (is.leaf(upper)) {
         leafInd <- as.integer(sub('Branch ', '', attributes(upper)$label))
         attributes(upper)$pgGroups <- lowerRes[[leafInd]]
     } else {
@@ -489,13 +556,15 @@ fillTree <- function(upper, lowerRes) {
 #' 
 #' @noRd
 #' 
-orgTree <- function(pangenome, type, kmerSize, dist, clust, chunkSize=100, pParam) {
+orgTree <- function(pangenome, type, kmerSize, dist, clust, chunkSize = 100, 
+                    pParam) {
     distances <- switch(
         type,
-        pangenome=pgDist(pangenome, method=dist),
-        kmer=kmerDist(pangenome, kmerSize, chunkSize=chunkSize, pParam, method=dist)
+        pangenome = pgDist(pangenome, method = dist),
+        kmer = kmerDist(pangenome, kmerSize, chunkSize = chunkSize, pParam, 
+                        method = dist)
     )
-    clusters <- hclust(distances, method=clust)
+    clusters <- hclust(distances, method = clust)
     as.dendrogram(clusters)
 }
 #' Get cosine similarity of organisms
@@ -517,8 +586,8 @@ orgTree <- function(pangenome, type, kmerSize, dist, clust, chunkSize=100, pPara
 #' 
 #' @noRd
 #' 
-kmerSim <- function(pangenome, kmerSize, chunkSize=100, pParam) {
-    er <- orgExRep(pangenome, kmerSize, chunkSize=chunkSize, pParam)
+kmerSim <- function(pangenome, kmerSize, chunkSize = 100, pParam) {
+    er <- orgExRep(pangenome, kmerSize, chunkSize = chunkSize, pParam)
     sim <- linearKernel(er, sparse = FALSE)@.Data
     diag(sim) <- 1
     sim[sim < 0] <- 0
@@ -546,13 +615,14 @@ kmerSim <- function(pangenome, kmerSize, chunkSize=100, pParam) {
 #' 
 #' @noRd
 #' 
-kmerDist <- function(pangenome, kmerSize, chunkSize=100, pParam, method='cosine') {
-    if(method == 'cosine') {
-        sim <- kmerSim(pangenome, kmerSize, chunkSize=chunkSize, pParam)
-        as.dist(sqrt(1-sim))
+kmerDist <- function(pangenome, kmerSize, chunkSize = 100, pParam, 
+                     method = 'cosine') {
+    if (method == 'cosine') {
+        sim <- kmerSim(pangenome, kmerSize, chunkSize = chunkSize, pParam)
+        as.dist(sqrt(1 - sim))
     } else {
-        er <- orgExRep(pangenome, kmerSize, chunkSize=chunkSize, pParam)
-        dist(er@.Data, method=method)
+        er <- orgExRep(pangenome, kmerSize, chunkSize = chunkSize, pParam)
+        dist(er@.Data, method = method)
     }
 }
 #' Calculate explicit representations of genomes
@@ -579,34 +649,47 @@ kmerDist <- function(pangenome, kmerSize, chunkSize=100, pParam, method='cosine'
 #' 
 #' @noRd
 #' 
-orgExRep <- function(pangenome, kmerSize, chunkSize=100, pParam) {
+orgExRep <- function(pangenome, kmerSize, chunkSize = 100, pParam) {
     nChunks <- ceiling(length(pangenome)/chunkSize)
-    chunks <- rep(1:nChunks, each=chunkSize, length.out=length(pangenome))
-    if(missing(pParam)) {
+    chunks <- rep(1:nChunks, each = chunkSize, length.out = length(pangenome))
+    if (missing(pParam)) {
         erList <- lapply(1:nChunks, function(i) {
-            genomes <- unstrsplit(lapply(as.list(genes(pangenome, 'organism', subset=which(chunks==1))), as.character), sep='-')
-            if(translated(pangenome)) {
+            genes <- lapply(as.list(genes(pangenome, 'organism', 
+                                          subset = which(chunks == 1))), 
+                            as.character)
+            genomes <- unstrsplit(genes, sep = '-')
+            if (translated(pangenome)) {
                 genomes <- AAStringSet(genomes)
             } else {
                 genomes <- DNAStringSet(genomes)
             }
-            er <- getExRep(genomes, spectrumKernel(kmerSize), sparse=FALSE)
+            er <- getExRep(genomes, spectrumKernel(kmerSize), sparse = FALSE)
             er@.Data
         })
     } else {
         erList <- bplapply(1:nChunks, function(i, pangenome, chunks, kmerSize) {
-            genomes <- unstrsplit(lapply(as.list(genes(pangenome, 'organism', subset=which(chunks==1))), as.character), sep='-')
-            if(translated(pangenome)) {
+            genes <- lapply(as.list(genes(pangenome, 'organism', 
+                                          subset = which(chunks == 1))), 
+                            as.character)
+            genomes <- unstrsplit(genes, sep = '-')
+            if (translated(pangenome)) {
                 genomes <- AAStringSet(genomes)
             } else {
                 genomes <- DNAStringSet(genomes)
             }
-            er <- getExRep(genomes, spectrumKernel(kmerSize), sparse=FALSE)
+            er <- getExRep(genomes, spectrumKernel(kmerSize), sparse = FALSE)
             er@.Data
-        }, pangenome=pangenome, chunks=chunks, kmerSize=kmerSize, BPPARAM=pParam)
+        }, 
+        pangenome = pangenome, 
+        chunks = chunks, 
+        kmerSize = kmerSize, 
+        BPPARAM = pParam)
     }
-    kmerMatrix <- rbindMat(erList, fill=0)
-    new('ExplicitRepresentationDense', .Data=kmerMatrix, usedKernel=spectrumKernel(kmerSize), quadratic=FALSE)
+    kmerMatrix <- rbindMat(erList, fill = 0)
+    new('ExplicitRepresentationDense', 
+        .Data = kmerMatrix, 
+        usedKernel = spectrumKernel(kmerSize), 
+        quadratic = FALSE)
 }
 #' Rbind matrices based on their colnames
 #' 
@@ -622,25 +705,26 @@ orgExRep <- function(pangenome, kmerSize, chunkSize=100, pParam) {
 #' 
 #' @noRd
 #' 
-rbindMat <- function(x, ..., fill=NA) {
-    if(inherits(x, 'matrix')) x <- list(x, ...)
-    if(length(x) == 1) return(x[[1]])
+rbindMat <- function(x, ..., fill = NA) {
+    if (inherits(x, 'matrix')) x <- list(x, ...)
+    if (length(x) == 1) return(x[[1]])
     cols <- unique(unlist(lapply(x, colnames)))
     rows <- seq(sum(sapply(x, nrow)))
-    ans <- matrix(fill, ncol=length(cols), nrow=length(rows), dimnames = list(NULL, cols))
+    ans <- matrix(fill, ncol = length(cols), nrow = length(rows), 
+                  dimnames = list(NULL, cols))
     currentEnd <- 1
     rowN <- FALSE
-    for(i in 1:length(x)) {
-        rowInd <- seq(currentEnd, length.out=nrow(x[[i]]))
+    for (i in 1:length(x)) {
+        rowInd <- seq(currentEnd, length.out = nrow(x[[i]]))
         ans[rowInd, colnames(x[[i]])] <- x[[i]]
-        if(!is.null(rownames(x[[i]]))) {
-            if(!rowN) {
+        if (!is.null(rownames(x[[i]]))) {
+            if (!rowN) {
                 rowN <- TRUE
                 rownames(ans) <- 1:nrow(ans)
             }
             rownames(ans)[rowInd] <- rownames(x[[i]])
         }
-        currentEnd <- currentEnd+nrow(x[[i]])
+        currentEnd <- currentEnd + nrow(x[[i]])
     }
     ans
 }
@@ -658,7 +742,12 @@ rbindMat <- function(x, ..., fill=NA) {
 prodigalParse <- function(desc) {
     info <- do.call(rbind, strsplit(desc, ' # '))[,-5]
     info[, 1] <- sub('_\\d+$', '', info[,1])
-    info <- data.frame(contig=info[, 1], start=as.integer(info[,2]), end=as.integer(info[,3]), strand=as.integer(info[,4]), stringsAsFactors=FALSE)
+    info <- data.frame(
+        contig = info[, 1], 
+        start = as.integer(info[,2]), 
+        end = as.integer(info[,3]), 
+        strand = as.integer(info[,4]), 
+        stringsAsFactors = FALSE)
     info
 }
 #' Extracts and check validity of location information
@@ -682,27 +771,38 @@ prodigalParse <- function(desc) {
 #' @noRd
 #' 
 getSeqInfo <- function(format, desc) {
-    if(is.null(format)) return(data.frame(contig=character(), start=integer(), end=integer(), strand=integer()))
+    if (is.null(format)) {
+        return(data.frame(
+            contig = character(), 
+            start = integer(), 
+            end = integer(), 
+            strand = integer())
+            )
+    }
     
-    if(inherits(format, 'data.frame')) {
+    if (inherits(format, 'data.frame')) {
         seqInfo <- format
-    } else if(inherits(format, 'list')) {
+    } else if (inherits(format, 'list')) {
         seqInfo <- do.call(rbind, format)
-    } else if(inherits(format, 'function')) {
+    } else if (inherits(format, 'function')) {
         seqInfo <- do.call(format, list(desc))
-    } else if(inherits(format, 'character')) {
+    } else if (inherits(format, 'character')) {
         seqInfo <- switch(
             format,
             prodigal = prodigalParse(desc),
             stop('Unknown format: ', format)
         )
     } else {
-        stop('Wrong input. Must be NULL, data.frame, list, function or character')
+        stop('Wrong input. Must be NULL, data.frame, list, function or 
+             character')
     }
     row.names(seqInfo) <- NULL
     
-    if(nrow(seqInfo) != length(desc) || !all(c('contig', 'start', 'end', 'strand') %in% names(seqInfo))) {
-        stop('Bad sequenceInfo formatting. Rows must match number of genes and columns must be at least \'contig\', \'start\', \'end\' and \'strand\'')
+    if (nrow(seqInfo) != length(desc) || 
+        !all(c('contig', 'start', 'end', 'strand') %in% names(seqInfo))) {
+        stop('Bad sequenceInfo formatting. Rows must match number of genes and 
+             columns must be at least \'contig\', \'start\', \'end\' and 
+             \'strand\'')
     }
     seqInfo
 }
@@ -724,7 +824,7 @@ getSeqInfo <- function(format, desc) {
 cutK <- function(x, k) {
     getHeights <- function(x) {
         heights <- attr(x, 'height')
-        if(!is.leaf(x)) {
+        if (!is.leaf(x)) {
             heights <- c(heights, getHeights(x[[1]]), getHeights(x[[2]]))
         }
         heights
@@ -732,9 +832,9 @@ cutK <- function(x, k) {
     heights <- sort(getHeights(x), decreasing = TRUE)
     middleHeight <- heights + c(diff(heights), 0)/2
     i <- 1
-    while(TRUE) {
+    while (TRUE) {
         dendro <- cut(x, middleHeight[i])
-        if(length(dendro$lower) == k) break
+        if (length(dendro$lower) == k) break
         i <- i + 1
     }
     dendro
@@ -761,7 +861,12 @@ splitStringSet <- function(x, f) {
     partitioning <- PartitioningByEnd(groups)
     data <- x[unlist(groups)]
     type <- as.character(class(x))
-    new(paste0(type, 'List'), unlistData=data, partitioning=partitioning, elementType=type, elementMetadata=NULL, metadata=list())
+    new(paste0(type, 'List'), 
+        unlistData = data, 
+        partitioning = partitioning, 
+        elementType = type, 
+        elementMetadata = NULL, 
+        metadata = list())
 }
 #' Group genes based on grouping of gene groups
 #' 
@@ -827,13 +932,13 @@ rbindGtable <- function(..., size = "max", z = NULL) {
 rbind_gtable <- function(x, y, size = "max") {
     if (nrow(x) == 0) return(y)
     if (nrow(y) == 0) return(x)
-    if(ncol(x) > ncol(y)) {
-        y <- gtable_add_cols(y, rep(grid::unit(1e-6, 'mm'), ncol(x)-ncol(y)))
+    if (ncol(x) > ncol(y)) {
+        y <- gtable_add_cols(y, rep(grid::unit(1e-6, 'mm'), ncol(x) - ncol(y)))
         background <- grep('background', y$layout$name)
         y$layout$r[background] <- ncol(y)
     }
-    if(ncol(x) < ncol(y)) {
-        x <- gtable_add_cols(x, rep(grid::unit(1e-6, 'mm'), ncol(y)-ncol(x)))
+    if (ncol(x) < ncol(y)) {
+        x <- gtable_add_cols(x, rep(grid::unit(1e-6, 'mm'), ncol(y) - ncol(x)))
         background <- grep('background', x$layout$name)
         x$layout$r[background] <- ncol(x)
     }
@@ -852,9 +957,9 @@ rbind_gtable <- function(x, y, size = "max") {
                        min = grid::unit.pmin(x$widths, y$widths),
                        max = grid::unit.pmax(x$widths, y$widths)
     )
-    if(size %in% c('max', 'min')) {
+    if (size %in% c('max', 'min')) {
         x$widths <- do.call(unit.c, lapply(x$widths, function(x) {
-            if(identical(x[[1]]$arg1[1], x[[1]]$arg1[2])) {
+            if (identical(x[[1]]$arg1[1], x[[1]]$arg1[2])) {
                 x[[1]]$arg1[1]
             } else {
                 x
@@ -892,12 +997,14 @@ rbind_gtable <- function(x, y, size = "max") {
 #' @export
 #' 
 readAnnot <- function(file) {
-    data <- read.table(file, header=F, sep='\t', fill = T, stringsAsFactors=FALSE)
+    data <- read.table(file, header = FALSE, sep = '\t', fill = TRUE, 
+                       stringsAsFactors = FALSE)
     names(data) <- c('name', 'annot', 'desc')
     data <- data %>% 
         mutate(ontology = grepl('GO:', annot)) %>%
         group_by(name) %>%
-        summarise(description=desc[1], GO=I(list(annot[ontology])), EC=I(list(annot[!ontology])))
+        summarise(description = desc[1], GO = I(list(annot[ontology])), 
+                  EC = I(list(annot[!ontology])))
     data <- as.data.frame(data)
     data$GO <- unclass(data$GO)
     data$EC <- unclass(data$EC)
@@ -925,10 +1032,11 @@ readAnnot <- function(file) {
 #' @noRd
 #' 
 transformSim <- function(similarity, low, rescale, transform) {
-    if(rescale) {
-        similarity[which(similarity!=0)] <- (similarity[which(similarity!=0)]-low)/(1-low)
+    if (rescale) {
+        zeroInd <- which(similarity != 0)
+        similarity[zeroInd] <- (similarity[zeroInd] - low)/(1 - low)
     }
-    if(inherits(transform, 'function')) {
+    if (inherits(transform, 'function')) {
         transform(similarity)
     } else {
         similarity
@@ -952,11 +1060,15 @@ transformSim <- function(similarity, low, rescale, transform) {
 #' @noRd
 #' 
 getPgMatrix <- function(object) {
-    if(!hasGeneGroups(object)) {
-        return(matrix(nrow=0, ncol=nOrganisms(object), dimnames = list(NULL, orgNames(object))))
+    if (!hasGeneGroups(object)) {
+        return(matrix(nrow = 0, ncol = nOrganisms(object), 
+                      dimnames = list(NULL, orgNames(object))))
     }
-    matRes <- matrix(0, ncol=nOrganisms(object), nrow=nGeneGroups(object), dimnames=list(groupNames(object), orgNames(object)))
-    pgmat <- acast(data.frame(seqToOrg=seqToOrg(object), seqToGeneGroup=seqToGeneGroup(object)), seqToGeneGroup~seqToOrg, length, value.var='seqToOrg')
+    matRes <- matrix(0, ncol = nOrganisms(object), nrow = nGeneGroups(object), 
+                     dimnames = list(groupNames(object), orgNames(object)))
+    pgmat <- acast(data.frame(seqToOrg = seqToOrg(object), 
+                              seqToGeneGroup = seqToGeneGroup(object)), 
+                   seqToGeneGroup ~ seqToOrg, length, value.var = 'seqToOrg')
     matRes[as.integer(rownames(pgmat)), as.integer(colnames(pgmat))] <- pgmat
     matRes
 }

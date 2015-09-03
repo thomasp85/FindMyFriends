@@ -16,12 +16,15 @@ NULL
 #' 
 setClass(
     'pgInMemLoc',
-    contains=c('VIRTUAL', 'pgVirtualLoc'),
-    slots=list(
-        geneLocation='data.frame'
+    contains = c('VIRTUAL', 'pgVirtualLoc'),
+    slots = list(
+        geneLocation = 'data.frame'
     ),
     prototype = list(
-        geneLocation = data.frame(contig=character(), start=integer(), end=integer(), strand=integer())
+        geneLocation = data.frame(contig = character(), 
+                                  start = integer(), 
+                                  end = integer(), 
+                                  strand = integer())
     )
 )
 #' @describeIn geneLocation Get gene location for pgInMemLoc subclasses

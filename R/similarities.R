@@ -27,22 +27,25 @@ NULL
 #' 
 setMethod(
     'kmerSimilarity', 'pgVirtual',
-    function(object, lowMem, kmerSize, lowerLimit, rescale, transform, pParam, nSplits) {
+    function(object, lowMem, kmerSize, lowerLimit, rescale, transform, pParam, 
+             nSplits) {
         .fillDefaults(defaults(object))
         
-        if(lowMem) {
-            if(missing(pParam)) {
+        if (lowMem) {
+            if (missing(pParam)) {
                 pParam <- SerialParam()
                 nSplits <- length(object)
             }
-            res <- lkParallelLM(object, kmerSize, pParam, nSplits, lowerLimit=lowerLimit)
+            res <- lkParallelLM(object, kmerSize, pParam, nSplits, 
+                                lowerLimit = lowerLimit)
         } else {
             kernel <- spectrumKernel(kmerSize)
-            er <- getExRep(genes(object), kernel, sparse=TRUE)
-            if(missing(pParam)) {
-                res <- linearKernel(er, sparse=TRUE, diag=FALSE, lowerLimit=lowerLimit)
+            er <- getExRep(genes(object), kernel, sparse = TRUE)
+            if (missing(pParam)) {
+                res <- linearKernel(er, sparse = TRUE, diag = FALSE, 
+                                    lowerLimit = lowerLimit)
             } else {
-                res <- lkParallel(er, pParam, nSplits, lowerLimit=lowerLimit)
+                res <- lkParallel(er, pParam, nSplits, lowerLimit = lowerLimit)
             }
         }
         transformSim(res, lowerLimit, rescale, transform)

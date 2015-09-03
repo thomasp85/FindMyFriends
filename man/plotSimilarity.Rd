@@ -29,6 +29,9 @@ clustering of the organisms based on Ward's distance.}
 
 \item{chunkSize}{Number of organisms to process at a time}
 }
+\value{
+This function is called for its side effects
+}
 \description{
 This method creates a heatplot showing the similarity between all organisms
 in the pangenome. The similarity can either be derived from the pangenome

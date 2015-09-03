@@ -62,56 +62,75 @@ NULL
 #' @importFrom Biostrings readAAStringSet readDNAStringSet fasta.index
 #' @importFrom tools file_path_sans_ext
 #' 
-pangenome <- function(paths, translated, geneLocation=NULL, lowMem=FALSE, ...) {
+pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE, 
+                      ...) {
     settings <- defaultArgs
     sOverwrite <- list(...)
-    for(i in names(sOverwrite)) {
+    for (i in names(sOverwrite)) {
         settings[[i]] <- sOverwrite[[i]]
     }
     settings$translated <- translated
     settings$lowMem <- lowMem
     args <- list(.settings = settings)
-    args$Class <- if(lowMem) {
-        if(is.null(geneLocation)) {
+    args$Class <- if (lowMem) {
+        if (is.null(geneLocation)) {
             'pgLM'
         } else {
             'pgLMLoc'
         }
     } else {
-        if(is.null(geneLocation)) {
+        if (is.null(geneLocation)) {
             'pgFull'
         } else {
             'pgFullLoc'
         }
     }
     sequenceFileLength <- as.integer(nSeqs(paths))
-    if(lowMem) {
-        args$seqIndex <- fasta.index(paths, seqtype = if(translated) 'AA' else 'DNA')
+    if (lowMem) {
+        args$seqIndex <- fasta.index(paths, 
+                                     seqtype = if (translated) 'AA' else 'DNA')
     } else {
-        args$sequences <- if(translated) readAAStringSet(paths) else readDNAStringSet(paths)
+        args$sequences <- if (translated) {
+            readAAStringSet(paths)
+        } else {
+            readDNAStringSet(paths)
+        }
     }
-    if(any(sequenceFileLength == 0)) {
-        warning('The following files contained no sequences\n\n', paste(paths[sequenceFileLength==0], collapse='\n'))
+    if (any(sequenceFileLength == 0)) {
+        warning('The following files contained no sequences\n\n', 
+                paste(paths[sequenceFileLength == 0], collapse = '\n'))
     }
-    args$seqToOrg <- as.integer(unlist(sapply(1:length(paths), function(x) rep(x, sequenceFileLength[x]))))
+    args$seqToOrg <- as.integer(unlist(sapply(1:length(paths), function(x) {
+        rep(x, sequenceFileLength[x])
+    })))
     
     orgNames <- file_path_sans_ext(basename(paths))
-    args$orgInfo <- data.frame(nGenes=sequenceFileLength, row.names = orgNames, check.names = F, stringsAsFactors=FALSE)
-    args$matrix <- matrix(nrow=0, ncol=length(paths), dimnames = list(NULL, orgNames))
-    if(!is.null(geneLocation)) {
-        args$geneLocation <- getSeqInfo(geneLocation, if(lowMem) args$seqIndex$desc else names(args$sequences))
+    args$orgInfo <- data.frame(
+        nGenes = sequenceFileLength, 
+        row.names = orgNames, 
+        check.names = FALSE, 
+        stringsAsFactors = FALSE)
+    args$matrix <- matrix(nrow = 0, ncol = length(paths), 
+                          dimnames = list(NULL, orgNames))
+    if (!is.null(geneLocation)) {
+        geneNames <- if (lowMem) {
+            args$seqIndex$desc
+        } else {
+            names(args$sequences)
+        }
+        args$geneLocation <- getSeqInfo(geneLocation, geneNames)
     }
     do.call(new, args)
 }
 
 defaultArgs <- list(
-    kmerSize=4,
-    lowerLimit=0.5,
-    algorithm='infomap',
-    flankSize=4,
-    minFlank=0,
-    forceParalogues=TRUE,
-    rescale=TRUE,
-    transform=FALSE,
-    maxLengthDif=0.1
+    kmerSize = 4,
+    lowerLimit = 0.5,
+    algorithm = 'infomap',
+    flankSize = 4,
+    minFlank = 0,
+    forceParalogues = TRUE,
+    rescale = TRUE,
+    transform = FALSE,
+    maxLengthDif = 0.1
 )
