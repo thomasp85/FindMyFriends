@@ -41,6 +41,7 @@ Imports:
 Suggests:
     testthat,
     knitr,
+    rmarkdown,
     reutils
 Collate:
     'FindMyFriends-package.R'
