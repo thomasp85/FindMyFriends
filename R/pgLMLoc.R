@@ -26,11 +26,8 @@ setMethod(
         if (class(pg1) != class(pg2)) {
             stop('pangenomes must be instances of the same class')
         }
-        pg <- callNextMethod()
-        new(
-            class(pg1),
-            pg,
-            geneLocation = rbind(pg1@geneLocation, pg2@geneLocation)
-        )
+        callNextMethod(pg1, pg2, geneGrouping, groupInfo, 
+                       geneLocation = rbind(pg1@geneLocation, 
+                                            pg2@geneLocation))
     }
 )

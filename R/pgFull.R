@@ -118,15 +118,11 @@ setMethod(
 #' 
 setMethod(
     'mergePangenomes', c('pgFull', 'pgFull'),
-    function(pg1, pg2, geneGrouping, groupInfo) {
+    function(pg1, pg2, geneGrouping, groupInfo, ...) {
         if (class(pg1) != class(pg2)) {
             stop('pangenomes must be instances of the same class')
         }
-        pg <- callNextMethod()
-        new(
-            class(pg1),
-            pg,
-            sequences = c(pg1@sequences, pg2@sequences)
-        )
+        callNextMethod(pg1, pg2, geneGrouping, groupInfo, 
+                       sequences = c(pg1@sequences, pg2@sequences), ...)
     }
 )

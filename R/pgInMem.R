@@ -254,16 +254,23 @@ setMethod(
 #' 
 setMethod(
     'mergePangenomes', c('pgInMem', 'pgInMem'),
-    function(pg1, pg2, geneGrouping, groupInfo) {
+    function(pg1, pg2, geneGrouping, groupInfo, ...) {
         if (class(pg1) != class(pg2)) {
             stop('pangenomes must be instances of the same class')
         }
-        pg1@seqToOrg <- c(pg1@seqToOrg, nOrganisms(pg1) + pg2@seqToOrg)
-        pg1@seqToGeneGroup <- geneGrouping
-        pg1@orgInfo <- bind_rows(pg1@orgInfo, pg2@orgInfo)
-        pg1@groupInfo <- groupInfo
-        pg1@pgMat <- getPgMatrix(pg1)
-        pg1
+        seqToOrg <- c(pg1@seqToOrg, nOrganisms(pg1) + pg2@seqToOrg)
+        orgInfo <- as.data.frame(bind_rows(pg1@orgInfo, pg2@orgInfo))
+        new(
+            class(pg1),
+            .settings = pg1@.settings,
+            seqToOrg = as.integer(seqToOrg),
+            seqToGeneGroup = as.integer(geneGrouping),
+            orgInfo = orgInfo,
+            groupInfo = groupInfo,
+            matrix = calcPgMatrix(seqToOrg, geneGrouping, rownames(groupInfo), 
+                                  rownames(orgInfo)),
+            ...
+        )
     }
 )
 ### PERFORMANCE OVERWRITE
