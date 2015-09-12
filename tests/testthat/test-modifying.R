@@ -22,13 +22,13 @@ test_that("removeGene works", {
     expect_warning(removeGene(pg, organism=9, ind=30))
     expect_warning(removeGene(pg, organism=2, ind=50000))
     
-    expect_equal(removeGene(pg, group='4'), removeGene(pg, group=4))
+    expect_equal(removeGene(pg, group='OG4'), removeGene(pg, group=4))
     expect_equal(removeGene(pg, group=4), removeGene(pg, ind=which(seqToGeneGroup(pg)==4)))
     expect_warning(removeGene(pg, group='not a group name'))
     expect_warning(removeGene(pg, group = -1))
     
-    expect_equal(removeGene(pg, group='4', ind=8), removeGene(pg, group=4, ind=8))
-    expect_equal(removeGene(pg, group=c('4', '9'), ind=c(8, 2)), removeGene(pg, group=c(4, 9), ind=c(8, 2)))
+    expect_equal(removeGene(pg, group='OG4', ind=8), removeGene(pg, group=4, ind=8))
+    expect_equal(removeGene(pg, group=c('OG4', 'OG9'), ind=c(8, 2)), removeGene(pg, group=c(4, 9), ind=c(8, 2)))
     expect_equal(removeGene(pg, group=c(4, 9), ind=c(8, 2)), removeGene(pg, ind=c(which(seqToGeneGroup(pg)==4)[8], which(seqToGeneGroup(pg)==9)[2])))
     expect_warning(removeGene(pg, group=9, ind=sum(seqToGeneGroup(pg)==9)+1))
 })
