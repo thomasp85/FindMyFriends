@@ -302,6 +302,15 @@ lkParallelLM <- function(pangenome, kmerSize, pParam, nSplits, diag = FALSE,
 #' @noRd
 #' 
 getChunks <- function(size, nSplits) {
+    if (nSplits == 1) {
+        return(list(
+            combs = data.frame(
+                col = 1,
+                row = 1
+            ),
+            chunks = matrix(c(1, size), nrow = 1)
+        ))
+    }
     chunkSize <- ceiling(size/nSplits)
     from <- seq(from = 1, to = size, by = chunkSize)
     to <- c(from[-1] - 1, size)
@@ -331,6 +340,13 @@ getChunks <- function(size, nSplits) {
 #' @noRd
 #' 
 weaveChunks <- function(squares, split) {
+    oldOptions <- options(dplyr.show_progress = FALSE)
+    on.exit({
+        options(oldOptions)
+    })
+    if (length(squares) == 1) {
+        return(squares[[1]])
+    }
     res <- split$combs %>%
         arrange(col) %>%
         group_by(col) %>%
