@@ -29,6 +29,7 @@ globalVariables(
         'y',
         'yend')
     )
+.pkg_variables <- new.env()
 #' Load an example pangenome
 #' 
 #' This function loads an example pangenome at various stages of calculation,

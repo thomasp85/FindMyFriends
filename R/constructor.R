@@ -64,7 +64,7 @@ NULL
 #' 
 pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE, 
                       ...) {
-    settings <- defaultArgs
+    settings <- .pkg_variables$defaults
     sOverwrite <- list(...)
     for (i in names(sOverwrite)) {
         settings[[i]] <- sOverwrite[[i]]
@@ -123,7 +123,9 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
     do.call(new, args)
 }
 
-defaultArgs <- list(
+.pkg_variables$defaults <- list(
+    groupPrefix = 'OG',
+    nextGroup = 1,
     kmerSize = 4,
     lowerLimit = 0.5,
     algorithm = 'infomap',
