@@ -10,34 +10,26 @@
 #' @param lowerLimit The lower threshold for sequence similarity, below which it
 #' is set to 0
 #' 
-#' @param algorithm The algorithm to use to cluster new genes with existing
-#' 
-#' @param flankSize The number of genes on each size of a gene to compare when
-#' assessing neighborhood similarity
-#' 
-#' @param gpcParam A list of parameters to pass to \code{\link{gpcGrouping}} in
-#' case newSet has not had gene grouping performed.
-#' 
-#' @param nsParam A list of parameters to pass to 
-#' \code{\link{neighborhoodSplit}} in case newSet has not had gene grouping 
-#' performed and inherits from pgVirtualLoc
-#' 
-#' @param klParam A list of parameters to pass to \code{\link{kmerLink}} In case
-#' object had paralogues defined
-#' 
 #' @param pParam A BiocParallelParam object
 #' 
-#' @param nSplits The number of parallel jobs to split the parallelization into
+#' @param nsParam A list of parameters to pass to 
+#' \code{\link{neighborhoodSplit}} or FALSE to skip neighborhood splitting 
+#' altogether. If object has had neighborhood splitting performed and nsParam is
+#' set to FALSE it is bound to cause problems, so don't do that.
+#' 
+#' @param klParam A list of parameters to pass to \code{\link{kmerLink}} or 
+#' FALSE to skip paralogue linking altogether. Independent of the value of 
+#' klParam kmerLink will only be run if paralogue links have been defined on 
+#' object beforehand.
 #' 
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
 #' @importFrom dplyr bind_rows
-#' 
-#' @noRd
+#' @importFrom BiocParallel bpworkers
 #' 
 setMethod(
     'addGenomes', c('pgVirtual', 'pgVirtual'),
-    function(object, newSet, kmerSize, lowerLimit, algorithm, flankSize, 
-             gpcParam, nsParam, klParam, pParam, nSplits, ...) {
+    function(object, newSet, kmerSize, lowerLimit, pParam, nsParam = list(), 
+             klParam = list()) {
         .fillDefaults(defaults(object))
         
         if (class(object) != class(newSet)) {
@@ -48,13 +40,13 @@ setMethod(
         }
         
         if (!hasGeneGroups(newSet)) {
+            gpcParam <- list(kmerSize = kmerSize, lowerLimit = lowerLimit)
+            if (!missing(pParam)) {
+                gpcParam$pParam <- pParam
+            }
             defaults(newSet) <- defaults(object)
             gpcParam$object <- newSet
             newSet <- do.call(gpcGrouping, gpcParam)
-            if(hasGeneInfo(newSet)) {
-                nsParam$object <- newSet
-                newSet <- do.call(neighborhoodSplit, nsParam)
-            }
         }
         
         fullSet <- c(getRep(object, 'random'), getRep(newSet, 'random'))
@@ -63,36 +55,49 @@ setMethod(
             sim <- linearKernel(er, sparse = TRUE, diag = FALSE, 
                                 lowerLimit = lowerLimit)
         } else {
-            sim <- lkParallel(er, pParam, nSplits, lowerLimit = lowerLimit)
+            sim <- lkParallel(er, pParam, bpworkers(pParam), 
+                              lowerLimit = lowerLimit)
         }
-        similarGroups <- igGroup(sim, algorithm, ...)
+        gr <- graph_from_adjacency_matrix(sim, mode = 'lower', 
+                                          weighted = TRUE, 
+                                          diag = FALSE)
+        members <- components(gr)$membership
+        groups <- c(seqToGeneGroup(object), 
+                    seqToGeneGroup(newSet) + nGeneGroups(object))
+        groups <- split(1:length(groups), groups)
+        groups <- lapply(split(groups, members), unlist)
+        if (hasGeneInfo(object) && !(is.logical(nsParam) && !nsParam)) {
+            info <- resizeDataFrame(groupInfo(object), length(groups))
+            newPG <- mergePangenomes(object, newSet, convertGrouping(groups), 
+                                     info)
+            nsParam$object <- newPG
+            nsParam$guideGroups <- seqToGeneGroup(object)
+            newPG <- do.call(neighborhoodSplit, nsParam)
+            groups <- convertGrouping(seqToGeneGroup(newPG))
+        }
+        newGroups <- matchGroups(groups, seqToGeneGroup(object))
+        removedGroups <- which(!1:max(newGroups) %in% unique(newGroups))
+        addedGroups <- max(newGroups) - nGeneGroups(object)
+        addedGroupNames <- paste0(defaults(object)$groupPrefix,
+                                  seq(object@.settings$nextGroup, 
+                                      length.out = addedGroups))
+        newInfo <- resizeDataFrame(groupInfo(object), max(newGroups), 
+                                   addedGroupNames)[-removedGroups, ]
+        newGroups <- removeIndex(newGroups, removedGroups)
+        newPG <- mergePangenomes(object, newSet, newGroups, newInfo)
         
-        members <- switch(
-            hasGeneInfo(object),
-            'TRUE' = mergeNeighborhood(object, newSet, flankSize, similarGroups, 
-                                       sim),
-            'FALSE' = mergeLargest(object, similarGroups)
-        )
-        
-        newGroups <- max(members) - nGeneGroups(object)
-        newInfo <- bind_rows(groupInfo(object), 
-                             data.frame(description = rep(NA, newGroups)))
-        newPG <- mergePangenomes(object, newSet, 
-                                 c(seqToGeneGroup(object), members), 
-                                 newInfo)
-        newMat <- pgMatrix(newPG)
-        newInfo$group <- apply(newMat, 1, function(x) {
-            if (all(x != 0)) return('Core')
-            if (sum(x != 0) == 1) return('Singleton')
-            return('Accessory')
-        })
-        newInfo$nOrg <- apply(newMat != 0, 1, sum)
-        newInfo$nGenes <- apply(newMat, 1, sum)
-        groupInfo(newPG) <- newInfo
-        if (hasParalogueLinks(object)) {
+        if (hasParalogueLinks(object) && !(is.logical(klParam) && !klParam)) {
+            oldLinks <- groupInfo(newPG)$paralogue
             klParam$object <- newPG
             newPG <- do.call(kmerLink, klParam)
+            newLinks <- split(1:nGeneGroups(newPG), groupInfo(newPG)$paralogue)
+            newLinks <- matchGroups(newLinks, oldLinks)
+            groupInfo(newPG)$paralogue <- newLinks
         }
+        
+        reportGroupChanges(groupNames(newPG)[seqToGeneGroup(newPG)], 
+                           groupNames(object)[seqToGeneGroup(object)])
+        
         newPG
     }
 )
@@ -414,135 +419,153 @@ removeIndex <- function(x, index) {
     }
     as.integer(x)
 }
-#' Merge gene groups based on neighborhood similarity
+#' Match new groups to old ones based on members
 #' 
-#' This function merges gene groups from two pangenomes based on similarity of
-#' neighborhood and sequence.
+#' This function takes a grouping of genes and compares it to an older, possibly
+#' smaller, grouping (i.e. based on fewer genes), and returns a reindexed
+#' grouping so that group indexes matches between new and old.
 #' 
-#' @param pangenome The pangenome with the original gene groups
+#' @param newGroups A list of integer vectors with the new groups
 #' 
-#' @param newPG The new pangenome with genes to add
+#' @param oldGroups An integer vector with the membership of genes in the old
+#' grouping
 #' 
-#' @param flankSize The size of the neighborhood to take into account
-#' 
-#' @param members Grouping of gene groups from pangenome and newPG
-#' 
-#' @param similarities The similarity matrix used to group the gene groups
-#' 
-#' @return A vector with gene group membership for all genes in the two 
-#' pangenomes
-#' 
-#' @importFrom dplyr mutate
+#' @return An integer vector with the membership of genes in the new set
 #' 
 #' @noRd
 #' 
-mergeNeighborhood <- function(pangenome, newPG, flankSize, members, similarities) {
-#     newGroups <- seqToGeneGroup(newPG) + nGeneGroups(pangenome)
-#     tempGrouping <- c(members[seqToGeneGroup(pangenome)], members[newGroups])
-#     tempInfo <- groupInfo(pangenome)
-#     tempInfo <- rbind(tempInfo, tempInfo[rep(1, nGeneGroups(newPG)),])
-#     tempPG <- mergePangenomes(pangenome, newPG, tempGrouping, tempInfo)
-#     tempPG <- neighborhoodSplitting(tempPG)
-#     
-#     
-#     newMembers <- members[(nGeneGroups(pangenome)+1):length(members)]
-#     oldMembers <- members[1:nGeneGroups(pangenome)]
-#     
-#     mergedGroups <- split(1:length(members), members)
-#     oldGroupNo <- nGeneGroups(pangenome)
-#     
-#     oldNeighborhood <- getNeighborhood(pangenome)
-#     newNeighborhood <- getNeighborhood(newPG)
-#     
-#     for(i in mergedGroups) {
-#         newGroups <- i > oldGroupNo
-#         if(sum(newGroups) == 0) next
-#         
-#         if(all(newGroups)) {
-#             members[i] <- NA
-#         } else {
-#             oldGroups <- i[!newGroups]
-#             newGroups <- i[newGroups]
-#             groupMatch <- list()
-#             for(j in newGroups) {
-#                 neighborhood <- newNeighborhood[[j-oldGroupNo]]
-#                 neighborhoodMatch <- sapply(oldNeighborhood[oldGroups], checkNeighborhood, newN=neighborhood, members=members)
-#                 oldGroups[neighborhoodMatch]
-#             }
-#         }
-#     }
-#     
-#     
-#     
-#     
-#     sequenceInfo$gene <- 1:nrow(sequenceInfo)
-#     neighbor <- sequenceInfo %>%
-#         group_by(contig, organism) %>%
-#         arrange(start, end) %>%
-#         mutate(backward=collectNeighbors(gene, 'b', flankSize), forward=collectNeighbors(gene, 'f', flankSize)) %>%
-#         mutate(backwards=rev(ifelse(strand==1, backward, forward)), forwards=ifelse(strand==1, forward, backward))
-#     
-#     mergedMembers <- lapply(newMembers, function(x) {
-#         which(oldMembers == x)
-#     })
-#     ggIndex <- seqToGeneGroup(pangenome)
-#     genes <- which(ggIndex %in% unlist(mergedMembers))
-#     geneGroups <- ggIndex[genes]
-#     trails <- trailGroups(genes, pangenome, flankSize)
-#     for(i in 1:length(mergedMembers)) {
-#         if(length(mergedMembers[[i]]) == 0) {
-#             mergedMembers[[i]] <- NA
-#         } else {
-#             geneTrail <- unlist(strsplit(c(neighbor$backward[i], neighbor$forward[i]), ';'))
-#             geneTrail <- as.integer(geneTrail[geneTrail != 'NA'])
-#             geneTrail <- unlist(mergedMembers[geneTrail])
-#             overlaps <- sapply(mergedMembers[[i]], function(x) {
-#                 groupTrail <- trails[geneGroups == x]
-#                 sum(unlist(groupTrail) %in% geneTrail)/(length(groupTrail)-0.01) # To favor big groups in tie
-#             })
-#             if(all(overlaps == 0)) {
-#                 mergedMembers[[i]] <- NA
-#             } else {
-#                 mergedMembers[[i]] <- mergedMembers[[i]][which.max(overlaps)]
-#             }
-#         }
-#     }
-#     mergedMembers <- unlist(mergedMembers)
-#     newGroups <- split(which(is.na(mergedMembers)), newMembers[is.na(mergedMembers)])
-#     mergedMembers[unlist(newGroups)] <- rep(1:length(newGroups), sapply(newGroups, length))+nGeneGroups(pangenome)
-#     mergedMembers
-}
-#' Merge gene groups into the largest
-#' 
-#' This function merges gene groups from two pangenomes choosing the largest
-#' group in the first pangenome when ties occur.
-#' 
-#' @param pangenome The pangenome to merge new gene groups into
-#' 
-#' @param members The grouping of gene groups across two pangenomes
-#' 
-#' @return As mergeNeighborhood
-#' 
-#' @noRd
-#' 
-mergeLargest <- function(pangenome, members) {
-    newMembers <- members[(nGeneGroups(pangenome) + 1):length(members)]
-    oldMembers <- members[1:nGeneGroups(pangenome)]
-    groupSizes <- groupInfo(pangenome)$nGenes
-    mergedMembers <- sapply(newMembers, function(x) {
-        links <- which(oldMembers == x)
-        if (length(links) == 0) {
-            NA
-        } else if (length(links) == 1) {
-            links
-        } else {
-            links[which.max(groupSizes[links])]
-        }
+matchGroups <- function(newGroups, oldGroups) {
+    finalGrouping <- rep(NA, length(unlist(newGroups)))
+    pendingGroups <- 1:length(newGroups)
+    bestGroups <- lapply(newGroups, function(group) {
+        table(oldGroups[group], useNA = 'no')
     })
-    newGroups <- split(which(is.na(mergedMembers)), 
-                       newMembers[is.na(mergedMembers)])
-    mergedMembers[unlist(newGroups)] <- 
-        rep(1:length(newGroups), 
-            sapply(newGroups, length)) + nGeneGroups(pangenome)
-    mergedMembers
+    memberGroup <- rep(1:length(bestGroups), lengths(bestGroups))
+    oldGroupInd <- as.integer(unlist(lapply(bestGroups, names)))
+    bestGroups <- unlist(bestGroups)
+    bestGroupOrder <- order(bestGroups, decreasing = TRUE)
+    for (i in 1:length(bestGroupOrder)) {
+        oldGroup <- oldGroupInd[bestGroupOrder[i]]
+        if (is.na(oldGroup)) next
+        newGroup <- memberGroup[bestGroupOrder[i]]
+        finalGrouping[newGroups[[newGroup]]] <- oldGroup
+        oldGroupInd[oldGroupInd == oldGroup] <- NA
+        oldGroupInd[memberGroup == newGroup] <- NA
+        pendingGroups[newGroup] <- NA
+    }
+    missingGroups <- !is.na(pendingGroups)
+    if (any(missingGroups)) {
+        nextGroup <- max(finalGrouping, na.rm = TRUE) + 1
+        addedGroups <- rep(seq(from = nextGroup, 
+                               length.out = sum(missingGroups)),
+                           lengths(newGroups[missingGroups]))
+        finalGrouping[unlist(newGroups[missingGroups])] <- addedGroups
+    }
+    finalGrouping
+}
+#' Reports the change in grouping
+#' 
+#' This function inspects gene grouping before and after a change and reports on
+#' the changes. If newGrouping is missing it reports on the last performed 
+#' comparison; optionally writing it to a file if 'file' is specified. 
+#' 
+#' @param newGrouping An integer vector as produced by 
+#' \code{\link{seqToGeneGroup}} with the grouping after the change
+#' 
+#' @param oldGrouping An integer vector as produced by 
+#' \code{\link{seqToGeneGroup}} with the grouping before the change
+#' 
+#' @param file A file to write 
+#' 
+#' @return This function is called for its side effects
+#' 
+#' @export
+#' 
+reportGroupChanges <- function(newGrouping, oldGrouping, file) {
+    if (missing(newGrouping)) {
+        if (is.null(.pkg_variables$report)) {
+            .pkg_variables$report <- c()
+        }
+        if (missing(file)) {
+            for (i in .pkg_variables$report) {
+                message(i)
+            }
+        } else {
+            write(.pkg_variables$report, file = file)
+        }
+        return(invisible())
+    }
+    changes <- newGrouping[1:length(oldGrouping)] != oldGrouping
+    if (sum(changes) == 0) return()
+    report <- c()
+    groups <- split(which(changes), oldGrouping[changes])
+    for (i in 1:length(groups)) {
+        movedTo <- split(groups[[i]], newGrouping[groups[[i]]])
+        for (j in 1:length(movedTo)) {
+            report <- c(report, paste0('Gene ', 
+                                       paste(movedTo[[j]], collapse = ', '), 
+                                       ' moved from group ', names(groups)[i], 
+                                       ' to ', names(movedTo)[j]))
+        }
+    }
+    if (length(report) > 50) {
+        message('More than 50 gene group changes. Use reportGroupChanges() to ',
+                'see them all, or reportGroupChanges(file="your/file.txt" to ',
+                'write them to a file.')
+    } else {
+        if (missing(file)) {
+            for (i in report) {
+                message(i)
+            }
+        } else {
+            write(report, file = file)
+        }
+    }
+    extraGroups <- unique(newGrouping[!newGrouping %in% unique(oldGrouping)])
+    removedGroups <- unique(oldGrouping[!oldGrouping %in% unique(newGrouping)])
+    if (length(extraGroups) != 0) {
+        extraMessage <- paste0(length(extraGroups), ' new groups added')
+        if (missing(file)) {
+            message(extraMessage)
+        } else {
+            write(extraMessage, file = file, append = TRUE)
+        }
+        report <- c(report, extraMessage)
+    }
+    if (length(removedGroups) != 0) {
+        removedMessage <- paste0(length(removedGroups), ' empty groups removed')
+        if (missing(file)) {
+            message(removedMessage)
+        } else {
+            write(removedMessage, file = file, append = TRUE)
+        }
+        report <- c(report, removedMessage)
+    }
+    assign('report', report, envir = .pkg_variables)
+    invisible()
+}
+#' Resize the number of rows in a data frame
+#' 
+#' This function allows for quick resizing of data.frames either shrinking by
+#' removing from the bottom, or growing by adding NA rows
+#' 
+#' @noRd
+#' 
+#' @importFrom dplyr bind_rows
+#' 
+resizeDataFrame <- function(df, nrows, newRowNames = NULL) {
+    if (nrows == nrow(df)) {
+        return(df)
+    } else if (nrows < nrow(df)) {
+        return(df[1:nrows, , drop = FALSE])
+    }
+    addedRows <- nrows - nrow(df)
+    appender <- data.frame(rep(NA, addedRows))
+    names(appender) <- names(df)[1]
+    newDF <- as.data.frame(bind_rows(df, appender))
+    if (is.null(newRowNames)) {
+        newRowNames <- as.character((nrow(df) + 1):(nrow(newDF)))
+    }
+    rownames(newDF) <- make.unique(c(rownames(df), newRowNames))
+    newDF
 }

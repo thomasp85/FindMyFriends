@@ -716,11 +716,27 @@ setGeneric('kmerLink', def = function(object, ...) {
 #' organisms to add. Grouping of the genes contained in this object can already
 #' exist, if not it will be done automatically.
 #'   
-#' @param ... parameters passed on to community detection algorithm.
+#' @param ... parameters passed on.
 #' 
 #' @return An object of the same class as object containing the new organisms
 #' from newSet and possible new gene groups from genes with no orthologues in 
 #' the original pangenome.
+#' 
+#' @examples 
+#' # Get base pangenome
+#' pg <- .loadPgExample(geneLoc = TRUE, withGroups = TRUE, 
+#'                      withNeighborhoodSplit = TRUE)
+#' # Get some additional genomes
+#' location <- tempdir()
+#' unzip(system.file('extdata', 'Mycoplasma.zip', package = 'FindMyFriends'),
+#'       exdir = location)
+#' genomeFiles <- list.files(location, full.names = TRUE, pattern = '*.fasta')[6:10]
+#' pg2 <- pangenome(genomeFiles, translated = TRUE, geneLocation = 'prodigal')
+#' 
+#' # Combine the two
+#' pg3 <- addGenomes(pg, pg2, nsParam = list(lowerLimit = 0.8))
+#' 
+#' @export
 #' 
 setGeneric('addGenomes', def = function(object, newSet, ...) {
     standardGeneric('addGenomes')
