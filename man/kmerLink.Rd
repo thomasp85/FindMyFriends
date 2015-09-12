@@ -9,7 +9,7 @@
 kmerLink(object, ...)
 
 \S4method{kmerLink}{pgVirtual}(object, lowMem, kmerSize, lowerLimit, rescale,
-  transform, pParam, nSplits, algorithm, ...)
+  transform, pParam, algorithm, ...)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -30,8 +30,6 @@ computation speed}
 
 \item{pParam}{An optional BiocParallelParam object that defines the workers
 used for parallelisation.}
-
-\item{nSplits}{The number of jobs to split the computations into}
 
 \item{algorithm}{The name of the community detection algorithm from igraph to
 use for gene grouping. See \code{\link[igraph]{communities}} for an overview.

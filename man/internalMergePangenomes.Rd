@@ -13,14 +13,16 @@
 \usage{
 mergePangenomes(pg1, pg2, ...)
 
-\S4method{mergePangenomes}{pgFull,pgFull}(pg1, pg2, geneGrouping, groupInfo)
+\S4method{mergePangenomes}{pgFull,pgFull}(pg1, pg2, geneGrouping, groupInfo,
+  ...)
 
 \S4method{mergePangenomes}{pgFullLoc,pgFullLoc}(pg1, pg2, geneGrouping,
   groupInfo)
 
-\S4method{mergePangenomes}{pgInMem,pgInMem}(pg1, pg2, geneGrouping, groupInfo)
+\S4method{mergePangenomes}{pgInMem,pgInMem}(pg1, pg2, geneGrouping, groupInfo,
+  ...)
 
-\S4method{mergePangenomes}{pgLM,pgLM}(pg1, pg2, geneGrouping, groupInfo)
+\S4method{mergePangenomes}{pgLM,pgLM}(pg1, pg2, geneGrouping, groupInfo, ...)
 
 \S4method{mergePangenomes}{pgLMLoc,pgLMLoc}(pg1, pg2, geneGrouping, groupInfo)
 }

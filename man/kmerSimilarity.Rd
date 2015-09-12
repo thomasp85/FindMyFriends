@@ -9,7 +9,7 @@
 kmerSimilarity(object, ...)
 
 \S4method{kmerSimilarity}{pgVirtual}(object, lowMem, kmerSize, lowerLimit,
-  rescale, transform, pParam, nSplits)
+  rescale, transform, pParam)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -30,8 +30,6 @@ computation speed}
 
 \item{pParam}{An optional BiocParallelParam object that defines the workers
 used for parallelisation.}
-
-\item{nSplits}{The number of jobs to split the computations into}
 }
 \value{
 A matrix (sparse or normal) with cosine similarity for each gene pair

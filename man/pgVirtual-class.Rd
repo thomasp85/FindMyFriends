@@ -74,8 +74,8 @@ them to plug into FindMyFriends algorithms:
  seqToGeneGroup method (i.e. an integer vector with each element giving the
  group of the corresponding gene). This method \strong{must} include a
  \code{callNextMethod(object)} as the last line.}
- \item{mergeGenomes(pg1, pg2)}{Merge pg2 into pg1 preserving the indexing in
- pg1 and appending and modifying the indexing of pg2.}
+ \item{mergePangenomes(pg1, pg2)}{Merge pg2 into pg1 preserving the indexing
+ in pg1 and appending and modifying the indexing of pg2.}
 }
 
 Additionally subclasses can override the following methods for performance
