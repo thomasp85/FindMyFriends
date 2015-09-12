@@ -21,12 +21,15 @@ NULL
 #' Between 0 and 1 it describes a percentage. Above 1 it describes a fixed 
 #' length
 #' 
+#' @param guideGroups An integer vector with prior grouping that, all else being
+#' equal, should be prioritized. Used internally.
+#' 
 #' @importFrom dplyr %>% arrange group_by do mutate ungroup
 #' 
 setMethod(
     'neighborhoodSplit', 'pgVirtualLoc',
     function(object, flankSize, minFlank, forceParalogues, kmerSize, lowerLimit, 
-             maxLengthDif) {
+             maxLengthDif, guideGroups = NULL) {
         .fillDefaults(defaults(object))
         
         pending <- rep(TRUE, nGeneGroups(object))
@@ -37,7 +40,8 @@ setMethod(
             if (!lastCall) {
                 hadChanges <- FALSE
                 thisRound <- which(pending)
-                neighbors <- trailGroups2(thisRound, currentGrouping, object, flankSize)
+                neighbors <- trailGroups2(thisRound, currentGrouping, object, 
+                                          flankSize)
             }
             for (i in seq_along(thisRound)) {
                 if (lastCall || 
@@ -57,7 +61,8 @@ setMethod(
                         lowerLimit = lowerLimit,
                         minFlank = as.integer(containsParalogues[i]),
                         forceParalogues = forceParalogues,
-                        maxLengthDif = maxLengthDif
+                        maxLengthDif = maxLengthDif,
+                        guideGroups = guideGroups
                     )
                     if (length(newGroup) != 1) {
                         newGroupNames <- seq(max(currentGrouping) + 1, 
@@ -221,11 +226,11 @@ neighborhoodSimilarity <- function(geneGroup, minFlank = 1,
 #' 
 #' @noRd
 #' 
-neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLengthDif, ...) {
+neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, 
+                              maxLengthDif, guideGroups, ...) {
     if (length(geneGroup$genes) == 1) return(list(geneGroup$genes))
-    
     nMat <- neighborhoodSimilarity(geneGroup, ...)
-    seqs <- genes(pangenome, subset=geneGroup$genes)
+    seqs <- genes(pangenome, subset = geneGroup$genes)
     sMat <- as.matrix(linearKernel(
         getExRep(seqs, spectrumKernel(kmerSize)), 
         sparse = FALSE,  # To avoid strange crash on AWS. Should be fixed in next kebabs
@@ -248,6 +253,13 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
     nMat <- melt(nMat, varnames = c('from', 'to'), value.name = 'nWeight')
     sMat <- melt(sMat, varnames = c('from', 'to'), value.name = 'sWeight')
     aMat <- merge(nMat, sMat)
+    if (!is.null(guideGroups)) {
+        guide <- guideGroups[geneGroup$genes]
+        gMat <- outer(guide, guide, `==`)
+        dimnames(gMat) <- list(geneGroup$genes, geneGroup$genes)
+        gMat <- melt(gMat, varnames = c('from', 'to'), value.name = 'gWeight')
+        aMat <- merge(aMat, gMat)
+    }
     aMat <- aMat[aMat$nWeight != 0 & aMat$sWeight != 0,]
     
     gr <- graph_from_data_frame(aMat, directed = FALSE, 
@@ -292,17 +304,22 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, maxLen
 #' @return A character vector with the name of the vertices included in the 
 #' clique
 #' 
-#' @importFrom igraph degree gorder V coreness E largest_cliques as_edgelist edge_attr
+#' @importFrom igraph degree gorder V coreness E largest_cliques as_edgelist edge_attr edge_attr_names
 #' 
 #' @noRd
 #' 
 extractClique <- function(gr, nDistinct) {
     if (all(degree(gr) == gorder(gr) - 1)) return(V(gr)$name)
     
+    if (!'gWeight' %in% edge_attr_names(gr)) {
+        E(gr)$gWeight <- FALSE
+    }
+    
     if (gorder(gr) > nDistinct && 
         sort(coreness(gr), decreasing = TRUE)[nDistinct] > nDistinct - 1) {
         edges <- E(gr)
-        edgeOrder <- order(edges$nWeight, edges$sWeight)
+        edgeOrder <- order(edges$nWeight, edges$sWeight, edges$gWeight, 
+                           na.last = FALSE)
         lastUpper <- length(edgeOrder)
         lastLower <- 0
         breakPoint <- lastLower + floor((lastUpper - lastLower)/2)
@@ -329,11 +346,18 @@ extractClique <- function(gr, nDistinct) {
     cliques[lengths(cliques) == 1] <- NULL
     cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
         edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
-        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]))
+        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]), 
+          mean(edgelist$gWeight[edges], na.rm = TRUE))
     }))
     bestClique <- which(cliqueStat[,1] == max(cliqueStat[,1]))
     if (length(bestClique) != 1) {
-        bestClique <- bestClique[which.max(cliqueStat[bestClique, 2])]
+        bestClique <- bestClique[which(cliqueStat[bestClique, 2] == 
+                                           max(cliqueStat[bestClique, 2]))]
+        if (length(bestClique) != 1) {
+            best <- which.max(cliqueStat[bestClique, 3])
+            if (length(best) == 0) best <- 1
+            bestClique <- bestClique[best]
+        }
     }
     V(gr)$name[cliques[[bestClique]]]
 }
