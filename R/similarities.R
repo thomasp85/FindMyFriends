@@ -19,24 +19,20 @@ NULL
 #' 
 #' @param pParam An optional BiocParallelParam object that defines the workers 
 #' used for parallelisation.
-#'   
-#' @param nSplits The number of jobs to split the computations into
 #' 
 #' @importFrom kebabs spectrumKernel getExRep linearKernel
-#' @importFrom BiocParallel SerialParam
+#' @importFrom BiocParallel SerialParam bpworkers
 #' 
 setMethod(
     'kmerSimilarity', 'pgVirtual',
-    function(object, lowMem, kmerSize, lowerLimit, rescale, transform, pParam, 
-             nSplits) {
+    function(object, lowMem, kmerSize, lowerLimit, rescale, transform, pParam) {
         .fillDefaults(defaults(object))
         
         if (lowMem) {
             if (missing(pParam)) {
                 pParam <- SerialParam()
-                nSplits <- length(object)
             }
-            res <- lkParallelLM(object, kmerSize, pParam, nSplits, 
+            res <- lkParallelLM(object, kmerSize, pParam, bpworkers(pParam), 
                                 lowerLimit = lowerLimit)
         } else {
             kernel <- spectrumKernel(kmerSize)
@@ -45,7 +41,8 @@ setMethod(
                 res <- linearKernel(er, sparse = TRUE, diag = FALSE, 
                                     lowerLimit = lowerLimit)
             } else {
-                res <- lkParallel(er, pParam, nSplits, lowerLimit = lowerLimit)
+                res <- lkParallel(er, pParam, bpworkers(pParam), 
+                                  lowerLimit = lowerLimit)
             }
         }
         transformSim(res, lowerLimit, rescale, transform)
