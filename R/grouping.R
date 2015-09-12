@@ -98,9 +98,8 @@ setMethod(
 setMethod(
     'manualGrouping', c('pgVirtual', 'list'),
     function(object, groups) {
-        groups <- groups[order(sapply(groups, length), decreasing = TRUE)]
-        members <- rep(1:length(groups), sapply(groups, length))
-        members[unlist(groups)] <- as.integer(members)
+        groups <- groups[order(lengths(groups), decreasing = TRUE)]
+        members <- convertGrouping(groups)
         
         manualGrouping(object, members)
     }

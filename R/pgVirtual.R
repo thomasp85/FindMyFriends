@@ -52,8 +52,8 @@ NULL
 #'  seqToGeneGroup method (i.e. an integer vector with each element giving the
 #'  group of the corresponding gene). This method \strong{must} include a 
 #'  \code{callNextMethod(object)} as the last line.}
-#'  \item{mergeGenomes(pg1, pg2)}{Merge pg2 into pg1 preserving the indexing in
-#'  pg1 and appending and modifying the indexing of pg2.}
+#'  \item{mergePangenomes(pg1, pg2)}{Merge pg2 into pg1 preserving the indexing 
+#'  in pg1 and appending and modifying the indexing of pg2.}
 #' }
 #' 
 #' Additionally subclasses can override the following methods for performance
@@ -185,7 +185,8 @@ setClass(
 setMethod(
     "defaults", 'pgVirtual', 
     function(object) {
-        object@.settings[names(object@.settings) != 'translated']
+        object@.settings[!names(object@.settings) %in% c('translated', 
+                                                         'nextGroup')]
     }
 )
 #' @describeIn defaults Set defaults for pgVirtual subclass objects
@@ -196,7 +197,11 @@ setMethod(
         if ('translated' %in% names(value)) {
             stop('Translational status cannot be redefined')
         }
+        if ('nextGroup' %in% names(value)) {
+            stop('Group names are handled automatically')
+        }
         value$translated <- translated(object)
+        value$nextGroup <- object@.settings$nextGroup
         object@.settings <- value
         object
     }
@@ -228,6 +233,13 @@ setMethod(
             'organisms\n')
         if (hasGeneGroups(object)) {
             cat(nGeneGroups(object), 'gene groups defined\n\n')
+            groupSizes <- groupDistribution(object)
+            cat('     Core|', createProgress(groupSizes['Core']), '\n', 
+                sep = '')
+            cat('Accessory|', createProgress(groupSizes['Accessory']), '\n', 
+                sep = '')
+            cat('Singleton|', createProgress(groupSizes['Singleton']), '\n\n', 
+                sep = '')
         } else {
             cat('Gene groups not yet defined\n\n')
         }
@@ -309,12 +321,14 @@ setMethod(
             GO = NA, 
             EC = NA, 
             nOrg = rep(0, max(seqToGeneGroup)), 
-            nGenes = rep(0, max(seqToGeneGroup))
+            nGenes = rep(0, max(seqToGeneGroup)),
+            row.names = paste0(defaults(object)$groupPrefix,
+                              1:max(seqToGeneGroup))
         )
         groupInfo[as.integer(names(groups)), 
                   c('group', 'nOrg', 'nGenes')] <- groupInfoCalc
-        rownames(groupInfo) <- as.character(1:nrow(groupInfo))
         groupInfo(object) <- groupInfo
+        object@.settings$nextGroup <- max(seqToGeneGroup) + 1
         object
     }
 )
@@ -788,4 +802,38 @@ pgSim <- function(pangenome) {
 pgDist <- function(pangenome, method) {
     if (!hasGeneGroups(pangenome)) stop('Gene groups must be defined')
     dist(t(pgMatrix(pangenome)), method = method)
+}
+#' Calculate percent distribution of gene groups
+#' 
+#' This function simply returns the percentage of Core, Accessory and Singleton
+#' gene groups in a pangenome.
+#' 
+#' @param pangenome A pgVirtual subclass
+#' 
+#' @return A named numeric vector
+#' 
+#' @noRd
+#' 
+groupDistribution <- function(pangenome) {
+    ans <- c(Core = 0, Accessory = 0, Singleton = 0)
+    gDist <- table(groupInfo(pangenome)$group)
+    gDist <- gDist/sum(gDist) * 100
+    ans[names(gDist)] <- gDist
+    ans
+}
+#' Create a horizontal progress bar scaled to 50
+#' 
+#' This function create a string of '=' and possibly ':' (in case of uneven
+#' numbers)
+#' 
+#' @param percent The percentage to create the progress bar for
+#' 
+#' @return A character string
+#' 
+#' @noRd
+#' 
+createProgress <- function(percent) {
+    equals <- round(percent)/2
+    half <- round(percent) %% 2 != 0
+    paste(c(rep('=', equals), if (half) ':' else ''), collapse = '')
 }

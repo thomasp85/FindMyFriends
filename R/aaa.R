@@ -106,7 +106,6 @@ globalVariables(
     }
     obj
 }
-
 #' Assign object defaults to missing values
 #' 
 #' This function takes care of investigating the enclosing functions arguments
@@ -1077,15 +1076,63 @@ transformSim <- function(similarity, low, rescale, transform) {
 #' @noRd
 #' 
 getPgMatrix <- function(object) {
-    if (!hasGeneGroups(object)) {
-        return(matrix(nrow = 0, ncol = nOrganisms(object), 
-                      dimnames = list(NULL, orgNames(object))))
+    calcPgMatrix(seqToOrg(object), seqToGeneGroup(object), groupNames(object),
+                 orgNames(object))
+}
+#' Calculate pangenome matrix directly
+#' 
+#' This function calculates a pangenome matrix based on the basic information
+#' available in a pgVirtual subclass. Depending on the class implementation,
+#' better approaches might be available, but this approach is ensured to be 
+#' possible.
+#' 
+#' @param seqToOrg An integer vector with organism membership
+#' 
+#' @param seqToGeneGroup An integer vector with gene group membership
+#' 
+#' @param groupNames The names of the gene groups
+#' 
+#' @param orgNames The names of the organisms
+#' 
+#' @return A matrix with number of rows equal to the number of gene groups and 
+#' number of columns equal to the number of organisms. Each cell holds the count
+#' of genes for the combination.
+#' 
+#' @importFrom reshape2 acast
+#' 
+#' @noRd
+#' 
+calcPgMatrix <- function(seqToOrg, seqToGeneGroup, groupNames, orgNames) {
+    if (length(seqToGeneGroup) == 0) {
+        return(matrix(nrow = 0, ncol = length(orgNames), 
+                      dimnames = list(NULL, orgNames)))
     }
-    matRes <- matrix(0, ncol = nOrganisms(object), nrow = nGeneGroups(object), 
-                     dimnames = list(groupNames(object), orgNames(object)))
-    pgmat <- acast(data.frame(seqToOrg = seqToOrg(object), 
-                              seqToGeneGroup = seqToGeneGroup(object)), 
+    matRes <- matrix(0, ncol = length(orgNames), nrow = length(groupNames), 
+                     dimnames = list(groupNames, orgNames))
+    pgmat <- acast(data.frame(seqToOrg = seqToOrg, 
+                              seqToGeneGroup = seqToGeneGroup), 
                    seqToGeneGroup ~ seqToOrg, length, value.var = 'seqToOrg')
     matRes[as.integer(rownames(pgmat)), as.integer(colnames(pgmat))] <- pgmat
     matRes
+}
+#' Convert between list and vector type indexing
+#' 
+#' This function converts back and forth between storing grouping as a list of
+#' integer vectors with members of each groups and one integer vector with
+#' group membership for each element.
+#' 
+#' @param groups Integer vector or list of integer vector
+#' 
+#' @return Depending on the input. The reverse of the input
+#' 
+#' @noRd
+#' 
+convertGrouping <- function(groups) {
+    if(is.list(groups)) {
+        members <- rep(1:length(groups), sapply(groups, length))
+        members[unlist(groups)] <- as.integer(members)
+    } else {
+        members <- split(1:length(groups), groups)
+    }
+    members
 }
