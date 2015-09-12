@@ -13,6 +13,10 @@ NULL
 setMethod(
     'groupStat', 'pgVirtual',
     function(object, vicinity = 1) {
+        oldOptions <- options(dplyr.show_progress = FALSE)
+        on.exit({
+            options(oldOptions)
+        })
         if (hasGeneInfo(object)) {
             gInfo <- geneLocation(object)
             gInfo$width <- geneWidth(object)
@@ -299,6 +303,10 @@ setMethod(
 #' @noRd
 #' 
 trailGroups <- function(genes, pg, vicinity) {
+    oldOptions <- options(dplyr.show_progress = FALSE)
+    on.exit({
+        options(oldOptions)
+    })
     info <- geneLocation(pg)
     locations <- unique(paste(seqToOrg(pg)[genes], info$contig[genes], 
                               sep = '>'))
