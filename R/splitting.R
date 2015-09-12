@@ -390,6 +390,10 @@ extractClique2 <- function(gr, nDistinct) {
 #' @noRd
 #' 
 trailGroups2 <- function(groups, currentGrouping, pg, vicinity) {
+    oldOptions <- options(dplyr.show_progress = FALSE)
+    on.exit({
+        options(oldOptions)
+    })
     genes <- which(currentGrouping %in% groups)
     info <- geneLocation(pg)
     info$gene <- 1:nrow(info)
