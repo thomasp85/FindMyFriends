@@ -75,7 +75,9 @@ setClass(
     prototype = list(
         seqToOrg = integer(),
         seqToGeneGroup = integer(),
-        pangenome = matrix(0L, nrow = 0, ncol = 0)
+        matrix = matrix(0L, nrow = 0, ncol = 0),
+        groupInfo = data.frame(),
+        orgInfo = data.frame()
     )
 )
 
