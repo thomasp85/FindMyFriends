@@ -479,6 +479,13 @@ matchGroups <- function(newGroups, oldGroups) {
 #' 
 #' @return This function is called for its side effects
 #' 
+#' @examples 
+#' # Show latest changes in grouping
+#' reportGroupChanges()
+#' 
+#' # Alternatively write it to a file
+#' reportGroupChanges(file = tempfile())
+#' 
 #' @export
 #' 
 reportGroupChanges <- function(newGrouping, oldGrouping, file) {

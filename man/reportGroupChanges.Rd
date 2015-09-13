@@ -23,4 +23,11 @@ This function inspects gene grouping before and after a change and reports on
 the changes. If newGrouping is missing it reports on the last performed
 comparison; optionally writing it to a file if 'file' is specified.
 }
+\examples{
+# Show latest changes in grouping
+reportGroupChanges()
+
+# Alternatively write it to a file
+reportGroupChanges(file = tempfile())
+}
 
