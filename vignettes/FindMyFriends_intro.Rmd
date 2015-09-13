@@ -180,7 +180,7 @@ from blasting two sequences against each other, the cosine similarity for the
 kmer feature vectors of the two sequences is used.
 
 ```{r, echo=TRUE, eval=TRUE}
-mycoSim <- kmerSimilarity(mycoPan, lowerLimit=0.8)
+mycoSim <- kmerSimilarity(mycoPan, lowerLimit=0.8, rescale=FALSE)
 ```
 
 The result of `kmerSimilarity()` will be a similarity matrix which can then be
