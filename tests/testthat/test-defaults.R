@@ -7,7 +7,7 @@ defaultTest <- function(x, defaults) {
 }
 
 test_that("Setter and getter works", {
-    expect_equal(defaults(pg)$kmerSize, defaultArgs$kmerSize)
+    expect_equal(defaults(pg)$kmerSize, .pkg_variables$defaults$kmerSize)
     defaults(pg)$kmerSize <- 1
     expect_equal(defaults(pg)$kmerSize, 1)
     defaults(pg)$newDef <- 'test'
