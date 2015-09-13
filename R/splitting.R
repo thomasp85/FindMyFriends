@@ -227,7 +227,7 @@ neighborhoodSimilarity <- function(geneGroup, minFlank = 1,
 #' @noRd
 #' 
 neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, 
-                              maxLengthDif, guideGroups, ...) {
+                              maxLengthDif, guideGroups = NULL, ...) {
     if (length(geneGroup$genes) == 1) return(list(geneGroup$genes))
     nMat <- neighborhoodSimilarity(geneGroup, ...)
     seqs <- genes(pangenome, subset = geneGroup$genes)
