@@ -31,8 +31,11 @@ setMethod(
         if (lowMem) {
             if (missing(pParam)) {
                 pParam <- SerialParam()
+                nSplits <- nOrganisms(object)
+            } else {
+                nSplits <- bpworkers(pParam)
             }
-            res <- lkParallelLM(object, kmerSize, pParam, bpworkers(pParam), 
+            res <- lkParallelLM(object, kmerSize, pParam, nSplits, 
                                 lowerLimit = lowerLimit)
         } else {
             kernel <- spectrumKernel(kmerSize)
