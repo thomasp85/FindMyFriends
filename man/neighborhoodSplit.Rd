@@ -31,6 +31,9 @@ be set to 0}
 \item{maxLengthDif}{The maximum deviation in sequence length to allow.
 Between 0 and 1 it describes a percentage. Above 1 it describes a fixed
 length}
+
+\item{guideGroups}{An integer vector with prior grouping that, all else being
+equal, should be prioritized. Used internally.}
 }
 \value{
 An object with the same class as object containing the new grouping.
