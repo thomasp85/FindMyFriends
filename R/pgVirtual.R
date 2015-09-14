@@ -52,8 +52,10 @@ NULL
 #'  seqToGeneGroup method (i.e. an integer vector with each element giving the
 #'  group of the corresponding gene). This method \strong{must} include a 
 #'  \code{callNextMethod(object)} as the last line.}
-#'  \item{mergePangenomes(pg1, pg2)}{Merge pg2 into pg1 preserving the indexing 
-#'  in pg1 and appending and modifying the indexing of pg2.}
+#'  \item{mergePangenomes(pg1, pg2, geneGrouping, groupInfo)}{Merge pg2 into pg1 
+#'  preserving the indexing in pg1 and appending and modifying the indexing of 
+#'  pg2. The geneGrouping argument is the new grouping of genes and groupInfo
+#'  the new group info for the groups.}
 #' }
 #' 
 #' Additionally subclasses can override the following methods for performance
@@ -210,6 +212,8 @@ setMethod(
 #' organisms it contain
 #' 
 #' @param x A pgVirtual subclass object
+#' 
+#' @return Length returns an integer giving the number of organisms
 #' 
 setMethod(
     'length', 'pgVirtual',
