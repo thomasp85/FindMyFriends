@@ -84,24 +84,8 @@ setMethod(
         manualGrouping(object, match(currentGrouping, unique(currentGrouping)))
     }
 )
-# setMethod(
-#     'similaritySplit', 'pgVirtual',
-#     function(object, forceParalogues, kmerSize, lowerLimit) {
-#         if(missing(kmerSize)) kmerSize <- object@.settings$kmerSize
-#         if(missing(lowerLimit)) lowerLimit <- object@.settings$lowerLimit
-#         
-#         geneInfo <- data.frame(
-#             1:nGenes(object), 
-#             organism=orgNames(object)[seqToOrg(object)], 
-#             geneGroup=groupNames(object)[seqToGeneGroup(object)]
-#         )
-#         
-#         geneInfo
-#     }
-# )
 
 ### SPLITTING HELPER FUNCTIONS
-
 
 #' Convert a sorted vector of groups to a vector of neighbors
 #' 
