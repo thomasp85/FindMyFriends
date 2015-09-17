@@ -1347,3 +1347,8 @@ setGeneric('setOrgInfo', def = function(object, ...) {
 setGeneric('mergePangenomes', def = function(pg1, pg2, ...) {
     standardGeneric('mergePangenomes')
 })
+#' Split gene groups based on similarity
+#' 
+setGeneric('kmerSplit', def = function(object, ...) {
+    standardGeneric('kmerSplit')
+})
