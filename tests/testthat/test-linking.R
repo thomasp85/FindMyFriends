@@ -9,5 +9,9 @@ test_that("kmerLink works", {
     pg3 <- kmerLink(pg, lowerLimit=0.8, pParam=BiocParallel::SerialParam())
     expect_equal(groupInfo(pg2)$paralogue, groupInfo(pg3)$paralogue)
     expect_equal(length(unique(groupInfo(pg2)$paralogue)), 3038)
-    expect_equal(groupInfo(pg2)$paralogue[1:6], c(2, 2, 1, 116, 55, 117))
+    if (R.version$arch == 'i386') {
+        expect_equal(groupInfo(pg2)$paralogue[1:6], c(2, 2, 1, 111, 55, 112))
+    } else {
+        expect_equal(groupInfo(pg2)$paralogue[1:6], c(2, 2, 1, 116, 55, 117))
+    }
 })
