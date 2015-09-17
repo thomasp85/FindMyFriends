@@ -84,8 +84,76 @@ setMethod(
         manualGrouping(object, match(currentGrouping, unique(currentGrouping)))
     }
 )
+#' @importFrom BiocParallel SerialParam bplapply
+#' 
+setMethod(
+    'kmerSplit', 'pgVirtual',
+    function(object, kmerSize, lowerLimit, pParam) {
+        .fillDefaults(defaults(object))
+        
+        if (missing(pParam)) pParam <- SerialParam()
+        groups <- split(1:nGenes(object), seqToGeneGroup(object))
+        newGroups <- bplapply(groups, kmerSplitting, pangenome = object, 
+                              kmerSize = kmerSize, lowerLimit = lowerLimit, 
+                              BPPARAM = pParam)
+        newGroups <- unlist(newGroups, recursive = FALSE)
+        manualGrouping(object, newGroups)
+    }
+)
 
 ### SPLITTING HELPER FUNCTIONS
+
+#' Split a group of genes based on kmer similarity
+#' 
+#' This function splits a set of group into subgroups based on their sequence 
+#' similarities and optionally lengths
+#' 
+#' @param i The indexes of the genes in the group
+#' 
+#' @param kmerSize The word size used for cosine similarity
+#' 
+#' @param lowerLimit The lower limit below which sequences are deemed unsimilar
+#' 
+#' @param maxLegthDif The maximum deviation in sequence length to allow. 
+#' Between 0 and 1 it describes a percentage. Above 1 it describes a fixed 
+#' length
+#' 
+#' @return A list of integer vectors with members of the new groups
+#' 
+#' @importFrom kebabs getExRep linearKernel spectrumKernel
+#' @importFrom Biostrings width
+#' @importFrom reshape2 melt
+#' @importFrom igraph graph_from_data_frame components V
+#' 
+#' @noRd
+#' 
+kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
+    geneSeqs <- genes(pangenome, subset = i)
+    er <- getExRep(geneSeqs, spectrumKernel(kmerSize))
+    lkMat <- linearKernel(er, sparse = TRUE, diag = FALSE, 
+                          lowerLimit = lowerLimit)
+    if (!is.null(maxLengthDif)) {
+        if (maxLengthDif < 1) {
+            lMat <- outer(width(geneSeqs), width(geneSeqs), 
+                          function(a, b) {
+                              abs(a - b)/pmax(a, b)
+                          }) < maxLengthDif
+        } else {
+            lMat <- outer(width(geneSeqs), width(geneSeqs), 
+                          function(a, b) {abs(a - b)}) < maxLengthDif
+        }
+        lkMat[!lMat] <- 0
+    }
+    dimnames(lkMat) <- list(i, i)
+    lkMat <- melt(lkMat, varnames = c('from', 'to'), value.name = 'lkWeight')
+    
+    gr <- graph_from_data_frame(lkMat, directed = FALSE, vertices = i)
+    
+    members <- components(gr)
+    
+    origInd <- as.integer(V(gr)$name)
+    lapply(members, function(x) origInd[x])
+}
 
 #' Convert a sorted vector of groups to a vector of neighbors
 #' 
