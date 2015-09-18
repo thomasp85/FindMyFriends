@@ -664,6 +664,8 @@ setGeneric('kmerSimilarity', def = function(object, ...) {
 #' 
 #' @return An object with the same class as object containing the new grouping.
 #' 
+#' @family group-splitting
+#' 
 #' @examples 
 #' testPG <- .loadPgExample(geneLoc=TRUE, withGroups=TRUE)
 #' 
@@ -1346,4 +1348,32 @@ setGeneric('setOrgInfo', def = function(object, ...) {
 #' 
 setGeneric('mergePangenomes', def = function(pg1, pg2, ...) {
     standardGeneric('mergePangenomes')
+})
+#' Split gene groups based on similarity
+#' 
+#' This function splits up gene groups based on cosine similarity of kmer 
+#' feature vectors. It uses hard splitting based on a similarity cutoff where
+#' unconnected components constitutes new groups. Unlike 
+#' \code{\link{neighborhoodSplit}}, paralogues cannot be forced into separate 
+#' groups as information needed for this is not present.
+#' 
+#' @param object A pgVirtual subclass
+#' 
+#' @param ... Arguments passed on
+#' 
+#' @return A new pgVirtual subclass object of the same class as 'object'
+#' 
+#' @family group-splitting
+#' 
+#' @examples 
+#' # Get a grouped pangenome
+#' pg <- .loadPgExample(withGroups = TRUE)
+#' 
+#' # Split groups by similarity
+#' pg <- kmerSplit(pg, lowerLimit = 0.8)
+#' 
+#' @export
+#' 
+setGeneric('kmerSplit', def = function(object, ...) {
+    standardGeneric('kmerSplit')
 })
