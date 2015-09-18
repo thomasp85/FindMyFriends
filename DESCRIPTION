@@ -24,6 +24,8 @@ Imports:
     tools,
     dplyr,
     IRanges,
+    GenomicRanges,
+    GenomeInfoDb,
     Biostrings,
     S4Vectors,
     kebabs,
@@ -62,5 +64,6 @@ Collate:
     'investigating.R'
     'linking.R'
     'modifying.R'
+    'parsers.R'
     'similarities.R'
     'splitting.R'
