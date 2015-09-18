@@ -160,14 +160,13 @@ kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
         lkMat[!lMat] <- 0
     }
     dimnames(lkMat) <- list(i, i)
-    lkMat <- melt(lkMat, varnames = c('from', 'to'), value.name = 'lkWeight')
     
-    gr <- graph_from_data_frame(lkMat, directed = FALSE, vertices = i)
+    gr <- graph_from_adjacency_matrix(lkMat, mode = 'lower', diag = FALSE, 
+                                      weighted = TRUE)
     
-    members <- components(gr)
+    members <- components(gr)$membership
     
-    origInd <- as.integer(V(gr)$name)
-    lapply(members, function(x) origInd[x])
+    split(as.integer(names(members)), members)
 }
 
 #' Convert a sorted vector of groups to a vector of neighbors
