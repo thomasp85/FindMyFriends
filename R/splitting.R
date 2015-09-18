@@ -103,14 +103,15 @@ setMethod(
 #' 
 setMethod(
     'kmerSplit', 'pgVirtual',
-    function(object, kmerSize, lowerLimit, pParam) {
+    function(object, kmerSize, lowerLimit, maxLengthDif, pParam) {
         .fillDefaults(defaults(object))
         
         if (missing(pParam)) pParam <- SerialParam()
+        
         groups <- split(1:nGenes(object), seqToGeneGroup(object))
         newGroups <- bplapply(groups, kmerSplitting, pangenome = object, 
                               kmerSize = kmerSize, lowerLimit = lowerLimit, 
-                              BPPARAM = pParam)
+                              maxLengthDif = maxLengthDif, BPPARAM = pParam)
         newGroups <- unlist(newGroups, recursive = FALSE)
         manualGrouping(object, newGroups)
     }
