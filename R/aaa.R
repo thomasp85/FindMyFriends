@@ -749,19 +749,19 @@ rbindMat <- function(x, ..., fill = NA) {
 #' This function is used to handle the multiple ways gene location can be 
 #' supplied in. Furthermore it checks the length and columns of the output.
 #' 
-#' @param format A data.frame, a list of data.frames, a function taking gene
-#' names as the sole input, or 'prodigal'. If it is a data.frame it will be 
-#' passed on as-is. If it is a list of data.frames they will be rbinded 
-#' together. If it is a function the function will be called with the gene names
-#' as input. If it is 'prodigal' the function prodigalParse will be called with
-#' the gene names as input. Other named formats (e.g. 'prodigal') might be added
-#' in the future.
-#' 
+#' @param format A data.frame, a GRanges object, a list of data.frames, a 
+#'   function taking gene names as the sole input, or 'prodigal'. If it is a 
+#'   data.frame it will be passed on as-is. If it is a list of data.frames they 
+#'   will be rbinded together. If it is a function the function will be called 
+#'   with the gene names as input. If it is 'prodigal' the function 
+#'   prodigalParse will be called with the gene names as input. Other named 
+#'   formats (e.g. 'prodigal') might be added in the future.
+#'   
 #' @param desc The gene names of the genes to get gene location from
-#' 
+#'   
 #' @return A data.frame with number of rows equal to length of desc and the 
-#' columns 'start', 'end', 'contig' and 'strand'.
-#' 
+#'   columns 'start', 'end', 'contig' and 'strand'.
+#'   
 #' @noRd
 #' 
 getSeqInfo <- function(format, desc) {
@@ -776,6 +776,10 @@ getSeqInfo <- function(format, desc) {
     
     if (inherits(format, 'data.frame')) {
         seqInfo <- format
+    } else if (inherits(format, 'GRanges')) {
+        seqInfo <- as.data.frame(format)[, c('seqnames', 'start', 'end', 
+                                             'strand')]
+        names(seqInfo)[1] <- 'contig'
     } else if (inherits(format, 'list')) {
         seqInfo <- do.call(rbind, format)
     } else if (inherits(format, 'function')) {
