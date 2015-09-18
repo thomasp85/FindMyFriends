@@ -84,6 +84,21 @@ setMethod(
         manualGrouping(object, match(currentGrouping, unique(currentGrouping)))
     }
 )
+#' @describeIn kmerSplit Kmer similarity based group splitting for pgVirtual 
+#' subclasses
+#' 
+#' @param kmerSize The length of kmers used for sequence similarity
+#' 
+#' @param lowerLimit The lower limit of sequence similarity below which it will
+#' be set to 0
+#' 
+#' @param maxLengthDif The maximum deviation in sequence length to allow. 
+#' Between 0 and 1 it describes a percentage. Above 1 it describes a fixed 
+#' length
+#' 
+#' @param pParam An optional BiocParallelParam object that defines the workers 
+#' used for parallelisation.
+#' 
 #' @importFrom BiocParallel SerialParam bplapply
 #' 
 setMethod(
@@ -122,8 +137,7 @@ setMethod(
 #' 
 #' @importFrom kebabs getExRep linearKernel spectrumKernel
 #' @importFrom Biostrings width
-#' @importFrom reshape2 melt
-#' @importFrom igraph graph_from_data_frame components V
+#' @importFrom igraph graph_from_adjacency_matrix components V
 #' 
 #' @noRd
 #' 

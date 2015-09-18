@@ -66,4 +66,8 @@ testPG <- .loadPgExample(geneLoc=TRUE, withGroups=TRUE)
 
 testPG <- neighborhoodSplit(testPG, lowerLimit=0.75)
 }
+\seealso{
+Other group-splitting: \code{\link{kmerSplit}},
+  \code{\link{kmerSplit,pgVirtual-method}}
+}
 
