@@ -1,0 +1,31 @@
+Package: FindMyFriends
+Type: Package
+Title: Microbial Comparative Genomics in R
+Version: 1.0.0
+Date: 2015-09-15
+Author: Thomas Lin Pedersen
+Maintainer: Thomas Lin Pedersen <thomasp85@gmail.com>
+Description: A framework for doing microbial comparative genomics in R.
+        The main purpose of the package is assisting in the creation of
+        pangenome matrices where genes from related organisms are
+        grouped by similarity, as well as the analysis of these data.
+        FindMyFriends provides many novel approaches to doing pangenome
+        analysis and supports a gene grouping algorithm that scales
+        linearly, thus making the creation of huge pangenomes feasible.
+URL: https://github.com/thomasp85/FindMyFriends
+BugReports: https://github.com/thomasp85/FindMyFriends/issues
+License: GPL (>=2)
+biocViews: ComparativeGenomics, Clustering, DataRepresentation,
+        GenomicVariation, SequenceMatching, GraphAndNetwork
+VignetteBuilder: knitr
+LinkingTo: Rcpp
+Imports: methods, Biobase, tools, dplyr, IRanges, Biostrings,
+        S4Vectors, kebabs, igraph, Matrix, digest, filehash, Rcpp,
+        ggplot2, gtable, grid, reshape2, ggdendro, BiocParallel
+Suggests: testthat, knitr, rmarkdown, reutils
+Collate: 'FindMyFriends-package.R' 'RcppExports.R' 'aaa.R' 'generics.R'
+        'pgVirtual.R' 'pgInMem.R' 'pgLM.R' 'pgVirtualLoc.R'
+        'pgInMemLoc.R' 'pgLMLoc.R' 'pgFull.R' 'pgFullLoc.R'
+        'constructor.R' 'ggGraph.R' 'grouping.R' 'investigating.R'
+        'linking.R' 'modifying.R' 'similarities.R' 'splitting.R'
+NeedsCompilation: yes
