@@ -547,3 +547,51 @@ getRoute <- function(start, fathers) {
     }
     start
 }
+orgGraphs <- function(object) {
+    oldOptions <- options(dplyr.show_progress = FALSE)
+    on.exit({
+        options(oldOptions)
+    })
+    gInfo <- geneLocation(object)
+    gInfo$gene <- 1:nGenes(object)
+    gInfo$organism <- orgNames(object)[seqToOrg(object)]
+    gInfo$geneGroup <- groupNames(object)[seqToGeneGroup(object)]
+    
+    prep <- gInfo %>% 
+        group_by(organism, contig) %>%
+        arrange(start, end) %>%
+        mutate(up = c(gene[-1], NA), 
+               reverse = gene < up, 
+               down = c(NA, gene[-n()])) %>%
+        ungroup()
+    
+    vertices <- prep %>%
+        group_by(organism) %>%
+        do(nodes = {data.frame(
+            gene = .$gene, 
+            geneGroup = .$geneGroup, 
+            strand = .$strand, 
+            up = ifelse(.$strand == 1, .$up, .$down), 
+            down = ifelse(.$strand == 1, .$down, .$up),
+            stringsAsFactors = FALSE
+        )})
+    nodes <- vertices$nodes
+    names(nodes) <- vertices$organism
+    
+    graphs <- prep %>%
+        group_by(organism) %>%
+        transmute(from = ifelse(reverse, gene, up), 
+                  to = ifelse(reverse, up, gene)) %>%
+        filter(!is.na(from) & !is.na(to)) %>%
+        do(graph = {
+            graph_from_data_frame(
+                data.frame(from = .$from, to = .$to), 
+                FALSE, 
+                nodes[[.$organism[1]]]
+            )
+        })
+    
+    res <- graphs$graph
+    names(res) <- graphs$organism
+    res
+}
