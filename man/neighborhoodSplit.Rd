@@ -71,4 +71,3 @@ Other group-splitting: \code{\link{kmerSplit}},
   \code{\link{kmerSplit,pgVirtual-method}}
 }
 
-
