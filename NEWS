@@ -1,4 +1,10 @@
+Version 1.1.1
+________________________________________________________________________________
+- Fix bug that would affect pangenomes above 100 genomes when GPC was used with
+automatic tree creation.
+
 Version 1.1.0
+________________________________________________________________________________
 - Added kmerSplit method
 
 Version 0.99.0
