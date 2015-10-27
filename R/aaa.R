@@ -671,7 +671,7 @@ orgExRep <- function(pangenome, kmerSize, chunkSize = 100, pParam) {
     if (missing(pParam)) {
         erList <- lapply(1:nChunks, function(i) {
             genes <- lapply(as.list(genes(pangenome, 'organism', 
-                                          subset = which(chunks == 1))), 
+                                          subset = which(chunks == i))), 
                             as.character)
             genomes <- unstrsplit(genes, sep = '-')
             if (translated(pangenome)) {
@@ -685,7 +685,7 @@ orgExRep <- function(pangenome, kmerSize, chunkSize = 100, pParam) {
     } else {
         erList <- bplapply(1:nChunks, function(i, pangenome, chunks, kmerSize) {
             genes <- lapply(as.list(genes(pangenome, 'organism', 
-                                          subset = which(chunks == 1))), 
+                                          subset = which(chunks == i))), 
                             as.character)
             genomes <- unstrsplit(genes, sep = '-')
             if (translated(pangenome)) {
