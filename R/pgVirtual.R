@@ -417,7 +417,7 @@ setMethod(
     'getRep', c('pgVirtual', 'character'),
     function(object, method) {
         ind <- split(1:nGenes(object), seqToGeneGroup(object))
-        switch(
+        rep <- switch(
             method,
             random = {
                 ind <- sapply(ind, function(x) {x[sample(length(x), size = 1)]})
@@ -437,6 +437,8 @@ setMethod(
             },
             stop('Unknown method: ', method)
         )
+        names(rep) <- groupNames(object)
+        rep
     }
 )
 
