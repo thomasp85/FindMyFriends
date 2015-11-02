@@ -100,7 +100,7 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
         warning('The following files contained no sequences\n\n', 
                 paste(paths[sequenceFileLength == 0], collapse = '\n'))
     }
-    args$seqToOrg <- as.integer(unlist(sapply(1:length(paths), function(x) {
+    args$seqToOrg <- as.integer(unlist(sapply(seq_along(paths), function(x) {
         rep(x, sequenceFileLength[x])
     })))
     

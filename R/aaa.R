@@ -270,8 +270,8 @@ lkParallelLM <- function(pangenome, kmerSize, pParam, nSplits, diag = FALSE,
                 x <- getExRep(genes(pangenome, 
                                     subset = c(intervalRow, intervalCol)), 
                               spectrumKernel(kmerSize))
-                linearKernel(x[1:length(intervalRow),], 
-                             x[1:length(intervalCol) + length(intervalRow), ], 
+                linearKernel(x[seq_along(intervalRow),], 
+                             x[seq_along(intervalCol) + length(intervalRow), ], 
                              sparse = TRUE, 
                              lowerLimit = lowerLimit)
             }
@@ -730,7 +730,7 @@ rbindMat <- function(x, ..., fill = NA) {
                   dimnames = list(NULL, cols))
     currentEnd <- 1
     rowN <- FALSE
-    for (i in 1:length(x)) {
+    for (i in seq_along(x)) {
         rowInd <- seq(currentEnd, length.out = nrow(x[[i]]))
         ans[rowInd, colnames(x[[i]])] <- x[[i]]
         if (!is.null(rownames(x[[i]]))) {
@@ -873,7 +873,7 @@ cutK <- function(x, k) {
 #' @importClassesFrom Biostrings AAStringSetList DNAStringSetList RNAStringSetList BStringSetList
 #' 
 splitStringSet <- function(x, f) {
-    groups <- split(1:length(x), f)
+    groups <- split(seq_along(x), f)
     partitioning <- PartitioningByEnd(groups)
     data <- x[unlist(groups)]
     type <- as.character(class(x))
@@ -900,8 +900,8 @@ splitStringSet <- function(x, f) {
 #' @noRd
 #' 
 paralogueInd <- function(groupInd, links) {
-    linkInd <- split(1:length(links), links)
-    groupLookup <- rep(1:length(linkInd), sapply(linkInd, length))
+    linkInd <- split(seq_along(links), links)
+    groupLookup <- rep(seq_along(linkInd), lengths(linkInd))
     groupLookup[match(groupInd, unlist(linkInd))]
 }
 #' Replacement for the gtable rbind
@@ -1129,10 +1129,10 @@ calcPgMatrix <- function(seqToOrg, seqToGeneGroup, groupNames, orgNames) {
 #' 
 convertGrouping <- function(groups) {
     if(is.list(groups)) {
-        members <- rep(1:length(groups), sapply(groups, length))
+        members <- rep(seq_along(groups), lengths(groups))
         members[unlist(groups)] <- as.integer(members)
     } else {
-        members <- split(1:length(groups), groups)
+        members <- split(seq_along(groups), groups)
     }
     members
 }

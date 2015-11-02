@@ -215,7 +215,7 @@ setMethod(
             object@seqIndex <- object@seqIndex[-ind, , drop = FALSE]
         }
         orgInfo(object)$nGenes <- 0
-        nGenesOrg <- sapply(split(1:nGenes(object), seqToOrg(object)), length)
+        nGenesOrg <- lengths(split(1:nGenes(object), seqToOrg(object)))
         orgInfo(object)$nGenes[as.integer(names(nGenesOrg))] <- nGenesOrg
         object
     }

@@ -69,7 +69,7 @@ setMethod(
     'orgStat', 'pgVirtual',
     function(object, subset, getFrequency = FALSE) {
         if (missing(subset)) {
-            subset <- 1:length(object)
+            subset <- seq_along(object)
         } else if (inherits(subset, 'character')) {
             subset <- match(subset, orgNames(object))
         }
@@ -86,8 +86,8 @@ setMethod(
             )
             if (getFrequency) {
                 cbind(stat, 
-                      t(apply(alphabetFrequency(genes(object, subset = org)), 
-                              2, sum)))
+                      t(colSums(alphabetFrequency(genes(object, subset = org))))
+                )
             } else {
                 stat
             }
@@ -95,11 +95,8 @@ setMethod(
         info <- as.data.frame(bind_rows(info))
         
         rownames(info) <- orgNames(object)[as.integer(names(orgs))]
-        info$nGeneGroups <- apply(
-            pgMatrix(object)[, rownames(info), drop = FALSE], 
-            2, 
-            function(x) sum(x != 0)
-        )
+        info$nGeneGroups <- colSums(
+            pgMatrix(object)[, rownames(info), drop = FALSE]) != 0
         if (hasParalogueLinks(object)) {
             links <- split(1:nGeneGroups(object), groupInfo(object)$paralogue)
             parMat <- apply(
@@ -112,7 +109,7 @@ setMethod(
         } else {
             parMat <- pgMatrix(object)[, rownames(info), drop = FALSE]
         }
-        info$nParalogues <- apply(parMat > 1, 2, sum)
+        info$nParalogues <- colSums(parMat > 1)
         info
     }
 )
@@ -400,7 +397,7 @@ scaleRange <- function(x, low, high) {
 locateCycles <- function(graph, maxLength=4) {
     potentialSplits <- V(graph)$name[degree(graph) > 2]
     smallGr <- make_ego_graph(graph, order = maxLength, nodes = potentialSplits)
-    cycles <- lapply(1:length(potentialSplits), function(i) {
+    cycles <- lapply(seq_along(potentialSplits), function(i) {
         tree <- bfs(smallGr[[i]], potentialSplits[i], father = TRUE)
         endPoints <- tree$order[!tree$order %in% tree$father]
         loops <- endPoints[degree(smallGr[[i]], endPoints) > 1]
