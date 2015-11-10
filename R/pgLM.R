@@ -115,7 +115,7 @@ setMethod(
             seqSubset <- which(seqToPar %in% subset)
             ans <- genes(object, subset=seqSubset)
             ans <- splitStringSet(ans, seqToPar[seqSubset])
-            names(ans) <- 1:length(ans)
+            names(ans) <- seq_along(ans)
         }
         ans
     }

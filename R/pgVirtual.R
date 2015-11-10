@@ -417,7 +417,7 @@ setMethod(
     'getRep', c('pgVirtual', 'character'),
     function(object, method) {
         ind <- split(1:nGenes(object), seqToGeneGroup(object))
-        switch(
+        rep <- switch(
             method,
             random = {
                 ind <- sapply(ind, function(x) {x[sample(length(x), size = 1)]})
@@ -437,6 +437,8 @@ setMethod(
             },
             stop('Unknown method: ', method)
         )
+        names(rep) <- groupNames(object)
+        rep
     }
 )
 
@@ -765,7 +767,7 @@ evolMan <- function(pangenome, order) {
 #' 
 panGroups <- function(mat) {
     mat[] <- mat != 0
-    nGenes <- apply(mat, 1, sum)
+    nGenes <- rowSums(mat)
     data.frame(group = c('Singleton', 'Accessory', 'Core', 'Total'),
                size = c(sum(nGenes == 1),
                         sum(nGenes > 1 & nGenes < ncol(mat)),

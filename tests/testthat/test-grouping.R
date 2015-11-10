@@ -4,7 +4,7 @@ pg <- .loadPgExample()
 
 test_that("Manual grouping works", {
     fauxGroups <- rep(1:10, length.out=nGenes(pg))
-    fauxGroups2 <- split(1:length(fauxGroups), fauxGroups)
+    fauxGroups2 <- split(seq_along(fauxGroups), fauxGroups)
     expect_equal(manualGrouping(pg, fauxGroups), manualGrouping(pg, fauxGroups2))
     expect_equal(nGeneGroups(manualGrouping(pg, fauxGroups)), 10)
     expect_equal(seqToGeneGroup(manualGrouping(pg, fauxGroups)), fauxGroups)
