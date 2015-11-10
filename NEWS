@@ -1,3 +1,9 @@
+Version 1.0.2
+________________________________________________________________________________
+- Fixed bug in transformSim that would cause it to break on large similarity
+matrices
+- Fixed bug in orgTree only present with pangenomes over 100 genomes
+
 Version 0.99.0
 ________________________________________________________________________________
 - Submission to Bioconductor
