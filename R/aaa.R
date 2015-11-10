@@ -1048,9 +1048,11 @@ readAnnot <- function(file) {
 #' @noRd
 #' 
 transformSim <- function(similarity, low, rescale, transform) {
+    if (!inherits(similarity, 'sparseMatrix')) {
+        similarity <- Matrix(similarity, sparse = TRUE)
+    }
     if (rescale) {
-        zeroInd <- which(similarity != 0)
-        similarity[zeroInd] <- (similarity[zeroInd] - low)/(1 - low)
+        similarity@x <- (similarity@x - low)/(1 - low)
     }
     if (inherits(transform, 'function')) {
         transform(similarity)
