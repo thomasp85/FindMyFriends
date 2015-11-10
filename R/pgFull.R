@@ -78,7 +78,7 @@ setMethod(
             ans <- splitStringSet(object@sequences, 
                                   paralogueInd(object@seqToGeneGroup, 
                                                groupInfo(object)$paralogue))
-            names(ans) <- 1:length(ans)
+            names(ans) <- seq_along(ans)
         }
         if (missing(subset)) {
             ans

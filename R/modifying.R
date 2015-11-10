@@ -64,7 +64,7 @@ setMethod(
         members <- components(gr)$membership
         groups <- c(seqToGeneGroup(object), 
                     seqToGeneGroup(newSet) + nGeneGroups(object))
-        groups <- split(1:length(groups), groups)
+        groups <- split(seq_along(groups), groups)
         groups <- lapply(split(groups, members), unlist)
         if (hasGeneInfo(object) && !(is.logical(nsParam) && !nsParam)) {
             info <- resizeDataFrame(groupInfo(object), length(groups))
@@ -414,7 +414,7 @@ pairToIndex <- function(row, col, nrow) {
 #' 
 removeIndex <- function(x, index) {
     index <- sort(index, decreasing = TRUE)
-    for (i in 1:length(index)) {
+    for (i in seq_along(index)) {
         x[x > index[i]] <- x[x > index[i]] - 1
     }
     as.integer(x)
@@ -436,15 +436,15 @@ removeIndex <- function(x, index) {
 #' 
 matchGroups <- function(newGroups, oldGroups) {
     finalGrouping <- rep(NA, length(unlist(newGroups)))
-    pendingGroups <- 1:length(newGroups)
+    pendingGroups <- seq_along(newGroups)
     bestGroups <- lapply(newGroups, function(group) {
         table(oldGroups[group], useNA = 'no')
     })
-    memberGroup <- rep(1:length(bestGroups), lengths(bestGroups))
+    memberGroup <- rep(seq_along(bestGroups), lengths(bestGroups))
     oldGroupInd <- as.integer(unlist(lapply(bestGroups, names)))
     bestGroups <- unlist(bestGroups)
     bestGroupOrder <- order(bestGroups, decreasing = TRUE)
-    for (i in 1:length(bestGroupOrder)) {
+    for (i in seq_along(bestGroupOrder)) {
         oldGroup <- oldGroupInd[bestGroupOrder[i]]
         if (is.na(oldGroup)) next
         newGroup <- memberGroup[bestGroupOrder[i]]
@@ -502,13 +502,13 @@ reportGroupChanges <- function(newGrouping, oldGrouping, file) {
         }
         return(invisible())
     }
-    changes <- newGrouping[1:length(oldGrouping)] != oldGrouping
+    changes <- newGrouping[seq_along(oldGrouping)] != oldGrouping
     if (sum(changes) == 0) return()
     report <- c()
     groups <- split(which(changes), oldGrouping[changes])
-    for (i in 1:length(groups)) {
+    for (i in seq_along(groups)) {
         movedTo <- split(groups[[i]], newGrouping[groups[[i]]])
-        for (j in 1:length(movedTo)) {
+        for (j in seq_along(movedTo)) {
             report <- c(report, paste0('Gene ', 
                                        paste(movedTo[[j]], collapse = ', '), 
                                        ' moved from group ', names(groups)[i], 

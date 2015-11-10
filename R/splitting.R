@@ -233,8 +233,8 @@ neighborhoodSimilarity <- function(geneGroup, minFlank = 1,
     backward <- geneGroup$down
     forward <- geneGroup$up
     res <- matrix(0, nrow = length(backward), ncol = length(backward))
-    for (i in 1:length(backward)) {
-        for (j in i:length(backward)) {
+    for (i in seq_along(backward)) {
+        for (j in seq.int(i, length(backward))) {
             if (j == i) next
             if (forceParalogues && 
                 geneGroup$organism[i] == geneGroup$organism[j]) next
