@@ -96,7 +96,7 @@ setMethod(
         
         rownames(info) <- orgNames(object)[as.integer(names(orgs))]
         info$nGeneGroups <- colSums(
-            pgMatrix(object)[, rownames(info), drop = FALSE]) != 0
+            pgMatrix(object)[, rownames(info), drop = FALSE] != 0)
         if (hasParalogueLinks(object)) {
             links <- split(1:nGeneGroups(object), groupInfo(object)$paralogue)
             parMat <- apply(
