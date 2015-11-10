@@ -2,6 +2,8 @@ Version 1.1.2
 ________________________________________________________________________________
 - Minor optimization of code
 - getRep now names genes by group name
+- transformSim now works on sparseMatrix rather than matrix objects - avoids 
+coercing huge sparse matrices down to matrix format
 
 Version 1.1.1
 ________________________________________________________________________________
