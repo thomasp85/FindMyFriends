@@ -478,7 +478,7 @@ setMethod(
         if (hasGeneGroups(object)) {
             groupNames <- c('Singleton', 'Accessory', 'Core')
             groups <- table(groupInfo(object)$group)
-            groups <- data.frame(nGenes = groups[], 
+            groups <- data.frame(nGenes = as.integer(groups), 
                                  group = factor(names(groups), 
                                                 levels = groupNames))
             groups <- groups[order(groups$group),]
