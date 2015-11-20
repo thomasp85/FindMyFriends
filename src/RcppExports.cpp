@@ -5,6 +5,16 @@
 
 using namespace Rcpp;
 
+// cdhit
+void cdhit(List opts);
+RcppExport SEXP FindMyFriends_cdhit(SEXP optsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type opts(optsSEXP);
+    cdhit(opts);
+    return R_NilValue;
+END_RCPP
+}
 // nSeqs
 NumericVector nSeqs(CharacterVector files);
 RcppExport SEXP FindMyFriends_nSeqs(SEXP filesSEXP) {
