@@ -61,9 +61,10 @@ Collate:
     'ggGraph.R'
     'grouping.R'
     'investigating.R'
+    'linearKernel.R'
     'linking.R'
     'modifying.R'
     'similarities.R'
     'splitting.R'
 NeedsCompilation: yes
-RoxygenNote: 5.0.0.9000
+RoxygenNote: 5.0.1

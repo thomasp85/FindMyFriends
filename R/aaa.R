@@ -398,6 +398,7 @@ weaveChunks <- function(squares, split) {
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
 #' @importFrom BiocParallel bpworkers
 #' @importFrom igraph components graph_from_adjacency_matrix
+#' @importFrom Biostrings order
 #' 
 #' @noRd
 #' 
@@ -439,23 +440,16 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB,
     if (length(unlist(groups)) > 1e6 || runif(1) < 0.01) 
         gc() # Ensures always gc() when ngenes reaches 1mill
     
+    gen <- genes(pangenome, subset = represent)
     if (missing(er)) {
-        erRep <- getExRep(genes(pangenome, subset = represent), 
-                          spectrumKernel(kmerSize))
+        erRep <- getExRep(gen,  spectrumKernel(kmerSize))
     } else {
         erRep <- er[represent,]
     }
-    if (missing(pParam)) {
-        sim <- linearKernel(erRep, sparse = TRUE, lowerLimit = lowerLimit, 
-                            diag = FALSE)
-    } else {
-        sim <- lkParallel(erRep, pParam, nSplits = bpworkers(pParam), 
-                          diag = FALSE, lowerLimit = lowerLimit)
-    }
-    gr <- graph_from_adjacency_matrix(sim, mode = 'lower', 
-                                      weighted = TRUE, 
-                                      diag = FALSE)
-    members <- components(gr)$membership
+    sim <- lkFMF(erRep, order = order(gen), lowerLimit = lowerLimit, 
+                 upperLimit = lowerLimit)
+    rm(gen)
+    members <- clustersFromAdjMatrix(sim)
     newGroups <- lapply(split(groups, members), unlist)
     if (!missing(cacheDB)) {
         dbInsert(cacheDB, key, newGroups)
