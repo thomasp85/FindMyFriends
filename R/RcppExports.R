@@ -13,6 +13,14 @@ nSeqs <- function(files) {
     .Call('FindMyFriends_nSeqs', PACKAGE = 'FindMyFriends', files)
 }
 
+linearKernel <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
+    .Call('FindMyFriends_linearKernel', PACKAGE = 'FindMyFriends', pX, jX, xX, selX, lowerLimit, upperLimit)
+}
+
+getClusters <- function(nNodes, I, P, X) {
+    .Call('FindMyFriends_getClusters', PACKAGE = 'FindMyFriends', nNodes, I, P, X)
+}
+
 panSim <- function(pg) {
     .Call('FindMyFriends_panSim', PACKAGE = 'FindMyFriends', pg)
 }

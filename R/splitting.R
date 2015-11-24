@@ -145,7 +145,7 @@ setMethod(
 kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
     geneSeqs <- genes(pangenome, subset = i)
     er <- getExRep(geneSeqs, spectrumKernel(kmerSize))
-    lkMat <- linearKernel(er, sparse = TRUE, diag = FALSE, 
+    lkMat <- kebabs::linearKernel(er, sparse = TRUE, diag = FALSE, 
                           lowerLimit = lowerLimit)
     if (!is.null(maxLengthDif)) {
         if (maxLengthDif < 1) {
@@ -297,7 +297,7 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit,
     if (length(geneGroup$genes) == 1) return(list(geneGroup$genes))
     nMat <- neighborhoodSimilarity(geneGroup, ...)
     seqs <- genes(pangenome, subset = geneGroup$genes)
-    sMat <- as.matrix(linearKernel(
+    sMat <- as.matrix(kebabs::linearKernel(
         getExRep(seqs, spectrumKernel(kmerSize)), 
         sparse = FALSE,  # To avoid strange crash on AWS. Should be fixed in next kebabs
         diag = FALSE, 

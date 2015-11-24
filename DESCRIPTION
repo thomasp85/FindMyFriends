@@ -61,6 +61,7 @@ Collate:
     'ggGraph.R'
     'grouping.R'
     'investigating.R'
+    'linearKernel.R'
     'linking.R'
     'modifying.R'
     'similarities.R'
