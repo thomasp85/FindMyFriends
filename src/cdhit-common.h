@@ -23,6 +23,13 @@
 //                    Center for Research in Biological Systems (CRBS), UCSD
 //                    La Jolla, CA, 92093
 //                    Email: l2fu@ucsd.edu, fu@daovm.net
+//
+// modified by:
+//                    Thomas Lin Pedersen
+//                    Center for Biological Sequencing (CBS), DTU
+//                    2300 Kongens Lyngby, Denmark
+//                    Email: thomasp85@gmail.com
+//                    
 // =============================================================================
 
 #include<iostream>
@@ -546,6 +553,7 @@ class SequenceDB
 		void Read( const char *file, const Options & options );
 		void WriteClusters( const char *db, const char *newdb, const Options & options );
 		void WriteExtra1D( const Options & options );
+		vector<int> GetClusters( const Options & options );
 		void WriteExtra2D( SequenceDB & other, const Options & options );
 		void DivideSave( const char *db, const char *newdb, int n, const Options & options );
 

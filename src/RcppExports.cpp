@@ -5,14 +5,26 @@
 
 using namespace Rcpp;
 
-// cdhit
-void cdhit(List opts);
-RcppExport SEXP FindMyFriends_cdhit(SEXP optsSEXP) {
+// cdhitestC
+IntegerVector cdhitestC(List opts);
+RcppExport SEXP FindMyFriends_cdhitestC(SEXP optsSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type opts(optsSEXP);
-    cdhit(opts);
-    return R_NilValue;
+    __result = Rcpp::wrap(cdhitestC(opts));
+    return __result;
+END_RCPP
+}
+// cdhitC
+IntegerVector cdhitC(List opts);
+RcppExport SEXP FindMyFriends_cdhitC(SEXP optsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type opts(optsSEXP);
+    __result = Rcpp::wrap(cdhitC(opts));
+    return __result;
 END_RCPP
 }
 // nSeqs

@@ -271,3 +271,17 @@ groupToGraph <- function(pangenome, groups, er, lowerLimit) {
     graph_from_data_frame(edges, directed = FALSE, 
                           vertices = data.frame(name = geneNames(pangenome)))
 }
+#' @importFrom Biostrings writeXStringSet
+#' 
+#' @noRd
+#' 
+cdhit <- function(seqs, options) {
+    options$i <- tempfile()
+    writeXStringSet(seqs, options$i)
+    switch(
+        class(seqs),
+        AAStringSet = cdhitC(options) + 1,
+        DNAStringSet = cdhitestC(options) + 1,
+        stop('seqs must be either AAStringSet or DNAStringSet')
+    )
+}

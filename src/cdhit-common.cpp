@@ -23,6 +23,13 @@
 //                    Center for Research in Biological Systems (CRBS), UCSD
 //                    La Jolla, CA, 92093
 //                    Email: l2fu@ucsd.edu, fu@daovm.net
+//
+// modified by:
+//                    Thomas Lin Pedersen
+//                    Center for Biological Sequencing (CBS), DTU
+//                    2300 Kongens Lyngby, Denmark
+//                    Email: thomasp85@gmail.com
+//                    
 // =============================================================================
 
 #include "cdhit-common.h"
@@ -1763,8 +1770,8 @@ void SequenceDB::SortDivide( Options & options, bool sort )
 		bomb_warning("Some seqs are too long, please rebuild the program with make parameter "
 				"MAX_SEQ=new-maximum-length (e.g. make MAX_SEQ=10000000)");
 
-	cout << "longest and shortest : " << max_len << " and " << min_len << endl;
-	cout << "Total letters: " << total_letter << endl;
+// 	cout << "longest and shortest : " << max_len << " and " << min_len << endl;
+// 	cout << "Total letters: " << total_letter << endl;
 	// END change all the NR_seq to iseq
 
 	len_n50 = (max_len + min_len) / 2; // will be properly set, if sort is true;
@@ -1807,7 +1814,7 @@ void SequenceDB::SortDivide( Options & options, bool sort )
 			}
 		}
 #endif
-		cout << "Sequences have been sorted" << endl;
+// 		cout << "Sequences have been sorted" << endl;
 		// END sort them from long to short
 	}
 }// END sort_seqs_divide_segs
@@ -1926,6 +1933,22 @@ void SequenceDB::WriteExtra1D( const Options & options )
 			sequences[ clusters[i][k] ]->PrintInfo( k, fout, options, buf );
 	}
 	delete []buf;
+}
+vector<int> SequenceDB::GetClusters( const Options & options )
+{
+    int i, k, N = sequences.size();
+    vector<long long> sorting( N );
+    for (i=0; i<N; i++) sorting[i] = ((long long)sequences[i]->index << 32) | i;
+    std::sort( sorting.begin(), sorting.end() );
+    
+    vector<int> clusters( N );
+    for (i=0; i<N; i++){
+        int k = sorting[i] & 0xffffffff;
+        int id = sequences[k]->cluster_id;
+        clusters[i] = k;
+    }
+    
+    return clusters;
 }
 void SequenceDB::WriteExtra2D( SequenceDB & other, const Options & options )
 {
@@ -2239,26 +2262,26 @@ size_t SequenceDB::MinimalMemory( int frag_no, int bsize, int T, const Options &
 	size_t mem, mega = 1000000;
 	int table = T > 1 ? 2 : 1;
 
-	printf( "\nApproximated minimal memory consumption:\n" );
+// 	printf( "\nApproximated minimal memory consumption:\n" );
 	mem = N*sizeof(Sequence) + total_desc + N + extra;
 	if( options.store_disk == false ) mem += total_letter + N;
-	printf( "%-16s: %zuM\n", "Sequence", mem/mega );
+// 	printf( "%-16s: %zuM\n", "Sequence", mem/mega );
 	mem_need += mem;
 
 	mem = bsize;
-	printf( "%-16s: %i X %zuM = %zuM\n", "Buffer", T, mem/mega, T*mem/mega );
+// 	printf( "%-16s: %i X %zuM = %zuM\n", "Buffer", T, mem/mega, T*mem/mega );
 	mem_need += T*mem;
 
 	mem = F*(sizeof(Sequence*) + sizeof(IndexCount)) + NAAN*sizeof(NVector<IndexCount>);
-	printf( "%-16s: %i X %zuM = %zuM\n", "Table", table, mem/mega, table*mem/mega );
+// 	printf( "%-16s: %i X %zuM = %zuM\n", "Table", table, mem/mega, table*mem/mega );
 	mem_need += table*mem;
 
 	mem = sequences.capacity()*sizeof(Sequence*) + N*sizeof(int);
 	mem += Comp_AAN_idx.size()*sizeof(int);
-	printf( "%-16s: %zuM\n", "Miscellaneous", mem/mega );
+// 	printf( "%-16s: %zuM\n", "Miscellaneous", mem/mega );
 	mem_need += mem;
 
-	printf( "%-16s: %zuM\n\n", "Total", mem_need/mega );
+// 	printf( "%-16s: %zuM\n\n", "Total", mem_need/mega );
 
 	if(options.max_memory and options.max_memory < mem_need + 50*table ){
 		char msg[200];
@@ -2293,9 +2316,9 @@ void Options::ComputeTableLimits( int min_len, int max_len, int typical_len, siz
 		if( max_sequences < MAX_TABLE_SEQ / 100 ) max_sequences = MAX_TABLE_SEQ / 100;
 		if( max_sequences > MAX_TABLE_SEQ ) max_sequences = MAX_TABLE_SEQ;
 	}
-	printf( "Table limit with the given memory limit:\n" );
-	printf( "Max number of representatives: %zu\n", max_sequences );
-	printf( "Max number of word counting entries: %zu\n\n", max_entries );
+// 	printf( "Table limit with the given memory limit:\n" );
+// 	printf( "Max number of representatives: %zu\n", max_sequences );
+// 	printf( "Max number of word counting entries: %zu\n\n", max_entries );
 }
 void SequenceDB::DoClustering( int T, const Options & options )
 {
@@ -2374,7 +2397,7 @@ void SequenceDB::DoClustering( int T, const Options & options )
 			if( m > i + 1E3 ) m = i + (N - i) / (2+T);
 		}
 		//printf( "m = %i  %i,  %i\n", i, m, m-i );
-		printf( "\r# comparing sequences from  %9i  to  %9i\n", i, m );
+// 		printf( "\r# comparing sequences from  %9i  to  %9i\n", i, m );
 		if( last_table.size ){
 			int print = (m-i)/20 + 1;
 			#pragma omp parallel for schedule( dynamic, 1 )
@@ -2385,7 +2408,7 @@ void SequenceDB::DoClustering( int T, const Options & options )
 				CheckOne( seq, last_table, params[tid], buffers[tid], options );
 				if ( options.store_disk && (seq->state & IS_REDUNDANT) ) seq->SwapOut();
 				if( j%print==0 ){
-					printf( "." ); fflush( stdout );
+// 					printf( "." ); fflush( stdout );
 				}
 			}
 			int may_stop = 0;
@@ -2431,8 +2454,8 @@ void SequenceDB::DoClustering( int T, const Options & options )
 						if( self_stop && tid ==1 ){
 							float p = (100.0*j)/N;
 							if( p > p0+1E-1 ){ // print only if the percentage changed
-								printf( "\r%4.1f%%", p );
-								fflush( stdout );
+// 								printf( "\r%4.1f%%", p );
+// 								fflush( stdout );
 								p0 = p;
 							}
 						}
@@ -2476,9 +2499,9 @@ void SequenceDB::DoClustering( int T, const Options & options )
 			}
 		}else if( i < m ){
 			remaining = remaining/2 + (m - i);
-			printf( "\r---------- %6i remaining sequences to the next cycle\n", m-i );
+// 			printf( "\r---------- %6i remaining sequences to the next cycle\n", m-i );
 		}
-		printf( "---------- new table with %8i representatives\n", word_table.sequences.size() );
+// 		printf( "---------- new table with %8i representatives\n", word_table.sequences.size() );
 		if( (last_table.size + word_table.size) > tabsize )
 			tabsize = last_table.size + word_table.size;
 		last_table.Clear();
@@ -2487,9 +2510,9 @@ void SequenceDB::DoClustering( int T, const Options & options )
 		last_table.size = word_table.size;
 		word_table.size = 0;
 	}
-	printf( "\n%9i  finished  %9i  clusters\n", sequences.size(), rep_seqs.size() );
+// 	printf( "\n%9i  finished  %9i  clusters\n", sequences.size(), rep_seqs.size() );
 	mem = (mem_need + tabsize*sizeof(IndexCount))/mega;
-	printf( "\nApprixmated maximum memory consumption: %zuM\n", mem );
+// 	printf( "\nApprixmated maximum memory consumption: %zuM\n", mem );
 	last_table.Clear();
 	word_table.Clear();
 }
