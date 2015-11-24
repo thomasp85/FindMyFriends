@@ -104,7 +104,86 @@ setMethod(
         manualGrouping(object, members)
     }
 )
-
+#' @describeIn cdhitGrouping Grouping using cdhit for all pgVirtual subclasses
+#' 
+#' @param kmerSize The size of the kmer's used for the comparison. If two values
+#' are given the first will be used for the CD-HIT algorithm and the second will
+#' be used for the cosine similarity calculations.
+#' 
+#' @param lowerLimit A numeric giving the lower bounds of similarity below which
+#' it will be set to zero.
+#' 
+#' @param maxLengthDif The maximum deviation in sequence length to allow during
+#' preclustering with CD-HIT. Below 1 it describes a percentage. Above 1 it 
+#' describes a fixed length.
+#' 
+#' @param geneChunkSize The maximum number of genes to pass to the CD-HIT
+#' algorithm. If object contains more genes than this, CD-HIT will be run in 
+#' chunks and combined with a second CD-HIT pass before the final cosine 
+#' similarity grouping.
+#' 
+#' @param cdhitOpts Additional arguments passed on to CD-HIT. It should be a 
+#' named list with names corresponding to the arguments expected in the CD-HIT
+#' algorithm (without the dash). i, n and s/S will be overwritten based on the
+#' other parameters given to this function and all values in cdhitOpts will be
+#' converted to character using as.character
+#' 
+setMethod(
+    'cdhitGrouping', 'pgVirtual',
+    function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize = 1e6, 
+             cdhitOpts = list()) {
+        .fillDefaults(defaults(object))
+        cdhitOpts$n <- kmerSize[1]
+        if (maxLengthDif < 1) {
+            cdhitOpts$s <- 1 - maxLengthDif
+        } else {
+            cdhitOpts$S <- maxLengthDif
+        }
+        cdhitOpts <- lapply(cdhitOpts, as.character)
+        nChunks <- ceiling(nGenes(object)/geneChunkSize)
+        chunks <- ceiling(nGenes(object)/nChunks) * seq_len(nChunks)
+        chunks[nChunks] <- nGenes(object)
+        chunks <- data.frame(start = c(1, chunks[-nChunks] + 1), end = chunks)
+        
+        message('Running CD-HIT...')
+        flush.console()
+        
+        groups <- lapply(seq_len(nChunks), function(i) {
+            cdhit(genes(object, subset = seq.int(chunks$start[i], chunks$end[i])), cdhitOpts)
+        })
+        if (nChunks > 1) {
+            nClusters <- sapply(groups, max)
+            offset <- c(0, cumsum(nClusters)[-nChunks])
+            groups <- Map(function(group, offset) {
+                group + offset
+            }, group = groups, offset = offset)
+            groups <- split(seq_len(nGenes(object)), unlist(groups))
+            reps <- sapply(groups, function(x) {
+                x[sample.int(length(x), size = 1)]
+            })
+            groupsGroups <- cdhit(genes(object, subset = reps), cdhitOpts)
+            groups <- lapply(split(groups, groupsGroups), unlist)
+        } else {
+            groups <- split(seq_len(nGenes(object)), unlist(groups))
+        }
+        
+        message('CD-HIT preclustering done!')
+        flush.console()
+        
+        reps <- sapply(groups, function(x) {
+            x[sample.int(length(x), size = 1)]
+        })
+        
+        # Update to own implementation when available @feature-new_linear_kernel
+        sim <- linearKernel(getExRep(genes(object, subset = reps), 
+                              spectrumKernel(rep(kmerSize, 2)[2])), 
+                     sparse = TRUE, triangular = TRUE, diag = FALSE, 
+                     lowerLimit = lowerLimit)
+        groupsGroups <- components(graph_from_adjacency_matrix(sim, 'lower', TRUE, FALSE))$membership
+        groups <- lapply(split(groups, groupsGroups), unlist)
+        manualGrouping(object, groups)
+    }
+)
 
 ### GROUPING HELPER FUNCTIONS
 

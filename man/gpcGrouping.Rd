@@ -4,7 +4,7 @@
 \name{gpcGrouping}
 \alias{gpcGrouping}
 \alias{gpcGrouping,pgVirtual-method}
-\title{Guided Pairwise Comparison  grouping of genes}
+\title{Guided Pairwise Comparison grouping of genes}
 \usage{
 gpcGrouping(object, ...)
 
@@ -63,7 +63,7 @@ testPG <- gpcGrouping(testPG)
 
 }
 \seealso{
-Other grouping algorithms: \code{\link{graphGrouping}},
-  \code{\link{manualGrouping}}
+Other grouping algorithms: \code{\link{cdhitGrouping}},
+  \code{\link{graphGrouping}}, \code{\link{manualGrouping}}
 }
 

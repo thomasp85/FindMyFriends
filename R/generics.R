@@ -549,7 +549,7 @@ setGeneric('pgMatrix', def = function(object) {
 setGeneric('graphGrouping', def = function(object, ...) {
     standardGeneric('graphGrouping')
 })
-#' Guided Pairwise Comparison  grouping of genes
+#' Guided Pairwise Comparison grouping of genes
 #' 
 #' This algorithm recursively builds up a pangenome by merging subpangenomes. 
 #' The recursion follows either a supplied hierarchical clustering or one 
@@ -578,6 +578,46 @@ setGeneric('graphGrouping', def = function(object, ...) {
 #' 
 setGeneric('gpcGrouping', def = function(object, ...) {
     standardGeneric('gpcGrouping')
+})
+#' Gene grouping by preclustering with CD-HIT
+#' 
+#' This grouping algorithm partly mimicks the approach used by Roary, but
+#' instead of using BLAST in the second pass it uses cosine similarity of kmer
+#' feature vectors, thus providing an even greater speedup. The algorithm uses
+#' the CD-HIT algorithm to precluster highly similar sequences and then groups
+#' these clusters by extracting a representative and clustering these using the
+#' standard FindMyFriends kmer cosine similarity.
+#' 
+#' @param object A pgVirtual subclass
+#'   
+#' @param ... parameters passed on.
+#'   
+#' @return An object of the same class as 'object'.
+#' 
+#' @references 
+#' Page, A. J., Cummins, C. A., Hunt, M., Wong, V. K., Reuter, S., Holden, M. T. 
+#' G., et al. (2015). Roary: rapid large-scale prokaryote pan genome analysis. 
+#' \emph{Bioinformatics}, btv421.
+#' 
+#' Fu, L., Niu, B., Zhu, Z., Wu, S., Li, W. (2012). CD-HIT: 
+#' accelerated for clustering the next generation sequencing data. 
+#' \emph{Bioinformatics}, \bold{28} (23), 3150--3152.
+#' 
+#' Li, W. and Godzik, A. (2006) Cd-hit: a fast program for clustering and 
+#' comparing large sets of protein or nucleotide sequences. 
+#' \emph{Bioinformatics}, \bold{22}, 1658--9.
+#' 
+#' @examples 
+#' testPG <- .loadPgExample()
+#' 
+#' testPG <- cdhitGrouping(testPG)
+#' 
+#' @family grouping algorithms
+#'   
+#' @export
+#' 
+setGeneric('cdhitGrouping', def = function(object, ...) {
+    standardGeneric('cdhitGrouping')
 })
 #' Define gene grouping manually
 #' 
