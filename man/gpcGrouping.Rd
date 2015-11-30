@@ -9,7 +9,7 @@
 gpcGrouping(object, ...)
 
 \S4method{gpcGrouping}{pgVirtual}(object, lowMem, kmerSize, tree, lowerLimit,
-  pParam, cacheDB)
+  pParam, cacheDB, precluster = TRUE, ...)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
