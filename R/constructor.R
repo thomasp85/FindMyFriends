@@ -134,5 +134,7 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
     forceParalogues = TRUE,
     rescale = TRUE,
     transform = FALSE,
-    maxLengthDif = 0.1
+    maxLengthDif = 0.1,
+    geneChunkSize = 1e6,
+    cdhitOpts = list()
 )
