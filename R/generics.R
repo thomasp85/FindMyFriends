@@ -619,6 +619,9 @@ setGeneric('gpcGrouping', def = function(object, ...) {
 setGeneric('cdhitGrouping', def = function(object, ...) {
     standardGeneric('cdhitGrouping')
 })
+setGeneric('precluster', def = function(object, ...) {
+    standardGeneric('precluster')
+})
 #' Define gene grouping manually
 #' 
 #' In cases where results from other algorithms are wished to be imported into
