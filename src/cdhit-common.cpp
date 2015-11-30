@@ -1945,7 +1945,7 @@ vector<int> SequenceDB::GetClusters( const Options & options )
     for (i=0; i<N; i++){
         int k = sorting[i] & 0xffffffff;
         int id = sequences[k]->cluster_id;
-        clusters[i] = k;
+        clusters[i] = id;
     }
     
     return clusters;
