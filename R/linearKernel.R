@@ -1,5 +1,4 @@
 #' @importFrom Matrix sparseMatrix
-#' @export
 #' 
 lkFMF <- function(x, selx, order, lowerLimit = 0, upperLimit = 1) {
     
@@ -21,7 +20,7 @@ lkFMF <- function(x, selx, order, lowerLimit = 0, upperLimit = 1) {
     sm
 }
 #' @importFrom Matrix t
-#' @export
+#' 
 clustersFromAdjMatrix <- function(x) {
     if (x@uplo == 'U') x <- t(x)
     FindMyFriends:::getClusters(dim(x)[1], x@i, x@p, x@x)
