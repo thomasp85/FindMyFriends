@@ -52,13 +52,23 @@ setMethod(
 #' 
 setMethod(
     'gpcGrouping', 'pgVirtual',
-    function(object, lowMem, kmerSize, tree, lowerLimit, pParam, cacheDB) {
+    function(object, lowMem, kmerSize, tree, lowerLimit, pParam, cacheDB,
+             precluster = TRUE, ...) {
         .fillDefaults(defaults(object))
+        
+        if (precluster) {
+            clusters <- precluster(object, kmerSize[1], ...)
+            clusters <- rep(seq_along(clusters), lengths(clusters))[order(unlist(clusters))]
+        } else {
+            clusters <- NA
+        }
         
         args <- mget(ls())
         args$lowMem <- NULL
         args$object <- NULL
+        args$precluster <- NULL
         args$pangenome <- object
+        args$clusters <- clusters
         
         if (!missing(cacheDB)) {
             if (!inherits(cacheDB, 'filehash')) {
@@ -128,12 +138,35 @@ setMethod(
 #' other parameters given to this function and all values in cdhitOpts will be
 #' converted to character using as.character
 #' 
+#' @importFrom Biostrings order
+#' @importFrom kebabs getExRep spectrumKernel
 setMethod(
     'cdhitGrouping', 'pgVirtual',
-    function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize = 1e6, 
-             cdhitOpts = list()) {
+    function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize, 
+             cdhitOpts) {
         .fillDefaults(defaults(object))
-        cdhitOpts$n <- kmerSize[1]
+        groups <- precluster(object, kmerSize[1], maxLengthDif, geneChunkSize, 
+                             cdhitOpts)
+        
+        reps <- sapply(groups, function(x) {
+            x[sample.int(length(x), size = 1)]
+        })
+        
+        seqs <- genes(object, subset = reps)
+        sim <- lkFMF(getExRep(seqs, spectrumKernel(rep(kmerSize, 2)[2])),
+                     order = order(seqs), lowerLimit = lowerLimit, 
+                     upperLimit = lowerLimit)
+        groupsGroups <- clustersFromAdjMatrix(sim)
+        groups <- lapply(split(groups, groupsGroups), unlist)
+        manualGrouping(object, groups)
+    }
+)
+setMethod(
+    'precluster', 'pgVirtual',
+    precluster <- function(object, kmerSize, maxLengthDif, geneChunkSize, 
+                           cdhitOpts) {
+        .fillDefaults(defaults(object))
+        cdhitOpts$n <- kmerSize
         if (maxLengthDif < 1) {
             cdhitOpts$s <- 1 - maxLengthDif
         } else {
@@ -149,7 +182,8 @@ setMethod(
         flush.console()
         
         groups <- lapply(seq_len(nChunks), function(i) {
-            cdhit(genes(object, subset = seq.int(chunks$start[i], chunks$end[i])), cdhitOpts)
+            cdhit(genes(object, subset = seq.int(chunks$start[i], chunks$end[i])), 
+                  cdhitOpts)
         })
         if (nChunks > 1) {
             nClusters <- sapply(groups, max)
@@ -169,22 +203,9 @@ setMethod(
         
         message('CD-HIT preclustering done!')
         flush.console()
-        
-        reps <- sapply(groups, function(x) {
-            x[sample.int(length(x), size = 1)]
-        })
-        
-        # Update to own implementation when available @feature-new_linear_kernel
-        sim <- linearKernel(getExRep(genes(object, subset = reps), 
-                              spectrumKernel(rep(kmerSize, 2)[2])), 
-                     sparse = TRUE, triangular = TRUE, diag = FALSE, 
-                     lowerLimit = lowerLimit)
-        groupsGroups <- components(graph_from_adjacency_matrix(sim, 'lower', TRUE, FALSE))$membership
-        groups <- lapply(split(groups, groupsGroups), unlist)
-        manualGrouping(object, groups)
+        groups
     }
 )
-
 ### GROUPING HELPER FUNCTIONS
 
 #' Extract community membership based on similarity matrix

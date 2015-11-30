@@ -402,8 +402,8 @@ weaveChunks <- function(squares, split) {
 #' 
 #' @noRd
 #' 
-recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, 
-                           pParam) {
+recurseCompare <- function(pangenome, tree, er, clusters, kmerSize, lowerLimit, 
+                           cacheDB, pParam) {
     args <- mget(ls())
     args$tree <- NULL
     
@@ -433,6 +433,7 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB,
         group2 <- do.call(recurseCompare, append(args, list(tree = tree[[2]])))
         groups <- c(group1, group2)
     }
+    groups <- mergeGroups(groups, clusters)
     represent <- sapply(groups, function(x) {
         x[sample.int(length(x), size = 1L)]
     })
@@ -455,6 +456,22 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB,
         dbInsert(cacheDB, key, newGroups)
     }
     newGroups
+}
+#' @importFrom igraph make_undirected_graph
+mergeGroups <- function(groups, clusters) {
+    if (is.na(clusters)) {
+        return(groups)
+    }
+    inds <- unlist(groups)
+    if (length(unique(clusters[inds])) == length(inds)) {
+        return(groups)
+    }
+    clusters <- rbind(rep(seq_along(groups), lengths(groups)),
+                      clusters[unlist(groups)] + length(groups))
+    edges <- as.integer(clusters)
+    gr <- make_undirected_graph(edges)
+    groupClusters <- components(gr)$membership[seq_along(groups)]
+    lapply(split(groups, groupClusters), unlist)
 }
 #' Parallel version of recurseCompare
 #' 
