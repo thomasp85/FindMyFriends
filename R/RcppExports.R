@@ -5,6 +5,30 @@ nSeqs <- function(files) {
     .Call('FindMyFriends_nSeqs', PACKAGE = 'FindMyFriends', files)
 }
 
+neighborhoodSim <- function(members, groups, organism, size, down, up, reverse, width, threshold, forceParalogues) {
+    .Call('FindMyFriends_neighborhoodSim', PACKAGE = 'FindMyFriends', members, groups, organism, size, down, up, reverse, width, threshold, forceParalogues)
+}
+
+mergeSims <- function(nI, nP, nX, sI, sP, sX, guideGroup) {
+    .Call('FindMyFriends_mergeSims', PACKAGE = 'FindMyFriends', nI, nP, nX, sI, sP, sX, guideGroup)
+}
+
+widthSim <- function(groups, width, threshold) {
+    .Call('FindMyFriends_widthSim', PACKAGE = 'FindMyFriends', groups, width, threshold)
+}
+
+getCliques <- function(graph) {
+    .Call('FindMyFriends_getCliques', PACKAGE = 'FindMyFriends', graph)
+}
+
+getPotentials <- function(down, up, pending, reverse, groupSplit, groups) {
+    .Call('FindMyFriends_getPotentials', PACKAGE = 'FindMyFriends', down, up, pending, reverse, groupSplit, groups)
+}
+
+testFun <- function() {
+    .Call('FindMyFriends_testFun', PACKAGE = 'FindMyFriends')
+}
+
 panSim <- function(pg) {
     .Call('FindMyFriends_panSim', PACKAGE = 'FindMyFriends', pg)
 }

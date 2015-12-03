@@ -16,6 +16,93 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// neighborhoodSim
+List neighborhoodSim(IntegerVector members, IntegerVector groups, IntegerVector organism, int size, IntegerVector down, IntegerVector up, LogicalVector reverse, IntegerVector width, double threshold, bool forceParalogues);
+RcppExport SEXP FindMyFriends_neighborhoodSim(SEXP membersSEXP, SEXP groupsSEXP, SEXP organismSEXP, SEXP sizeSEXP, SEXP downSEXP, SEXP upSEXP, SEXP reverseSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP forceParaloguesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type members(membersSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type organism(organismSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type down(downSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type up(upSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type reverse(reverseSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type width(widthSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    Rcpp::traits::input_parameter< bool >::type forceParalogues(forceParaloguesSEXP);
+    __result = Rcpp::wrap(neighborhoodSim(members, groups, organism, size, down, up, reverse, width, threshold, forceParalogues));
+    return __result;
+END_RCPP
+}
+// mergeSims
+DataFrame mergeSims(IntegerVector nI, IntegerVector nP, IntegerVector nX, IntegerVector sI, IntegerVector sP, NumericVector sX, IntegerVector guideGroup);
+RcppExport SEXP FindMyFriends_mergeSims(SEXP nISEXP, SEXP nPSEXP, SEXP nXSEXP, SEXP sISEXP, SEXP sPSEXP, SEXP sXSEXP, SEXP guideGroupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type nI(nISEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type nP(nPSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type nX(nXSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type sI(sISEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type sP(sPSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sX(sXSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type guideGroup(guideGroupSEXP);
+    __result = Rcpp::wrap(mergeSims(nI, nP, nX, sI, sP, sX, guideGroup));
+    return __result;
+END_RCPP
+}
+// widthSim
+List widthSim(IntegerVector groups, IntegerVector width, double threshold);
+RcppExport SEXP FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type width(widthSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    __result = Rcpp::wrap(widthSim(groups, width, threshold));
+    return __result;
+END_RCPP
+}
+// getCliques
+IntegerVector getCliques(RObject graph);
+RcppExport SEXP FindMyFriends_getCliques(SEXP graphSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< RObject >::type graph(graphSEXP);
+    __result = Rcpp::wrap(getCliques(graph));
+    return __result;
+END_RCPP
+}
+// getPotentials
+IntegerVector getPotentials(IntegerVector down, IntegerVector up, LogicalVector pending, LogicalVector reverse, List groupSplit, IntegerVector groups);
+RcppExport SEXP FindMyFriends_getPotentials(SEXP downSEXP, SEXP upSEXP, SEXP pendingSEXP, SEXP reverseSEXP, SEXP groupSplitSEXP, SEXP groupsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type down(downSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type up(upSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type pending(pendingSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type reverse(reverseSEXP);
+    Rcpp::traits::input_parameter< List >::type groupSplit(groupSplitSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type groups(groupsSEXP);
+    __result = Rcpp::wrap(getPotentials(down, up, pending, reverse, groupSplit, groups));
+    return __result;
+END_RCPP
+}
+// testFun
+IntegerVector testFun();
+RcppExport SEXP FindMyFriends_testFun() {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    __result = Rcpp::wrap(testFun());
+    return __result;
+END_RCPP
+}
 // panSim
 NumericMatrix panSim(NumericMatrix pg);
 RcppExport SEXP FindMyFriends_panSim(SEXP pgSEXP) {
