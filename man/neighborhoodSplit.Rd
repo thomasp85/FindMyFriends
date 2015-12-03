@@ -8,8 +8,8 @@
 \usage{
 neighborhoodSplit(object, ...)
 
-\S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize, minFlank,
-  forceParalogues, kmerSize, lowerLimit, maxLengthDif, guideGroups = NULL)
+\S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize, forceParalogues,
+  kmerSize, lowerLimit, maxLengthDif, guideGroups = NULL)
 }
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
@@ -18,8 +18,6 @@ neighborhoodSplit(object, ...)
 
 \item{flankSize}{The number of flanking genes on each side of the gene to use
 for comparison.}
-
-\item{minFlank}{The lowest number of matching genes on either side to allow}
 
 \item{forceParalogues}{Force similarity of paralogue genes to 0}
 

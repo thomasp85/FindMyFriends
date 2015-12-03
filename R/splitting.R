@@ -8,8 +8,6 @@ NULL
 #' @param flankSize The number of flanking genes on each side of the gene to use
 #' for comparison.
 #' 
-#' @param minFlank The lowest number of matching genes on either side to allow
-#' 
 #' @param forceParalogues Force similarity of paralogue genes to 0
 #' 
 #' @param kmerSize The length of kmers used for sequence similarity
@@ -24,64 +22,79 @@ NULL
 #' @param guideGroups An integer vector with prior grouping that, all else being
 #' equal, should be prioritized. Used internally.
 #' 
-#' @importFrom dplyr %>% arrange group_by do mutate ungroup
+#' @importFrom Matrix sparseMatrix
+#' @importFrom igraph graph_from_adjacency_matrix components
 #' 
 setMethod(
     'neighborhoodSplit', 'pgVirtualLoc',
-    function(object, flankSize, minFlank, forceParalogues, kmerSize, lowerLimit, 
+    function(object, flankSize, forceParalogues, kmerSize, lowerLimit, 
              maxLengthDif, guideGroups = NULL) {
         .fillDefaults(defaults(object))
         
-        pending <- rep(TRUE, nGeneGroups(object))
-        containsParalogues <- anyParalogues(object)
-        currentGrouping <- seqToGeneGroup(object)
-        lastCall <- FALSE
-        while (any(pending)) {
-            if (!lastCall) {
-                hadChanges <- FALSE
-                thisRound <- which(pending)
-                neighbors <- trailGroups2(thisRound, currentGrouping, object, 
-                                          flankSize)
-            }
-            for (i in seq_along(thisRound)) {
-                if (lastCall || 
-                    qualifies(thisRound[i], neighbors[[i]], 
-                              containsParalogues[i], pending)) {
-                    genes <- as.integer(names(neighbors[[i]]))
-                    group <- list(
-                        genes = genes,
-                        organism = seqToOrg(object)[genes],
-                        down = lapply(neighbors[[i]], `[[`, i = 'down'),
-                        up = lapply(neighbors[[i]], `[[`, i = 'up')
-                    )
-                    newGroup <- neighborSplitting(
-                        group, 
-                        pangenome = object, 
-                        kmerSize = kmerSize, 
-                        lowerLimit = lowerLimit,
-                        minFlank = as.integer(containsParalogues[i]),
-                        forceParalogues = forceParalogues,
-                        maxLengthDif = maxLengthDif,
-                        guideGroups = guideGroups
-                    )
-                    if (length(newGroup) != 1) {
-                        newGroupNames <- seq(max(currentGrouping) + 1, 
-                                             length.out = length(newGroup))
-                        currentGrouping[unlist(newGroup)] <- 
-                            rep(newGroupNames, lengths(newGroup))
-                    }
-                    pending[[thisRound[i]]] <- FALSE
-                    hadChanges <- TRUE
-                }
-            }
-            if (!hadChanges) {
-                if (lastCall) {
-                    stop('No convergence')
-                }
-                lastCall <- TRUE
-            }
+        if (is.null(guideGroups)) {
+            guideGroups <- rep(1, nGenes(object))
         }
-        manualGrouping(object, match(currentGrouping, unique(currentGrouping)))
+        
+        # Presplit by length
+        widths <- geneWidth(object)
+        wSim <- widthSim(seqToGeneGroup(object), widths, maxLengthDif)
+        wSim <- sparseMatrix(i = wSim$i, p = wSim$p, x = wSim$x, 
+                             dims = rep(nGenes(object), 2), symmetric = TRUE,
+                             index1 = FALSE)
+        grouping <- components(
+            graph_from_adjacency_matrix(wSim, mode = 'undirected', diag = FALSE)
+        )$membership
+        object <- manualGrouping(object, as.integer(grouping))
+        rm(wSim, grouping)
+        
+        gLoc <- getNeighbors(object)
+        containsParalogues <- anyParalogues(object)
+        startGrouping <- seqToGeneGroup(object)
+        startGroupingSplit <- split(seq_len(nGenes(object)), startGrouping)
+        finalGrouping <- startGrouping
+        org <- seqToOrg(object)
+        easySplits <- lapply(
+            which(!containsParalogues), 
+            neighborSplitting,
+            object = object, seqToOrg = org, neighbors = gLoc, 
+            grouping = finalGrouping, widths = widths, 
+            maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
+            flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
+            guide = guideGroups
+        )
+        easySplits <- lapply(easySplits, unlist)
+        finalGrouping[unlist(easySplits)] <- rep(seq_along(easySplits) + max(finalGrouping), lengths(easySplits))
+        
+        pending <- containsParalogues
+        lastCall = 0
+        while (any(pending)) {
+            if (lastCall < 5) {
+                currentRound <- getPotentials(gLoc$down, gLoc$up, pending, gLoc$reverse, startGroupingSplit, startGrouping)
+                if (length(currentRound) == 0) {
+                    lastCall <- lastCall + 1
+                    chosen <- order(lengths(startGrouping[pending]))[seq_len(min(sum(pending), 10))]
+                    currentRound <- which(pending)[chosen]
+                } else {
+                    lastCall <- 0
+                }
+            } else {
+                currentRound <- which(pending)
+            }
+            
+            splits <- lapply(
+                currentRound, 
+                neighborSplitting,
+                object = object, seqToOrg = org, neighbors = gLoc, 
+                grouping = finalGrouping, widths = widths, 
+                maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
+                flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
+                guide = guideGroups
+            )
+            splits <- lapply(splits, unlist)
+            finalGrouping[unlist(splits)] <- rep(seq_along(splits) + max(finalGrouping), lengths(splits))
+            pending[currentRound] <- FALSE
+        }
+        manualGrouping(object, split(seq_len(nGenes(object)), finalGrouping))
     }
 )
 #' @describeIn kmerSplit Kmer similarity based group splitting for pgVirtual 
@@ -168,97 +181,6 @@ kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
     
     split(as.integer(names(members)), members)
 }
-
-#' Convert a sorted vector of groups to a vector of neighbors
-#' 
-#' This function takes a vector of gene groups, sorted by location, and converts
-#' it to a vector of neighbors in either direction.
-#' 
-#' @param groups A vector of gene group indexes
-#' 
-#' @param dir Either 'f' for forward or 'b' for backward
-#' 
-#' @param n The number of neighbors to collect for each gene
-#' 
-#' @return A character vector with neighbors separated by ';'. If the neighbors
-#' 'falls of' the end of the vector they will be substituted by NA
-#' 
-#' @noRd
-#' 
-collectNeighbors <- function(groups, dir, n) {
-    if (dir == 'b') {
-        groups <- rev(groups)
-    }
-    groups <- c(groups[-1], NA_character_)
-    res <- groups
-    n <- n - 1
-    while (n) {
-        groups <- c(groups[-1], NA_character_)
-        res <- paste(res, groups, sep = ';')
-        n <- n - 1
-    }
-    if (dir == 'b') {
-        rev(res)
-    } else {
-        res
-    }
-}
-#' Create a matrix of neighborhood similarity
-#' 
-#' This function compares the neighborhood and organism membership of a group of
-#' genes, converting it to a similarity matrix. Similarities are calculated over
-#' a series of step. First if forceParalogues=TRUE gene pairs from the same
-#' organism gets their similarity set to 0. Secondly if minFlink>0 the size of 
-#' the gene group intersection on both sides is calculated and if below minFlank
-#' the similarity is set to 0. Lastly for the remaining gene pairs the inverse
-#' jackards distance for the neighborhood sequence for gene groups present in
-#' both neighborhoods of the two genes is calculated and seet as the similarity.
-#' 
-#' @param geneGroup A list with genes and their assiciated up- and downstream
-#' neighbors as well as the organism its from
-#' 
-#' @param minFlank The minimum number of corresponding genes on each side of the
-#' gene needed to accept similarity
-#' 
-#' @param forceParalogues Should genes from the same organism be forced to have
-#' zero similarity
-#' 
-#' @return A triangular matrix with the lower half filled with hamming distances
-#' of the sequence of the shared genes.
-#' 
-#' @noRd
-#' 
-neighborhoodSimilarity <- function(geneGroup, minFlank = 1, 
-                                   forceParalogues = TRUE) {
-    backward <- geneGroup$down
-    forward <- geneGroup$up
-    res <- matrix(0, nrow = length(backward), ncol = length(backward))
-    for (i in seq_along(backward)) {
-        for (j in seq.int(i, length(backward))) {
-            if (j == i) next
-            if (forceParalogues && 
-                geneGroup$organism[i] == geneGroup$organism[j]) next
-            
-            bIntersect <- intersect(backward[[i]], backward[[j]])
-            if (length(bIntersect) < minFlank && 
-                length(backward[[i]]) > 0 && 
-                length(backward[[j]]) > 0) next
-            
-            fIntersect <- intersect(forward[[i]], forward[[j]])
-            if (length(fIntersect) < minFlank && 
-                length(forward[[i]]) > 0 && 
-                length(forward[[j]]) > 0) next
-            
-            iVec <- c(bIntersect[order(match(bIntersect,backward[[i]]))],
-                      fIntersect[order(match(fIntersect,backward[[i]]))])
-            jVec <- c(bIntersect[order(match(bIntersect,backward[[j]]))],
-                      fIntersect[order(match(fIntersect,backward[[j]]))])
-            
-            res[j, i] <- sum(iVec == jVec)
-        }
-    }
-    res
-}
 #' Split gene groups based on neighborhood and similarity
 #' 
 #' This function takes a gene group and splits it into subgroups based on the
@@ -269,89 +191,59 @@ neighborhoodSimilarity <- function(geneGroup, minFlank = 1,
 #' are extracted, favouring cliques with high internal sequence and neighborhood 
 #' similarity, until all genes have been assigned to a group.
 #' 
-#' @param geneGroup A list with genes and their assiciated up- and downstream
-#' neighbors as well as the organism its from
+#' @param group The index of the group to split
 #' 
-#' @param pangenome The pangenome object. A pgVirtual subclass
+#' @param object The pgVirtual subclass object
 #' 
-#' @param kmerSize The size of the kmers used for similarities
+#' @param seqToOrg The value returned when calling seqToOrg() on object
 #' 
-#' @param lowerLimit The similarity threshold below which it is set to 0
+#' @param neighbors A data.frame as returned by calling getNeighbors
 #' 
-#' @param maxLegthDif The maximum deviation in sequence length to allow. 
-#' Between 0 and 1 it describes a percentage. Above 1 it describes a fixed 
-#' length
+#' @param grouping The current grouping of the genes, similar in format to 
+#' calling seqToGeneGroup on object, but possibly modified in advance
 #' 
-#' @param ... Arguments passed on to \code{neighborhoodSimilarity}
+#' @param widths The sequence length of each sequence
+#' 
+#' @param maxLengthDif The maximal deviation in sequence length allowed when
+#' grouping two sequences
+#' 
+#' @param forceParalogues Logical. Should genes from the same genome be forced
+#' apart?
+#' 
+#' @param flankSize The length to traverse the neighbors to either side
+#' 
+#' @param kmerSize The size of the kmers to use for sequence comparison
+#' 
+#' @param lowerLimit The lower threshold in cosine similarity that sequences
+#' must have in order to get grouped
+#' 
+#' @param guideGroups An a priori grouping that will, all else being equal, be
+#' prefered when the grouping is performed
 #' 
 #' @return A list containing the new groups as integer vectors holding the gene
 #' index.
 #' 
 #' @importFrom kebabs linearKernel getExRep spectrumKernel
-#' @importFrom igraph graph_from_data_frame components induced_subgraph gsize gorder
 #' 
 #' @noRd
 #' 
-neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit, 
-                              maxLengthDif, guideGroups = NULL, ...) {
-    if (length(geneGroup$genes) == 1) return(list(geneGroup$genes))
-    nMat <- neighborhoodSimilarity(geneGroup, ...)
-    seqs <- genes(pangenome, subset = geneGroup$genes)
-    sMat <- as.matrix(kebabs::linearKernel(
-        getExRep(seqs, spectrumKernel(kmerSize)), 
-        sparse = FALSE,  # To avoid strange crash on AWS. Should be fixed in next kebabs
-        diag = FALSE, 
-        lowerLimit = lowerLimit))
-    if (!is.null(maxLengthDif)) {
-        if (maxLengthDif < 1) {
-            lMat <- outer(width(seqs), width(seqs), 
-                          function(a, b) {
-                              abs(a - b)/pmax(a, b)
-                          }) < maxLengthDif
-        } else {
-            lMat <- outer(width(seqs), width(seqs), 
-                          function(a, b) {abs(a - b)}) < maxLengthDif
-        }
-        sMat[!lMat] <- 0
+neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping, 
+                              widths, maxLengthDif, forceParalogues, flankSize, 
+                              kmerSize, lowerLimit, guideGroups) {
+    members <- which(grouping == group)
+    nSim <- neighborhoodSim(members - 1, grouping, seqToOrg, flankSize, 
+                            neighbors$down, neighbors$up, neighbors$reverse, 
+                            widths, maxLengthDif, forceParalogues)
+    sSim <- linearKernel(getExRep(genes(object, subset=members), 
+                                  spectrumKernel(kmerSize)),
+                         sparse = TRUE, diag = FALSE, 
+                         lowerLimit = lowerLimit)
+    edges <- mergeSims(nSim$i, nSim$p, nSim$x, sSim@i, sSim@p, sSim@x, 
+                       guideGroups)
+    if (nrow(edges) == 0) {
+        return(split(members, seq_along(members)))
     }
-    dimnames(sMat) <- list(geneGroup$genes, geneGroup$genes)
-    dimnames(nMat) <- list(geneGroup$genes, geneGroup$genes)
-    nMat <- melt(nMat, varnames = c('from', 'to'), value.name = 'nWeight')
-    sMat <- melt(sMat, varnames = c('from', 'to'), value.name = 'sWeight')
-    aMat <- merge(nMat, sMat)
-    if (!is.null(guideGroups)) {
-        guide <- guideGroups[geneGroup$genes]
-        gMat <- outer(guide, guide, `==`)
-        dimnames(gMat) <- list(geneGroup$genes, geneGroup$genes)
-        gMat <- melt(gMat, varnames = c('from', 'to'), value.name = 'gWeight')
-        aMat <- merge(aMat, gMat)
-    }
-    aMat <- aMat[aMat$nWeight != 0 & aMat$sWeight != 0,]
-    
-    gr <- graph_from_data_frame(aMat, directed = FALSE, 
-                                vertices = geneGroup$genes)
-    
-    chosenCliques <- list()
-    
-    unconnected <- components(gr)
-    
-    for (i in seq_len(unconnected$no)) {
-        members <- which(unconnected$membership == i)
-        subgr <- induced_subgraph(gr, members)
-        
-        while (gsize(subgr) != 0) {
-            clique <- extractClique(subgr, 
-                                    length(unique(geneGroup$organism[members])))
-            subgr <- subgr - clique
-            chosenCliques <- append(chosenCliques, list(as.integer(clique)))
-        }
-        if (gorder(subgr) != 0) {
-            chosenCliques <- append(chosenCliques, 
-                                    as.list(as.integer(V(subgr)$name)))
-        }
-    }
-    
-    chosenCliques
+    split(members, extractCliques(edges, length(members)))
 }
 #' Extract the \emph{best} clique from a graph
 #' 
@@ -361,162 +253,67 @@ neighborSplitting <- function(geneGroup, pangenome, kmerSize, lowerLimit,
 #' and sorted by their minimum sWeight and nWeight edges. The clique with the
 #' highest minimum weights are returned.
 #' 
-#' @param gr An undirected igraph object with edge attributes nWeight and 
-#' sWeight
+#' @param edges A data.frame with the edges in the graph. The start and end of
+#' the edgesis recorded in the "to" and "from" columns. The data.frame must
+#' additionally contain the columns "nSim", "sSim" and "gSim", with the 
+#' similarity of the neighborhood, sequence and guidegroup respectively.
 #' 
-#' @param nDistinct The number of distinct members in the graph, i.e. the 
-#' maximum size of a clique in the graph
+#' @param nNodes The number of nodes in the graph. If the last node is 
+#' unconnected it will not be recorded in the edges data.frame, so this 
+#' information is necessary.
 #' 
-#' @return A character vector with the name of the vertices included in the 
-#' clique
+#' @return An integer vector with the membership of each node
 #' 
-#' @importFrom igraph degree gorder V coreness E largest_cliques as_edgelist edge_attr edge_attr_names
-#' 
-#' @noRd
-#' 
-extractClique <- function(gr, nDistinct) {
-    if (all(degree(gr) == gorder(gr) - 1)) return(V(gr)$name)
-    
-    if (!'gWeight' %in% edge_attr_names(gr)) {
-        E(gr)$gWeight <- FALSE
-    }
-    
-    if (gorder(gr) > nDistinct && 
-        sort(coreness(gr), decreasing = TRUE)[nDistinct] > nDistinct - 1) {
-        edges <- E(gr)
-        edgeOrder <- order(edges$nWeight, edges$sWeight, edges$gWeight, 
-                           na.last = FALSE)
-        lastUpper <- length(edgeOrder)
-        lastLower <- 0
-        breakPoint <- lastLower + floor((lastUpper - lastLower)/2)
-        subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
-        grCoreness <- sort(coreness(subgr), decreasing = TRUE)
-        while (grCoreness[nDistinct] != nDistinct - 1 && 
-               grCoreness[nDistinct + 1 != nDistinct - 1]) { # At least nDistinct must have nDistinct-1 neighbors
-            if (grCoreness[nDistinct] > nDistinct - 1) {
-                lastLower <- breakPoint
-            } else {
-                lastUpper <- breakPoint
-            }
-            breakPoint <- lastLower + floor((lastUpper - lastLower)/2)
-            subgr <- gr - edges[edgeOrder[seq_len(breakPoint)]]
-            grCoreness <- sort(coreness(subgr), decreasing = TRUE)
-            if (lastLower == lastUpper) break
-        }
-        gr <- subgr
-    }
-    cliques <- largest_cliques(gr)
-    
-    edgelist <- cbind(as_edgelist(gr, names = FALSE), data.frame(edge_attr(gr)))
-    
-    cliques[lengths(cliques) == 1] <- NULL
-    cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
-        edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
-        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]), 
-          mean(edgelist$gWeight[edges], na.rm = TRUE))
-    }))
-    bestClique <- which(cliqueStat[,1] == max(cliqueStat[,1]))
-    if (length(bestClique) != 1) {
-        bestClique <- bestClique[which(cliqueStat[bestClique, 2] == 
-                                           max(cliqueStat[bestClique, 2]))]
-        if (length(bestClique) != 1) {
-            best <- which.max(cliqueStat[bestClique, 3])
-            if (length(best) == 0) best <- 1
-            bestClique <- bestClique[best]
-        }
-    }
-    V(gr)$name[cliques[[bestClique]]]
-}
-#' @importFrom igraph as_edgelist edge_attr max_cliques degree gorder V E gsize
-#' 
-extractClique2 <- function(gr, nDistinct) {
-    if (all(degree(gr) == gorder(gr) - 1)) return(V(gr)$name)
-    
-    maxEdges <- ceiling(gorder(gr)/nDistinct)*nDistinct*(nDistinct - 1)/2
-    currentECount <- gsize(gr)
-    if (currentECount > maxEdges) {
-        edges <- E(gr)
-        badEdges <- order(edges$nWeight, 
-                          edges$sWeight)[seq_len(currentECount - maxEdges)]
-        gr <- gr - E(gr)[badEdges]
-    }
-    
-    edgelist <- cbind(as_edgelist(gr, names = FALSE), data.frame(edge_attr(gr)))
-    
-    cliques <- max_cliques(gr)
-    cliques[lengths(cliques) == 1] <- NULL
-    cliqueStat <- do.call(rbind, lapply(cliques, function(clique) {
-        edges <- edgelist[,1] %in% clique & edgelist[,2] %in% clique
-        c(min(edgelist$sWeight[edges]), min(edgelist$nWeight[edges]))
-    }))
-    bestClique <- which(cliqueStat[,1] == max(cliqueStat[,1]))
-    if (length(bestClique) != 1) {
-        bestClique <- bestClique[which.max(cliqueStat[bestClique, 2])]
-    }
-    V(gr)$name[cliques[[bestClique]]]
-}
-#' Extract the neighborhood of each gene in multiple gene groups
-#' 
-#' This function finds the gene group membership of the flanking genes for each
-#' gene in one or several gene groups.
-#' 
-#' @param groups The index of the groups for which the neighborhood of their
-#' members must be found
-#' 
-#' @param currentGrouping The current group membership of the genes (often the 
-#' result of seqToGeneGroup(pg))
-#' 
-#' @param pg A pgVirtual subclass object
-#' 
-#' @param vicinity The distance from the gene to extract group membership from
-#' 
-#' @return A list of list of lists. The elements of the outermost list are the 
-#' gene groups queried the elements of the middle list are the genes in the 
-#' group and the elements of the innermost list are 'up' and 'down' containing
-#' the up- and downstream gene groups of each gene respectively.
-#' 
-#' @importFrom dplyr %>% group_by arrange do
+#' @importFrom igraph make_undirected_graph gorder degree V<-
 #' 
 #' @noRd
 #' 
-trailGroups2 <- function(groups, currentGrouping, pg, vicinity) {
+extractCliques <- function(edges, nNodes) {
+    edges <- edges[order(edges$nSim, edges$sSim, edges$gSim, decreasing = TRUE),]
+    gr <- make_undirected_graph(rbind(edges$from, edges$to), n = nNodes)
+    if (all(degree(gr) == nNodes - 1)) {
+        return(list(rep(1, nNodes)))
+    }
+    V(gr)$ID <- seq_len(nNodes) - 1
+    getCliques(gr)
+}
+#' Get the adjacent genes for for each gene in a pangenome
+#' 
+#' This function is used to extract neighbor information for each gene in a 
+#' pangenome. The returned information is 0-indexed as it is mainly used to pass
+#' into C++ functions.
+#' 
+#' @param pg A pgVirtualLoc subclass object
+#' 
+#' @return A data.frame with column "id", "down", "up" and "reverse". Id gives 
+#' the id of the group, down the neighbor downwards and up the neighbor upward.
+#' Reverse tells if the gene is located on the reverse strand. If a gene is 
+#' located at the beginning or end of a DNA string, -1 will be used to indicate
+#' absence of neighbors in up and down
+#' 
+#' @importFrom dplyr %>% group_by arrange transmute n ungroup arrange
+#' 
+#' @noRd
+#' 
+getNeighbors <- function(pg) {
     oldOptions <- options(dplyr.show_progress = FALSE)
     on.exit({
         options(oldOptions)
     })
-    genes <- which(currentGrouping %in% groups)
-    info <- geneLocation(pg)
-    info$gene <- 1:nrow(info)
-    info$group <- currentGrouping
-    info$organism <- seqToOrg(pg)
-    info$location <- paste(info$organism, info$contig, sep = '>')
-    info <- info[info$location %in% unique(info$location[genes]), , 
-                 drop = FALSE]
-    info <- info %>%
-        group_by(location) %>%
-        arrange(start, end) %>%
-        do(trail = {
-            geneInd <- which(.$gene %in% genes)
-            res <- lapply(geneInd, function(x) {
-                trailSeq <- x + c(-1, 1)*vicinity
-                if (trailSeq[1] < 1) trailSeq[1] <- 1
-                if (trailSeq[2] > nrow(.)) trailSeq[2] <- nrow(.)
-                if (.$strand[x] == -1) {
-                    trailSeq <- rev(trailSeq)
-                }
-                downLength <- abs(trailSeq[1] - x) + 1
-                list(
-                    down = .$group[seq(trailSeq[1], x)[-downLength]],
-                    up = .$group[seq(x, trailSeq[2])[-1]]
-                )
-            })
-            names(res) <- .$gene[geneInd]
-            res
-        })
-    info <- unlist(info$trail, recursive = FALSE)
-    info <- info[match(as.character(genes), names(info))]
-    info <- split(info, currentGrouping[genes])
-    info[match(as.character(groups), names(info))]
+    gLoc <- geneLocation(pg)
+    gLoc$id <- seq_len(nGenes(pg))
+    gLoc$org <- seqToOrg(pg)
+    
+    gLoc <- gLoc %>% group_by(org, contig) %>% 
+        arrange(start, end) %>% 
+        transmute(id = id-1, 
+                  down = c(-1, id[-n()]), 
+                  up = c(id[-1], -1), 
+                  reverse = strand == -1) %>% 
+        ungroup() %>% 
+        arrange(id)
+    
+    as.data.frame(gLoc)[, -(1:2)]
 }
 #' Determine which gene groups contains paralogues
 #' 
@@ -539,39 +336,4 @@ anyParalogues <- function(pangenome) {
         group_by(geneGroup) %>%
         summarise(paralogues = anyDuplicated(organism) != 0)
     groups$paralogues
-}
-#' Test if a gene group qualifies for splitting
-#' 
-#' This function investigates several aspects of the gene group along with the
-#' status of its neighboring gene groups to decide whether or not it is fit for
-#' splitting.
-#' 
-#' @param group The gene group - currently unused
-#' 
-#' @param neighbors The neighborhood of each gene in the group as a list of 
-#' lists. Each inner list have an 'up' and 'down' element with the index of the
-#' upstream and downstream neighbors respectively.
-#' 
-#' @param hasParalogues logical. Does the group contain several genes from the 
-#' same organism.
-#' 
-#' @param pending A logical vector with the current status of splitting for all
-#' gene groups
-#' 
-#' @return TRUE if the gene group is fit for splitting and FALSE if not
-#' 
-#' @noRd
-#' 
-qualifies <- function(group, neighbors, hasParalogues, pending) {
-    if (!hasParalogues) return(TRUE)
-    down <- lapply(neighbors, `[[`, i = 'down')
-    down[lengths(down) == 0] <- NULL
-    downResolved <- all(!pending[unique(unlist(down))], na.rm = TRUE)
-    up <- lapply(neighbors, `[[`, i = 'up')
-    up[lengths(up) == 0] <- NULL
-    upResolved <- all(!pending[unique(unlist(up))], na.rm = TRUE)
-    if (all(downResolved, upResolved)) return(TRUE)
-    if (length(Reduce(intersect, down)) == 0) return(TRUE)
-    if (length(Reduce(intersect, up)) == 0) return(TRUE)
-    FALSE
 }
