@@ -243,7 +243,7 @@ IntegerVector getCliques(RObject graph) {
     int cliqueID = 1;
     
     // Result variable
-    IntegerVector cliques(10)//nVertices);
+    IntegerVector cliques(10);//nVertices);
     //std::vector<int> cliques(nVertices, 0);
     
 //     // Storage of possible vertices to add
