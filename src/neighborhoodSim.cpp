@@ -236,8 +236,8 @@ IntegerVector getCliques(RObject graph) {
 //     Function deleteVertices = igraph["delete_vertices"];
     
     // Containers for graph information etc.
-    int nVertices = as<int>(gorder(graph));
-    int nEdges = as<int>(gsize(graph));
+//     int nVertices = as<int>(gorder(graph));
+//     int nEdges = as<int>(gsize(graph));
     IntegerMatrix edges;
     int i;
     int cliqueID = 1;
