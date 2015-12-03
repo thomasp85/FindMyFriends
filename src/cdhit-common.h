@@ -72,8 +72,10 @@
 #define IS_PROCESSED 16
 #define IS_MINUS_STRAND 32
 
+/*
 #define max(a,b) (((a)>(b))?(a):(b))
 #define min(a,b) (((a)<(b))?(a):(b))
+*/
 
 typedef unsigned int UINT4;
 typedef unsigned short UINT2;
