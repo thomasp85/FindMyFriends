@@ -231,13 +231,15 @@ neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping,
                               widths, maxLengthDif, forceParalogues, flankSize, 
                               kmerSize, lowerLimit, guideGroups) {
     members <- which(grouping == group)
+    if (length(members) == 1) {
+        return(list(members))
+    }
     nSim <- neighborhoodSim(members - 1, grouping, seqToOrg, flankSize, 
                             neighbors$down, neighbors$up, neighbors$reverse, 
                             widths, maxLengthDif, forceParalogues)
-    sSim <- linearKernel(getExRep(genes(object, subset=members), 
-                                  spectrumKernel(kmerSize)),
-                         sparse = TRUE, diag = FALSE, 
-                         lowerLimit = lowerLimit)
+    seqs <- genes(object, subset=members)
+    sSim <- lkFMF(getExRep(seqs, spectrumKernel(kmerSize)), order = order(seqs),
+                  lowerLimit = lowerLimit, upperLimit = 1)
     edges <- mergeSims(nSim$i, nSim$p, nSim$x, sSim@i, sSim@p, sSim@x, 
                        guideGroups)
     if (nrow(edges) == 0) {
