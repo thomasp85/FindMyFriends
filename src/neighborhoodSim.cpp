@@ -228,12 +228,12 @@ List widthSim(IntegerVector groups, IntegerVector width, double threshold) {
 IntegerVector getCliques(RObject graph) {
     // R functionality
 //    Environment igraph("package:igraph");
-    Function neighbors = igraph["neighbors"];
-    Function gorder = igraph["gorder"];
-    Function gsize = igraph["gsize"];
-    Function ends = igraph["ends"];
-    Function vertexAttr = igraph["vertex_attr"];
-    Function deleteVertices = igraph["delete_vertices"];
+//     Function neighbors = igraph["neighbors"];
+//     Function gorder = igraph["gorder"];
+//     Function gsize = igraph["gsize"];
+//     Function ends = igraph["ends"];
+//     Function vertexAttr = igraph["vertex_attr"];
+//     Function deleteVertices = igraph["delete_vertices"];
     
     // Containers for graph information etc.
     int nVertices = as<int>(gorder(graph));
