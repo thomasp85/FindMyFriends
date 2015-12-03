@@ -243,7 +243,8 @@ IntegerVector getCliques(RObject graph) {
     int cliqueID = 1;
     
     // Result variable
-    std::vector<int> cliques(nVertices, 0);
+    IntegerVector cliques(nVertices);
+    //std::vector<int> cliques(nVertices, 0);
     
     // Storage of possible vertices to add
     int * possibles = new int[nVertices];
@@ -327,7 +328,7 @@ IntegerVector getCliques(RObject graph) {
     }
     delete[] possibles;
     delete[] possiblesNext;
-    return wrap(cliques);
+    return cliques;
 }
 
 //[[Rcpp::export]]
