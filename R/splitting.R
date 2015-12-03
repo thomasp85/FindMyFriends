@@ -168,41 +168,6 @@ kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
     
     split(as.integer(names(members)), members)
 }
-
-#' Convert a sorted vector of groups to a vector of neighbors
-#' 
-#' This function takes a vector of gene groups, sorted by location, and converts
-#' it to a vector of neighbors in either direction.
-#' 
-#' @param groups A vector of gene group indexes
-#' 
-#' @param dir Either 'f' for forward or 'b' for backward
-#' 
-#' @param n The number of neighbors to collect for each gene
-#' 
-#' @return A character vector with neighbors separated by ';'. If the neighbors
-#' 'falls of' the end of the vector they will be substituted by NA
-#' 
-#' @noRd
-#' 
-collectNeighbors <- function(groups, dir, n) {
-    if (dir == 'b') {
-        groups <- rev(groups)
-    }
-    groups <- c(groups[-1], NA_character_)
-    res <- groups
-    n <- n - 1
-    while (n) {
-        groups <- c(groups[-1], NA_character_)
-        res <- paste(res, groups, sep = ';')
-        n <- n - 1
-    }
-    if (dir == 'b') {
-        rev(res)
-    } else {
-        res
-    }
-}
 #' Create a matrix of neighborhood similarity
 #' 
 #' This function compares the neighborhood and organism membership of a group of
