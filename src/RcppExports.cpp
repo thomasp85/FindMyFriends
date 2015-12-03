@@ -65,7 +65,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type P(PSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type X(XSEXP);
     __result = Rcpp::wrap(getClusters(nNodes, I, P, X));
-
+    return __result;
+END_RCPP
+}
 // neighborhoodSim
 List neighborhoodSim(IntegerVector members, IntegerVector groups, IntegerVector organism, int size, IntegerVector down, IntegerVector up, LogicalVector reverse, IntegerVector width, double threshold, bool forceParalogues);
 RcppExport SEXP FindMyFriends_neighborhoodSim(SEXP membersSEXP, SEXP groupsSEXP, SEXP organismSEXP, SEXP sizeSEXP, SEXP downSEXP, SEXP upSEXP, SEXP reverseSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP forceParaloguesSEXP) {

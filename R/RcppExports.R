@@ -19,6 +19,7 @@ linearKernel <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
 
 getClusters <- function(nNodes, I, P, X) {
     .Call('FindMyFriends_getClusters', PACKAGE = 'FindMyFriends', nNodes, I, P, X)
+}
 
 neighborhoodSim <- function(members, groups, organism, size, down, up, reverse, width, threshold, forceParalogues) {
     .Call('FindMyFriends_neighborhoodSim', PACKAGE = 'FindMyFriends', members, groups, organism, size, down, up, reverse, width, threshold, forceParalogues)
