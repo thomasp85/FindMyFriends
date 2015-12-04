@@ -9,7 +9,7 @@
 cdhitGrouping(object, ...)
 
 \S4method{cdhitGrouping}{pgVirtual}(object, kmerSize, lowerLimit, maxLengthDif,
-  geneChunkSize = 1e+06, cdhitOpts = list())
+  geneChunkSize, cdhitOpts)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
