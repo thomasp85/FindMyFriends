@@ -227,7 +227,8 @@ List widthSim(IntegerVector groups, IntegerVector width, double threshold) {
 //[[Rcpp::export]]
 IntegerVector getCliques(RObject graph) {
     // R functionality
-    Environment igraph("package:igraph");
+    Environment FMF("package:FindMyFriends");
+    List igraph = FMF[".igraphFunctions"];
     Function neighbors = igraph["neighbors"];
     Function gorder = igraph["gorder"];
     Function gsize = igraph["gsize"];

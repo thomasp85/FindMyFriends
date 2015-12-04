@@ -339,3 +339,23 @@ anyParalogues <- function(pangenome) {
         summarise(paralogues = anyDuplicated(organism) != 0)
     groups$paralogues
 }
+
+#' igraph functions to access through Rcpp
+#' 
+#' This list allows one to access igraph functions without putting igraph in 
+#' Depends, thus polluting the seqrch path
+#' 
+#' @keywords Internal
+#' 
+#' @export
+#' 
+#' @noRd
+#' 
+.igraphFunctions <- list(
+    neighbors = igraph::neighbors,
+    gorder = igraph::gorder,
+    gsize = igraph::gsize,
+    ends = igraph::ends,
+    vertex_attr = igraph::vertex_attr,
+    delete_vertices = igraph::delete_vertices
+)
