@@ -54,11 +54,11 @@ List neighborhoodSim(IntegerVector members, IntegerVector groups,
     uint64_t vectorSize = nMembers * 2;
     
     std::vector<int> P;
-    std::vector<int> I;
-    std::vector<int> X;
+    std::deque<int> I;
+    std::deque<int> X;
     P.reserve(nMembers + 1);
-    I.reserve(vectorSize);
-    X.reserve(vectorSize);
+//     I.reserve(vectorSize);
+//     X.reserve(vectorSize);
     
     for (j = 0; j < nMembers - 1; j++) {
         R_CheckUserInterrupt();
@@ -187,14 +187,16 @@ List widthSim(IntegerVector groups, IntegerVector width, double threshold) {
     // Result storage
     uint64_t vectorSize = size * 2;
     
-    std::vector<int> P;
-    std::vector<int> I;
-    std::vector<int> X;
-    P.reserve(size + 1);
-    I.reserve(vectorSize);
-    X.reserve(vectorSize);
+    std::deque<int> P;
+    std::deque<int> I;
+    std::deque<int> X;
+//     P.reserve(size + 1);
+//     I.reserve(vectorSize);
+//     X.reserve(vectorSize);
     
     for (j = 0; j < size - 1; j++) {
+        R_CheckUserInterrupt();
+        
         P.push_back(I.size());
         for (i = j+1; i < size; i++) {
             if (groups[j] != groups[i])
@@ -261,6 +263,7 @@ IntegerVector getCliques(RObject graph) {
     IntegerVector neighbor1, neighbor2;
     
     while (nEdges) {
+        R_CheckUserInterrupt();
         
         edges = ends(graph, seq_len(nEdges), wrap(false));
         IntegerMatrix::Column from = edges(_, 0);

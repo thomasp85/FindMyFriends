@@ -27,12 +27,12 @@ List linearKernel(IntegerVector pX, IntegerVector jX,
 //     
 //     int nextFree = 0;
     
-    std::vector<int> P;
-    std::vector<int> I;
-    std::vector<double> X;
-    P.reserve(sizeX + 1);
-    I.reserve(vectorSize);
-    X.reserve(vectorSize);
+    std::deque<int> P;
+    std::deque<int> I;
+    std::deque<double> X;
+//     P.reserve(sizeX + 1);
+//     I.reserve(vectorSize);
+//     X.reserve(vectorSize);
     
     // Initialize grouping variables
     std::vector<int> group; // Group representative
@@ -130,7 +130,7 @@ List linearKernel(IntegerVector pX, IntegerVector jX,
 //     ptrX = NULL;
     
     return List::create(
-       Named("member") = member,
+        Named("member") = member,
         Named("i") = wrap(I),
         Named("p") = wrap(P),
         Named("x") = wrap(X)
