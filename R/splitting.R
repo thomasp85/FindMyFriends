@@ -56,7 +56,7 @@ setMethod(
             flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
             guide = guideGroups
         )
-        easySplits <- lapply(easySplits, unlist)
+        easySplits <- unlist(easySplits, recursive = FALSE)
         finalGrouping[unlist(easySplits)] <- rep(seq_along(easySplits) + max(finalGrouping), lengths(easySplits))
         
         pending <- containsParalogues
@@ -84,7 +84,7 @@ setMethod(
                 flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
                 guide = guideGroups
             )
-            splits <- lapply(splits, unlist)
+            splits <- unlist(splits, recursive = FALSE)
             finalGrouping[unlist(splits)] <- rep(seq_along(splits) + max(finalGrouping), lengths(splits))
             pending[currentRound] <- FALSE
         }
