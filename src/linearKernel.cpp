@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include "fmf-common.h"
 using namespace Rcpp;
 
 template<typename T1, typename T2, typename R1, typename R2>
@@ -74,6 +75,14 @@ IntegerVector linearKernel(const T1& pX, const T1& jX, const T2& xX, const T1& s
     
     return member;
 }
+
+//[[Rcpp::export]]
+List lkMatrix(IntegerVector pX, IntegerVector jX, NumericVector xX, 
+              IntegerVector selX, double lowerLimit, double upperLimit) {
+    std::deque<int> P;
+    std::deque<int> I;
+    std::deque<double> X;
+    IntegerVector member = linearKernel(pX, jX, xX, selX, lowerLimit, upperLimit, P, I, X);
     
     return List::create(
         Named("member") = member,
@@ -83,29 +92,20 @@ IntegerVector linearKernel(const T1& pX, const T1& jX, const T2& xX, const T1& s
     );
 }
 
-// //[[Rcpp::export]]
-// void freeHeapLinearKernelC() {
-//     if (ptrP != NULL)
-//     {
-//         Free(ptrP);
-//         ptrP = NULL;
-//     }
-//     
-//     if (ptrI != NULL)
-//     {
-//         Free(ptrI);
-//         ptrI = NULL;
-//     }
-//     
-//     if (ptrX != NULL)
-//     {
-//         Free(ptrX);
-//         ptrX = NULL;
-//     }
-// }
-
 //[[Rcpp::export]]
+IntegerVector lkMembers(IntegerVector pX, IntegerVector jX, NumericVector xX, 
+                        IntegerVector selX, double lowerLimit, 
+                        double upperLimit) {
+    std::deque<int> P;
+    std::deque<int> I;
+    std::deque<double> X;
+    IntegerVector member = linearKernel(pX, jX, xX, selX, lowerLimit, upperLimit, P, I, X);
     
+    IntegerVector grouping = getClusters(I, P, X);
+    int i;
+    for (i = 0; i < member.size(); ++i) {
+        member[i] = grouping[member[i]];
     }
     
+    return member;
 }

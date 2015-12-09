@@ -447,10 +447,9 @@ recurseCompare <- function(pangenome, tree, er, clusters, kmerSize, lowerLimit,
     } else {
         erRep <- er[represent,]
     }
-    sim <- lkFMF(erRep, order = order(gen), lowerLimit = lowerLimit, 
+    members <- lkFMF(erRep, order = order(gen), lowerLimit = lowerLimit, 
                  upperLimit = lowerLimit)
     rm(gen)
-    members <- clustersFromAdjMatrix(sim)
     newGroups <- lapply(split(groups, members), unlist)
     if (!missing(cacheDB)) {
         dbInsert(cacheDB, key, newGroups)

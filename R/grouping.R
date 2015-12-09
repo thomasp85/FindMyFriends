@@ -153,10 +153,9 @@ setMethod(
         })
         
         seqs <- genes(object, subset = reps)
-        sim <- lkFMF(getExRep(seqs, spectrumKernel(rep(kmerSize, 2)[2])),
+        groupsGroups <- lkFMF(getExRep(seqs, spectrumKernel(rep(kmerSize, 2)[2])),
                      order = order(seqs), lowerLimit = lowerLimit, 
                      upperLimit = lowerLimit)
-        groupsGroups <- clustersFromAdjMatrix(sim)
         groups <- lapply(split(groups, groupsGroups), unlist)
         manualGrouping(object, groups)
     }

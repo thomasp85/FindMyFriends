@@ -232,7 +232,7 @@ neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping,
                             neighbors$down, neighbors$up, neighbors$reverse, 
                             widths, maxLengthDif, forceParalogues)
     seqs <- genes(object, subset=members)
-    sSim <- lkFMF(getExRep(seqs, spectrumKernel(kmerSize)), order = order(seqs),
+    sSim <- lkFMFmat(getExRep(seqs, spectrumKernel(kmerSize)), order = order(seqs),
                   lowerLimit = lowerLimit, upperLimit = 1)
     edges <- mergeSims(nSim$i, nSim$p, nSim$x, sSim@i, sSim@p, sSim@x, 
                        guideGroups)
