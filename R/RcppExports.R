@@ -45,6 +45,10 @@ getPotentials <- function(down, up, pending, reverse, groupSplit, groups) {
     .Call('FindMyFriends_getPotentials', PACKAGE = 'FindMyFriends', down, up, pending, reverse, groupSplit, groups)
 }
 
+groupHasParalogues <- function(groupMembers, org) {
+    .Call('FindMyFriends_groupHasParalogues', PACKAGE = 'FindMyFriends', groupMembers, org)
+}
+
 panSim <- function(pg) {
     .Call('FindMyFriends_panSim', PACKAGE = 'FindMyFriends', pg)
 }

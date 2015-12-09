@@ -362,3 +362,33 @@ IntegerVector getPotentials(IntegerVector down, IntegerVector up,
     
     return wrap(potentials);
 }
+
+//[[Rcpp::export]]
+LogicalVector groupHasParalogues(List groupMembers, IntegerVector org) {
+    int nGroups = groupMembers.size();
+    int i, j, currentOrg;
+    int maxO = 0;
+    IntegerVector group;
+    LogicalVector hasParalogues(nGroups, false);
+    std::vector<bool> visited(max(org), false);
+    
+    for (i = 0; i < nGroups; ++i) {
+        R_CheckUserInterrupt();
+        
+        group = groupMembers[i];
+        for (j = 0; j < group.size(); ++j) {
+            currentOrg = org[group[j]-1]-1;
+            if (currentOrg < visited.size() && visited[currentOrg]) {
+                hasParalogues[i] = true;
+                break;
+            } else {
+                visited[currentOrg] = true;
+            }
+        }
+        while (j != 0) {
+            visited[org[group[--j]-1]-1] = false;
+        }
+    }
+    
+    return hasParalogues;
+}

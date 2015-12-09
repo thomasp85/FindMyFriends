@@ -42,11 +42,11 @@ setMethod(
         rm(grouping)
         
         gLoc <- getNeighbors(object)
-        containsParalogues <- anyParalogues(object)
         startGrouping <- seqToGeneGroup(object)
         startGroupingSplit <- split(seq_len(nGenes(object)), startGrouping)
         finalGrouping <- startGrouping
         org <- seqToOrg(object)
+        containsParalogues <- anyParalogues(startGroupingSplit, org)
         easySplits <- lapply(
             which(!containsParalogues), 
             neighborSplitting,

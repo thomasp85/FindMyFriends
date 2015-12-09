@@ -160,6 +160,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// groupHasParalogues
+LogicalVector groupHasParalogues(List groupMembers, IntegerVector org);
+RcppExport SEXP FindMyFriends_groupHasParalogues(SEXP groupMembersSEXP, SEXP orgSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type groupMembers(groupMembersSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type org(orgSEXP);
+    __result = Rcpp::wrap(groupHasParalogues(groupMembers, org));
+    return __result;
+END_RCPP
+}
 // panSim
 NumericMatrix panSim(NumericMatrix pg);
 RcppExport SEXP FindMyFriends_panSim(SEXP pgSEXP) {
