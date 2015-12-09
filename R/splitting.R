@@ -37,15 +37,9 @@ setMethod(
         
         # Presplit by length
         widths <- geneWidth(object)
-        wSim <- widthSim(seqToGeneGroup(object), widths, maxLengthDif)
-        wSim <- sparseMatrix(i = wSim$i, p = wSim$p, x = wSim$x, 
-                             dims = rep(nGenes(object), 2), symmetric = TRUE,
-                             index1 = FALSE)
-        grouping <- components(
-            graph_from_adjacency_matrix(wSim, mode = 'undirected', diag = FALSE)
-        )$membership
+        grouping <- widthSim(seqToGeneGroup(object), widths, maxLengthDif)
         object <- manualGrouping(object, as.integer(grouping))
-        rm(wSim, grouping)
+        rm(grouping)
         
         gLoc <- getNeighbors(object)
         containsParalogues <- anyParalogues(object)

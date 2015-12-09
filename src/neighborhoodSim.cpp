@@ -1,5 +1,6 @@
 #include <Rcpp.h>
 #include <algorithm>
+#include "fmf-common.h"
 
 using namespace Rcpp;
 
@@ -178,21 +179,15 @@ DataFrame mergeSims(IntegerVector nI, IntegerVector nP, IntegerVector nX,
 }
 
 //[[Rcpp::export]]
-List widthSim(IntegerVector groups, IntegerVector width, double threshold) {
+IntegerVector widthSim(IntegerVector groups, IntegerVector width, double threshold) {
     int i, j, minLength, widthi, widthj;
     double diff;
     
     int size = groups.size();
     
-    // Result storage
-    uint64_t vectorSize = size * 2;
-    
     std::deque<int> P;
     std::deque<int> I;
     std::deque<int> X;
-//     P.reserve(size + 1);
-//     I.reserve(vectorSize);
-//     X.reserve(vectorSize);
     
     for (j = 0; j < size - 1; j++) {
         R_CheckUserInterrupt();
@@ -218,12 +213,11 @@ List widthSim(IntegerVector groups, IntegerVector width, double threshold) {
             X.push_back(1);
         }
     }
+    P.push_back(I.size());
+    P.push_back(I.size());
     
-    return List::create(
-        Named("i") = wrap(I),
-        Named("p") = wrap(P),
-        Named("x") = wrap(X)
-    );
+    IntegerVector newgroups = getClusters(I, P, X);
+    return newgroups;
 }
 
 //[[Rcpp::export]]
