@@ -51,15 +51,10 @@ List neighborhoodSim(IntegerVector members, IntegerVector groups,
     std::vector<bool> hasNeighbors(nMembers, false);
     std::vector<int> neighborhoodI, neighborhoodJ;
     
-    // Result storage
-    uint64_t vectorSize = nMembers * 2;
-    
     std::vector<int> P;
     std::deque<int> I;
     std::deque<int> X;
     P.reserve(nMembers + 1);
-//     I.reserve(vectorSize);
-//     X.reserve(vectorSize);
     
     for (j = 0; j < nMembers - 1; j++) {
         R_CheckUserInterrupt();
@@ -366,8 +361,4 @@ IntegerVector getPotentials(IntegerVector down, IntegerVector up,
     }
     
     return wrap(potentials);
-}
-//[[Rcpp::export]]
-IntegerVector testFun() {
-    return seq_len(10);
 }
