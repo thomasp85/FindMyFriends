@@ -130,8 +130,8 @@ setMethod(
             group_by(organism, contig) %>%
             arrange(start, end) %>%
             mutate(up = c(geneGroup[-1], NA), reverse = geneGroup < up) %>%
-            transmute(from = ifelse(reverse, geneGroup, up), 
-                      to = ifelse(reverse, up, geneGroup)) %>%
+            transmute(from = as.character(ifelse(reverse, geneGroup, up)), 
+                      to = as.character(ifelse(reverse, up, geneGroup))) %>%
             ungroup() %>%
             filter(!is.na(from) & !is.na(to)) %>%
             group_by(from, to) %>%
