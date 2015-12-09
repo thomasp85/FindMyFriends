@@ -66,7 +66,7 @@ setMethod(
                 currentRound <- getPotentials(gLoc$down, gLoc$up, pending, gLoc$reverse, startGroupingSplit, startGrouping)
                 if (length(currentRound) == 0) {
                     lastCall <- lastCall + 1
-                    chosen <- order(lengths(startGrouping[pending]))[seq_len(min(sum(pending), 10))]
+                    chosen <- order(lengths(startGroupingSplit[pending]))[seq_len(min(sum(pending), 10))]
                     currentRound <- which(pending)[chosen]
                 } else {
                     lastCall <- 0
