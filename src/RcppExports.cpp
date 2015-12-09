@@ -38,9 +38,22 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// linearKernel
-List linearKernel(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
-RcppExport SEXP FindMyFriends_linearKernel(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
+// getClustersFromR
+IntegerVector getClustersFromR(IntegerVector I, IntegerVector P, NumericVector X);
+RcppExport SEXP FindMyFriends_getClustersFromR(SEXP ISEXP, SEXP PSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type I(ISEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type P(PSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type X(XSEXP);
+    __result = Rcpp::wrap(getClustersFromR(I, P, X));
+    return __result;
+END_RCPP
+}
+// lkMatrix
+List lkMatrix(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
+RcppExport SEXP FindMyFriends_lkMatrix(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -50,21 +63,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type selX(selXSEXP);
     Rcpp::traits::input_parameter< double >::type lowerLimit(lowerLimitSEXP);
     Rcpp::traits::input_parameter< double >::type upperLimit(upperLimitSEXP);
-    __result = Rcpp::wrap(linearKernel(pX, jX, xX, selX, lowerLimit, upperLimit));
+    __result = Rcpp::wrap(lkMatrix(pX, jX, xX, selX, lowerLimit, upperLimit));
     return __result;
 END_RCPP
 }
-// getClusters
-IntegerVector getClusters(int nNodes, IntegerVector I, IntegerVector P, NumericVector X);
-RcppExport SEXP FindMyFriends_getClusters(SEXP nNodesSEXP, SEXP ISEXP, SEXP PSEXP, SEXP XSEXP) {
+// lkMembers
+IntegerVector lkMembers(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
+RcppExport SEXP FindMyFriends_lkMembers(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< int >::type nNodes(nNodesSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type I(ISEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type P(PSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type X(XSEXP);
-    __result = Rcpp::wrap(getClusters(nNodes, I, P, X));
+    Rcpp::traits::input_parameter< IntegerVector >::type pX(pXSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type jX(jXSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xX(xXSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type selX(selXSEXP);
+    Rcpp::traits::input_parameter< double >::type lowerLimit(lowerLimitSEXP);
+    Rcpp::traits::input_parameter< double >::type upperLimit(upperLimitSEXP);
+    __result = Rcpp::wrap(lkMembers(pX, jX, xX, selX, lowerLimit, upperLimit));
     return __result;
 END_RCPP
 }
@@ -106,7 +121,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // widthSim
-List widthSim(IntegerVector groups, IntegerVector width, double threshold);
+IntegerVector widthSim(IntegerVector groups, IntegerVector width, double threshold);
 RcppExport SEXP FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
@@ -142,16 +157,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type groupSplit(groupSplitSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type groups(groupsSEXP);
     __result = Rcpp::wrap(getPotentials(down, up, pending, reverse, groupSplit, groups));
-    return __result;
-END_RCPP
-}
-// testFun
-IntegerVector testFun();
-RcppExport SEXP FindMyFriends_testFun() {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    __result = Rcpp::wrap(testFun());
     return __result;
 END_RCPP
 }

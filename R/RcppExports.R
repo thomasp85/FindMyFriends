@@ -13,12 +13,16 @@ nSeqs <- function(files) {
     .Call('FindMyFriends_nSeqs', PACKAGE = 'FindMyFriends', files)
 }
 
-linearKernel <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
-    .Call('FindMyFriends_linearKernel', PACKAGE = 'FindMyFriends', pX, jX, xX, selX, lowerLimit, upperLimit)
+getClusters <- function(I, P, X) {
+    .Call('FindMyFriends_getClustersFromR', PACKAGE = 'FindMyFriends', I, P, X)
 }
 
-getClusters <- function(nNodes, I, P, X) {
-    .Call('FindMyFriends_getClusters', PACKAGE = 'FindMyFriends', nNodes, I, P, X)
+lkMatrix <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
+    .Call('FindMyFriends_lkMatrix', PACKAGE = 'FindMyFriends', pX, jX, xX, selX, lowerLimit, upperLimit)
+}
+
+lkMembers <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
+    .Call('FindMyFriends_lkMembers', PACKAGE = 'FindMyFriends', pX, jX, xX, selX, lowerLimit, upperLimit)
 }
 
 neighborhoodSim <- function(members, groups, organism, size, down, up, reverse, width, threshold, forceParalogues) {
@@ -39,10 +43,6 @@ getCliques <- function(graph) {
 
 getPotentials <- function(down, up, pending, reverse, groupSplit, groups) {
     .Call('FindMyFriends_getPotentials', PACKAGE = 'FindMyFriends', down, up, pending, reverse, groupSplit, groups)
-}
-
-testFun <- function() {
-    .Call('FindMyFriends_testFun', PACKAGE = 'FindMyFriends')
 }
 
 panSim <- function(pg) {
