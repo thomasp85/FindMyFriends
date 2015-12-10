@@ -46,7 +46,7 @@ setMethod(
         startGroupingSplit <- split(seq_len(nGenes(object)), startGrouping)
         finalGrouping <- startGrouping
         org <- seqToOrg(object)
-        containsParalogues <- anyParalogues(startGroupingSplit, org)
+        containsParalogues <- groupHasParalogues(startGroupingSplit, org)
         easySplits <- lapply(
             which(!containsParalogues), 
             neighborSplitting,
