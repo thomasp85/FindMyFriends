@@ -17,6 +17,10 @@ getClusters <- function(I, P, X) {
     .Call('FindMyFriends_getClustersFromR', PACKAGE = 'FindMyFriends', I, P, X)
 }
 
+createPanMatrix <- function(org, group) {
+    .Call('FindMyFriends_createPanMatrix', PACKAGE = 'FindMyFriends', org, group)
+}
+
 lkMatrix <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
     .Call('FindMyFriends_lkMatrix', PACKAGE = 'FindMyFriends', pX, jX, xX, selX, lowerLimit, upperLimit)
 }

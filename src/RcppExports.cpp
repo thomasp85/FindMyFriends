@@ -51,6 +51,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// createPanMatrix
+List createPanMatrix(IntegerVector org, IntegerVector group);
+RcppExport SEXP FindMyFriends_createPanMatrix(SEXP orgSEXP, SEXP groupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type org(orgSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
+    __result = Rcpp::wrap(createPanMatrix(org, group));
+    return __result;
+END_RCPP
+}
 // lkMatrix
 List lkMatrix(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
 RcppExport SEXP FindMyFriends_lkMatrix(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {

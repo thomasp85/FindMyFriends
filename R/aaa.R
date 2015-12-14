@@ -1079,53 +1079,17 @@ transformSim <- function(similarity, low, rescale, transform) {
 #' 
 #' @param object A pgVirtual subclass
 #' 
-#' @return A matrix with number of rows equal to the number of gene groups and 
-#' number of columns equal to the number of organisms. Each cell holds the count
-#' of genes for the combination.
+#' @return A dgCMatrix with organisms in columns and gene groups in rows
 #' 
-#' @importFrom reshape2 acast
+#' @importFrom Matrix sparseMatrix
 #' 
 #' @noRd
 #' 
 getPgMatrix <- function(object) {
-    calcPgMatrix(seqToOrg(object), seqToGeneGroup(object), groupNames(object),
-                 orgNames(object))
-}
-#' Calculate pangenome matrix directly
-#' 
-#' This function calculates a pangenome matrix based on the basic information
-#' available in a pgVirtual subclass. Depending on the class implementation,
-#' better approaches might be available, but this approach is ensured to be 
-#' possible.
-#' 
-#' @param seqToOrg An integer vector with organism membership
-#' 
-#' @param seqToGeneGroup An integer vector with gene group membership
-#' 
-#' @param groupNames The names of the gene groups
-#' 
-#' @param orgNames The names of the organisms
-#' 
-#' @return A matrix with number of rows equal to the number of gene groups and 
-#' number of columns equal to the number of organisms. Each cell holds the count
-#' of genes for the combination.
-#' 
-#' @importFrom reshape2 acast
-#' 
-#' @noRd
-#' 
-calcPgMatrix <- function(seqToOrg, seqToGeneGroup, groupNames, orgNames) {
-    if (length(seqToGeneGroup) == 0) {
-        return(matrix(nrow = 0, ncol = length(orgNames), 
-                      dimnames = list(NULL, orgNames)))
-    }
-    matRes <- matrix(0, ncol = length(orgNames), nrow = length(groupNames), 
-                     dimnames = list(groupNames, orgNames))
-    pgmat <- acast(data.frame(seqToOrg = seqToOrg, 
-                              seqToGeneGroup = seqToGeneGroup), 
-                   seqToGeneGroup ~ seqToOrg, length, value.var = 'seqToOrg')
-    matRes[as.integer(rownames(pgmat)), as.integer(colnames(pgmat))] <- pgmat
-    matRes
+    mat <- createPanMatrix(seqToOrg(object), seqToGeneGroup(object))
+    sparseMatrix(i = mat$i, p = mat$p, x = mat$x, 
+                 dims = c(nGeneGroups(object), nOrganisms(object)),
+                 dimnames = list(groupNames(object), orgNames(object)))
 }
 #' Convert between list and vector type indexing
 #' 
