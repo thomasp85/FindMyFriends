@@ -1104,7 +1104,7 @@ getPgMatrix <- function(object) {
 #' @noRd
 #' 
 convertGrouping <- function(groups) {
-    if(is.list(groups)) {
+    if (is.list(groups)) {
         members <- rep(seq_along(groups), lengths(groups))
         members[unlist(groups)] <- as.integer(members)
     } else {
