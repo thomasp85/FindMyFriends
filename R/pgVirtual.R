@@ -303,21 +303,7 @@ setMethod(
         seqToOrg <- seqToOrg(object)
         groups <- split(seqToOrg, seqToGeneGroup)
         nOrgs <- nOrganisms(object)
-        groupInfoCalc <- do.call(rbind, lapply(groups, function(group, nOrgs) {
-            nOrg <- length(unique(group))
-            data.frame(
-                group = if (nOrg == nOrgs) {
-                    'Core'
-                } else if (nOrg == 1) {
-                    'Singleton'
-                } else {
-                    'Accessory'
-                },
-                nOrg = nOrg,
-                nGenes = length(group),
-                stringsAsFactors = FALSE
-            )
-        }, nOrgs = nOrgs))
+        groupInfoCalc <- calcGroupInfo(groups, nOrgs)
         groupInfo <- data.frame(
             description = NA, 
             group = NA, 

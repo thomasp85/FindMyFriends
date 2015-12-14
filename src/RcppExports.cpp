@@ -63,6 +63,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// calcGroupInfo
+DataFrame calcGroupInfo(List groupOrgs, int nOrgs);
+RcppExport SEXP FindMyFriends_calcGroupInfo(SEXP groupOrgsSEXP, SEXP nOrgsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type groupOrgs(groupOrgsSEXP);
+    Rcpp::traits::input_parameter< int >::type nOrgs(nOrgsSEXP);
+    __result = Rcpp::wrap(calcGroupInfo(groupOrgs, nOrgs));
+    return __result;
+END_RCPP
+}
 // lkMatrix
 List lkMatrix(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
 RcppExport SEXP FindMyFriends_lkMatrix(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {

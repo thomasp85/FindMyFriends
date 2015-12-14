@@ -43,3 +43,31 @@ List createPanMatrix(IntegerVector org, IntegerVector group) {
         Named("x") = wrap(X)
     );
 }
+
+//[[Rcpp::export]]
+DataFrame calcGroupInfo(List groupOrgs, int nOrgs) {
+    IntegerVector geneToOrg, uGeneToOrg;
+    CharacterVector group(groupOrgs.size());
+    IntegerVector nOrg(groupOrgs.size());
+    IntegerVector nGenes(groupOrgs.size());
+    
+    for (int i = 0; i < groupOrgs.size(); ++i) {
+        geneToOrg = groupOrgs[i];
+        uGeneToOrg = unique(geneToOrg);
+        if (uGeneToOrg.size() == nOrgs) {
+            group[i] = "Core";
+        } else if (uGeneToOrg.size() == 1) {
+            group[i] = "Singleton";
+        } else {
+            group[i] = "Accessory";
+        }
+        nOrg[i] = uGeneToOrg.size();
+        nGenes[i] = geneToOrg.size();
+    }
+    
+    return DataFrame::create(
+        Named("group") = group,
+        Named("nOrg") = nOrg,
+        Named("nGenes") = nGenes
+    );
+}
