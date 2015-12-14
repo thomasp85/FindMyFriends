@@ -110,8 +110,6 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
         row.names = orgNames, 
         check.names = FALSE, 
         stringsAsFactors = FALSE)
-    args$matrix <- matrix(nrow = 0, ncol = length(paths), 
-                          dimnames = list(NULL, orgNames))
     if (!is.null(geneLocation)) {
         geneNames <- if (lowMem) {
             args$seqIndex$desc
