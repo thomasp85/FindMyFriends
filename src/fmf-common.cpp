@@ -68,6 +68,7 @@ DataFrame calcGroupInfo(List groupOrgs, int nOrgs) {
     return DataFrame::create(
         Named("group") = group,
         Named("nOrg") = nOrg,
-        Named("nGenes") = nGenes
+        Named("nGenes") = nGenes,
+        Named("stringsAsFactors") = false
     );
 }
