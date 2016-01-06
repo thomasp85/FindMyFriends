@@ -161,7 +161,8 @@ globalVariables(
 #' @rdname fillDefaults
 #' 
 .fillDefaults <- function(def) {
-    args <- as.list(sys.frame(-1))
+    frame <- sys.frame(-1)
+    args <- as.list(frame)
     for (i in names(args)) {
         if (identical(args[[i]], quote(expr = )) && !is.null(def[[i]])) {
             if (!is.null(def$verbose) && def$verbose) {
