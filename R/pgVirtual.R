@@ -450,6 +450,9 @@ setMethod(
 #' 
 #' @param color A metadata name to color the organisms by
 #' 
+#' @importFrom ggplot2 ggplot theme_bw scale_y_continuous theme element_text geom_bar aes aes_string scale_fill_brewer element_blank scale_fill_manual coord_polar ggplotGrob
+#' @importFrom grid grid.newpage grid.draw
+#' 
 setMethod(
     'plotStat', 'pgVirtual',
     function(object, sort = TRUE, color, ...) {
@@ -502,7 +505,8 @@ setMethod(
                                           labels = groups$nGenes)
             
             p <- rbindGtable(ggplotGrob(p1), ggplotGrob(p))
-            gtable:::plot.gtable(p)
+            grid.newpage()
+            grid.draw(p)
             invisible(p)
         } else {
             p
@@ -515,6 +519,8 @@ setMethod(
 #' one of 'bootstrap', 'random' or 'none'.
 #' 
 #' @param times The number of sampling for ordering='bootstrap'
+#' 
+#' @importFrom ggplot2 ggplot aes theme_bw scale_color_manual scale_y_continuous geom_smooth scale_x_continuous geom_line scale_x_discrete
 #' 
 setMethod(
     'plotEvolution', 'pgVirtual',
@@ -571,6 +577,7 @@ setMethod(
 #' @param chunkSize Number of organisms to process at a time
 #' 
 #' @importFrom reshape2 melt
+#' @importFrom ggplot2 ggplot aes theme_bw theme element_text geom_raster scale_x_discrete scale_y_discrete coord_fixed scale_fill_distiller
 #' 
 setMethod(
     'plotSimilarity', 'pgVirtual',
@@ -604,7 +611,7 @@ setMethod(
         p <- p + scale_y_discrete('Organism', expand = c(0,0))
         p <- p + coord_fixed()
         p <- p + scale_fill_distiller(palette = 7, guide = 'colorbar', 
-                                      limits = c(0,1))
+                                      limits = c(0,1), direction = 1)
         p
     }
 )
@@ -630,6 +637,7 @@ setMethod(
 #' @param chunkSize Number of organisms to process at a time
 #' 
 #' @importFrom ggdendro dendro_data label
+#' @importFrom ggplot2 ggplot aes theme_bw theme element_blank geom_segment aes_string coord_polar scale_x_continuous scale_y_continuous element_text 
 #' 
 setMethod(
     'plotTree', 'pgVirtual',

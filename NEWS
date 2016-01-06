@@ -14,6 +14,17 @@ Version 1.1.0
 ________________________________________________________________________________
 - Added kmerSplit method
 
+Version 1.0.3
+________________________________________________________________________________
+- Update to work with ggplot2 v2.0.0
+- All imports from ggplot2, gtable and grid are now explicit
+
+Version 1.0.2
+________________________________________________________________________________
+- Fixed bug in transformSim that would cause it to break on large similarity
+matrices
+- Fixed bug in orgTree only present with pangenomes over 100 genomes
+
 Version 0.99.0
 ________________________________________________________________________________
 - Submission to Bioconductor

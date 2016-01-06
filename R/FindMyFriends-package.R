@@ -27,7 +27,7 @@
 #' @name FindMyFriends-package
 #' @author Thomas Lin Pedersen
 #' 
-#' @import methods ggplot2 gtable grid
+#' @import methods
 #' @importFrom Rcpp evalCpp
 #' @useDynLib FindMyFriends
 #' 
