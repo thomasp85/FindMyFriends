@@ -115,6 +115,7 @@ setMethod(
     'orgNames<-', 'pgInMem',
     function(object, value) {
         rownames(object@orgInfo) <- value
+        colnames(object@matrix) <- value
         object
     }
 )
@@ -132,6 +133,7 @@ setMethod(
     'groupNames<-', 'pgInMem',
     function(object, value) {
         rownames(object@groupInfo) <- value
+        rownames(object@matrix) <- value
         object
     }
 )
