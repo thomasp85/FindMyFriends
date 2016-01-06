@@ -660,7 +660,7 @@ kmerDist <- function(pangenome, kmerSize, chunkSize = 100, pParam,
 #' 
 #' @return An ExplicitRepresentationDense object.
 #' 
-#' @importFrom S4Vectors unstrsplit
+#' @import S4Vectors
 #' @importFrom Biostrings AAStringSet DNAStringSet
 #' @importFrom kebabs getExRep spectrumKernel
 #' 
@@ -870,7 +870,7 @@ cutK <- function(x, k) {
 #' 
 #' @noRd
 #' 
-#' @importFrom IRanges PartitioningByEnd
+#' @import IRanges
 #' @importClassesFrom Biostrings AAStringSetList DNAStringSetList RNAStringSetList BStringSetList
 #' 
 splitStringSet <- function(x, f) {
