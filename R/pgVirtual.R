@@ -688,7 +688,7 @@ setMethod(
             p <- p + coord_polar()
             p <- p + scale_x_continuous(breaks = data$labels$x, 
                                         labels = data$labels$label, 
-                                        limit = c(0.5, 
+                                        limits = c(0.5, 
                                                   max(label(data)$x) + 0.5))
         } else {
             p <- p + scale_x_continuous(breaks = data$labels$x, 
