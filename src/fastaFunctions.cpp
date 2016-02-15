@@ -13,6 +13,7 @@ int countSeq(std::string filename) {
         while(getline(in,line)) {
             if(line[0] == '>') counter++;
         }
+        in.close();
     }
     return counter;
 }
