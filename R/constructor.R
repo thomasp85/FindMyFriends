@@ -87,8 +87,22 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
     }
     sequenceFileLength <- as.integer(nSeqs(paths))
     if (lowMem) {
-        args$seqIndex <- fasta.index(paths, 
-                                     seqtype = if (translated) 'AA' else 'DNA')
+        if (length(paths) > 2000) {
+            splits <- rep(seq_len(ceiling(length(paths) / 2000)), each = 2000, 
+                          length.out = length(paths))
+            fi <- lapply(split(paths, splits), function(p) {
+                fasta.index(p, 
+                            seqtype = if (translated) 'AA' else 'DNA')
+            })
+            args$seqIndex <- Reduce(function(l, r) {
+                r$recno <- r$recno + max(l$recno)
+                r$fileno <- r$fileno + max(l$fileno)
+                rbind(l, r)
+            }, x = fi)
+        } else {
+            args$seqIndex <- fasta.index(paths, 
+                                         seqtype = if (translated) 'AA' else 'DNA')
+        }
     } else {
         args$sequences <- if (translated) {
             readAAStringSet(paths)
