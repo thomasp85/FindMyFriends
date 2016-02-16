@@ -163,12 +163,12 @@ setMethod(
 safeAAread <- function(index) {
     if (length(unique(index$fileno)) > 2000) {
         nIndex <- index[order(index$fileno), ]
-        splits <- rep(ceiling(length(unique(index$fileno))) / 2000, each = 2000,
-                      length.out = nrow(nIndex))
+        splits <- rep(seq_len(ceiling(length(unique(index$fileno)) / 2000)), 
+                      each = 2000, length.out = nrow(nIndex))
         seqs <- lapply(split(seq_len(nrow(nIndex)), splits), function(i) {
             readAAStringSet(nIndex[i,])
         })
-        seqs <- do.call(c, seqs)
+        seqs <- Reduce(c, seqs)
         seqs[match(nIndex$recno, index$recno)]
     } else {
         readAAStringSet(index)
@@ -178,12 +178,12 @@ safeAAread <- function(index) {
 safeDNAread <- function(index) {
     if (length(unique(index$fileno)) > 2000) {
         nIndex <- index[order(index$fileno), ]
-        splits <- rep(ceiling(length(unique(index$fileno))) / 2000, each = 2000,
-                      length.out = nrow(nIndex))
+        splits <- rep(seq_len(ceiling(length(unique(index$fileno)) / 2000)), 
+                      each = 2000, length.out = nrow(nIndex))
         seqs <- lapply(split(seq_len(nrow(nIndex)), splits), function(i) {
             readDNAStringSet(nIndex[i,])
         })
-        seqs <- do.call(c, seqs)
+        seqs <- Reduce(c, seqs)
         seqs[match(nIndex$recno, index$recno)]
     } else {
         readDNAStringSet(index)
