@@ -143,20 +143,43 @@ setMethod(
 setMethod(
     'cdhitGrouping', 'pgVirtual',
     function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize, 
-             cdhitOpts) {
+             cdhitOpts, cdhitIter = FALSE) {
         .fillDefaults(defaults(object))
         groups <- precluster(object, kmerSize[1], maxLengthDif, geneChunkSize, 
                              cdhitOpts)
         
-        reps <- sapply(groups, function(x) {
-            x[sample.int(length(x), size = 1)]
-        })
-        
-        seqs <- genes(object, subset = reps)
-        groupsGroups <- lkFMF(getExRep(seqs, spectrumKernel(rep(kmerSize, 2)[2])),
-                     order = order(seqs), lowerLimit = lowerLimit, 
-                     upperLimit = lowerLimit)
-        groups <- lapply(split(groups, groupsGroups), unlist)
+        if (cdhitIter) {
+            if (maxLengthDif < 1) {
+                cdhitOpts$s <- 1 - maxLengthDif
+            } else {
+                cdhitOpts$S <- maxLengthDif
+            }
+            cdhitOpts <- lapply(cdhitOpts, as.character)
+            opts <- data.frame(lowerLimit = seq(0.9, 0.4, by = -0.05), 
+                               kmerSize = c(5, 5, 5, 5, 5, 4, 4, 3, 3, 2, 2))
+            opts <- opts[opts$lowerLimit > lowerLimit, ]
+            for (i in seq_len(nrow(opts))) {
+                reps <- sapply(groups, function(x) {
+                    x[sample.int(length(x), size = 1)]
+                })
+                seqs <- genes(object, subset = reps)
+                
+                cdhitOpts$n <- as.character(opts$kmerSize[i])
+                cdhitOpts$c <- as.character(opts$lowerLimit[i])
+                groupsGroups <- cdhit(seqs, cdhitOpts)
+                groups <- lapply(split(groups, groupsGroups), unlist)
+            }
+        } else {
+            reps <- sapply(groups, function(x) {
+                x[sample.int(length(x), size = 1)]
+            })
+            seqs <- genes(object, subset = reps)
+            
+            groupsGroups <- lkFMF(getExRep(seqs, spectrumKernel(rep(kmerSize, 2)[2])),
+                                  order = order(seqs), lowerLimit = lowerLimit, 
+                                  upperLimit = lowerLimit)
+            groups <- lapply(split(groups, groupsGroups), unlist)
+        }
         manualGrouping(object, groups)
     }
 )
