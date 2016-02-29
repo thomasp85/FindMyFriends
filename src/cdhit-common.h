@@ -575,7 +575,7 @@ class SequenceDB
 		//    WorkingParam & param, WorkingBuffer & buf, const Options & options );
 
 		void ComputeDistance( const Options & options );
-		void DoClustering( const Options & options );
+		void DoClustering( const Options & options, std::string name );
 		void DoClustering( int T, const Options & options );
 		void ClusterTo( SequenceDB & other, const Options & optioins );
 		int  CheckOne( Sequence *seq, WordTable & tab, WorkingParam & par, WorkingBuffer & buf, const Options & opt );

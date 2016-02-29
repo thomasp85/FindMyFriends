@@ -6,24 +6,26 @@
 using namespace Rcpp;
 
 // cdhitestC
-IntegerVector cdhitestC(List opts);
-RcppExport SEXP FindMyFriends_cdhitestC(SEXP optsSEXP) {
+IntegerVector cdhitestC(List opts, CharacterVector name);
+RcppExport SEXP FindMyFriends_cdhitestC(SEXP optsSEXP, SEXP nameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type opts(optsSEXP);
-    __result = Rcpp::wrap(cdhitestC(opts));
+    Rcpp::traits::input_parameter< CharacterVector >::type name(nameSEXP);
+    __result = Rcpp::wrap(cdhitestC(opts, name));
     return __result;
 END_RCPP
 }
 // cdhitC
-IntegerVector cdhitC(List opts);
-RcppExport SEXP FindMyFriends_cdhitC(SEXP optsSEXP) {
+IntegerVector cdhitC(List opts, CharacterVector name);
+RcppExport SEXP FindMyFriends_cdhitC(SEXP optsSEXP, SEXP nameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type opts(optsSEXP);
-    __result = Rcpp::wrap(cdhitC(opts));
+    Rcpp::traits::input_parameter< CharacterVector >::type name(nameSEXP);
+    __result = Rcpp::wrap(cdhitC(opts, name));
     return __result;
 END_RCPP
 }
@@ -145,15 +147,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // widthSim
-IntegerVector widthSim(IntegerVector groups, IntegerVector width, double threshold);
-RcppExport SEXP FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP) {
+IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName);
+RcppExport SEXP FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP progNameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< IntegerVector >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< List >::type groups(groupsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type width(widthSEXP);
     Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
-    __result = Rcpp::wrap(widthSim(groups, width, threshold));
+    Rcpp::traits::input_parameter< CharacterVector >::type progName(progNameSEXP);
+    __result = Rcpp::wrap(widthSim(groups, width, threshold, progName));
     return __result;
 END_RCPP
 }

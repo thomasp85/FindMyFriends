@@ -149,6 +149,7 @@ setMethod(
                              cdhitOpts)
         
         if (cdhitIter) {
+            cdhitOpts$l <- kmerSize[1]
             if (maxLengthDif < 1) {
                 cdhitOpts$s <- 1 - maxLengthDif
             } else {
@@ -167,7 +168,8 @@ setMethod(
                     
                     cdhitOpts$n <- as.character(opts$kmerSize[i])
                     cdhitOpts$c <- as.character(opts$lowerLimit[i])
-                    groupsGroups <- cdhit(seqs, cdhitOpts)
+                    if (!(i == 1 && j == 1)) cat('\n')
+                    groupsGroups <- cdhit(seqs, cdhitOpts, 'Grouping     ')
                     groups <- lapply(split(groups, groupsGroups), unlist)
                 }
             }
@@ -182,6 +184,7 @@ setMethod(
                                   upperLimit = lowerLimit)
             groups <- lapply(split(groups, groupsGroups), unlist)
         }
+        cat('\nGrouping resulted in ', length(groups), ' gene groups', sep = '')
         manualGrouping(object, groups)
     }
 )
@@ -191,6 +194,7 @@ setMethod(
                            cdhitOpts) {
         .fillDefaults(defaults(object))
         cdhitOpts$n <- kmerSize
+        cdhitOpts$l <- kmerSize
         if (maxLengthDif < 1) {
             cdhitOpts$s <- 1 - maxLengthDif
         } else {
@@ -202,12 +206,10 @@ setMethod(
         chunks[nChunks] <- nGenes(object)
         chunks <- data.frame(start = c(1, chunks[-nChunks] + 1), end = chunks)
         
-        message('Running CD-HIT...')
-        flush.console()
-        
         groups <- lapply(seq_len(nChunks), function(i) {
+            if (i != 1) cat('\n')
             cdhit(genes(object, subset = seq.int(chunks$start[i], chunks$end[i])), 
-                  cdhitOpts)
+                  cdhitOpts, 'Preclustering')
         })
         if (nChunks > 1) {
             nClusters <- sapply(groups, max)
@@ -219,14 +221,13 @@ setMethod(
             reps <- sapply(groups, function(x) {
                 x[sample.int(length(x), size = 1)]
             })
-            groupsGroups <- cdhit(genes(object, subset = reps), cdhitOpts)
+            cat('\n')
+            groupsGroups <- cdhit(genes(object, subset = reps), cdhitOpts, 'Merging      ')
             groups <- lapply(split(groups, groupsGroups), unlist)
         } else {
             groups <- split(seq_len(nGenes(object)), unlist(groups))
         }
-        
-        message('CD-HIT preclustering done!')
-        flush.console()
+        cat('\nPreclustering resulted in ', length(groups), ' gene groups\n', sep = '')
         groups
     }
 )
@@ -320,13 +321,13 @@ groupToGraph <- function(pangenome, groups, er, lowerLimit) {
 #' 
 #' @noRd
 #' 
-cdhit <- function(seqs, options) {
+cdhit <- function(seqs, options, name = 'CD-Hit') {
     options$i <- tempfile()
     writeXStringSet(seqs, options$i)
     switch(
         class(seqs),
-        AAStringSet = cdhitC(options) + 1,
-        DNAStringSet = cdhitestC(options) + 1,
+        AAStringSet = cdhitC(options, name) + 1,
+        DNAStringSet = cdhitestC(options, name) + 1,
         stop('seqs must be either AAStringSet or DNAStringSet')
     )
 }

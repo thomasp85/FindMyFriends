@@ -1,5 +1,6 @@
 #' @include aaa.R
 #' @include pgVirtualLoc.R
+#' @include progress.R
 NULL
 
 #' @describeIn neighborhoodSplit Neighborhood-based gene group splitting for
@@ -37,9 +38,10 @@ setMethod(
         
         # Presplit by length
         widths <- geneWidth(object)
-        grouping <- widthSim(seqToGeneGroup(object), widths, maxLengthDif)
+        grouping <- widthSim(split(seq_len(nGenes(object)), seqToGeneGroup(object)), widths, maxLengthDif, 'Presplitting')
         object <- manualGrouping(object, as.integer(grouping))
         rm(grouping)
+        cat('\nPresplitting resulted in ', nGeneGroups(object), ' gene groups\n', sep = '')
         
         gLoc <- getNeighbors(object)
         startGrouping <- seqToGeneGroup(object)
@@ -47,6 +49,8 @@ setMethod(
         finalGrouping <- startGrouping
         org <- seqToOrg(object)
         containsParalogues <- groupHasParalogues(startGroupingSplit, org)
+        
+        prog <- makeProgress(length(startGroupingSplit), 'Splitting   ', 100, 12)
         easySplits <- lapply(
             which(!containsParalogues), 
             neighborSplitting,
@@ -54,7 +58,8 @@ setMethod(
             grouping = finalGrouping, widths = widths, 
             maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
             flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
-            guide = guideGroups
+            guide = guideGroups,
+            prog = prog
         )
         easySplits <- unlist(easySplits, recursive = FALSE)
         finalGrouping[unlist(easySplits)] <- rep(seq_along(easySplits) + max(finalGrouping), lengths(easySplits))
@@ -82,13 +87,18 @@ setMethod(
                 grouping = finalGrouping, widths = widths, 
                 maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
                 flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
-                guide = guideGroups
+                guide = guideGroups,
+                prog = prog
             )
             splits <- unlist(splits, recursive = FALSE)
             finalGrouping[unlist(splits)] <- rep(seq_along(splits) + max(finalGrouping), lengths(splits))
             pending[currentRound] <- FALSE
         }
-        manualGrouping(object, split(seq_len(nGenes(object)), finalGrouping))
+        object <- manualGrouping(object, split(seq_len(nGenes(object)), finalGrouping))
+        cat('\nSplitting resulted in ', nGeneGroups(object), ' gene groups\n', sep = '')
+        object <- neighborhoodMerge(object, maxLengthDif)
+        cat('\nMerging resulted in ', nGeneGroups(object), ' gene groups\n', sep = '')
+        object
     }
 )
 #' @describeIn kmerSplit Kmer similarity based group splitting for pgVirtual 
@@ -223,9 +233,12 @@ kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
 #' 
 neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping, 
                               widths, maxLengthDif, forceParalogues, flankSize, 
-                              kmerSize, lowerLimit, guideGroups) {
+                              kmerSize, lowerLimit, guideGroups, prog) {
     members <- which(grouping == group)
     if (length(members) == 1) {
+        if (!missing(prog)) {
+            progress(prog)
+        }
         return(list(members))
     }
     nSim <- neighborhoodSim(members - 1, grouping, seqToOrg, flankSize, 
@@ -237,9 +250,16 @@ neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping,
     edges <- mergeSims(nSim$i, nSim$p, nSim$x, sSim@i, sSim@p, sSim@x, 
                        guideGroups)
     if (nrow(edges) == 0) {
+        if (!missing(prog)) {
+            progress(prog)
+        }
         return(split(members, seq_along(members)))
     }
-    split(members, extractCliques(edges, length(members)))
+    res <- split(members, extractCliques(edges, length(members)))
+    if (!missing(prog)) {
+        progress(prog)
+    }
+    res
 }
 #' Extract the \emph{best} clique from a graph
 #' 
@@ -333,7 +353,76 @@ anyParalogues <- function(pangenome) {
         summarise(paralogues = anyDuplicated(organism) != 0)
     groups$paralogues
 }
-
+#' @importFrom igraph degree 
+neighborhoodMerge <- function(pangenome, maxLengthDif) {
+    cdhitOpts <- list(l = 5, n = 5)
+    if (maxLengthDif < 1) {
+        cdhitOpts$s <- 1 - maxLengthDif
+    } else {
+        cdhitOpts$S <- maxLengthDif
+    }
+    cdhitOpts <- lapply(cdhitOpts, as.character)
+    first <- TRUE
+    while (TRUE) {
+        pc <- pcGraph(pangenome)
+        knots <- which(degree(pc) > 2)
+        if (length(knots) == 0) break
+        knots <- match(V(pc)$name[knots], groupNames(pangenome))
+        geneInd <- which(seqToGeneGroup(pangenome) %in% knots)
+        neighbors <- trailGroups(geneInd, pangenome, 1)
+        neighbors <- split(neighbors, seqToGeneGroup(pangenome)[geneInd])
+        neighbors <- lapply(seq_along(neighbors), function(i) {
+            groupInd <- as.integer(names(neighbors)[i])
+            n <- neighbors[[i]]
+            nNeighbors <- lengths(n)
+            groupPos <- sapply(n, function(nn) which(nn == groupInd))
+            down <- groupPos - 1
+            up <- groupPos + 1
+            down <- unlist(Map(`[`, n[down != 0], down[down != 0]))
+            up <- unlist(Map(`[`, n[up <= nNeighbors], up[up <= nNeighbors]))
+            list(sort(unique(down)), sort(unique(up)))
+        })
+        neighbors <- unlist(neighbors, recursive = FALSE)
+        neighbors <- unique(neighbors[lengths(neighbors) > 1])
+        neighborlookup <- data.frame(
+            OG = unlist(neighbors), 
+            NG = rep(seq_along(neighbors), lengths(neighbors))
+        )
+        GOI <- unique(unlist(neighbors))
+        repGOI <- getRep(pangenome, 'longest')[GOI]
+        if (first) {
+            first <- FALSE
+        } else {
+            cat('\n')
+        }
+        equals <- cdhit(repGOI, cdhitOpts, 'Merging     ')
+        GOI <- split(GOI, equals)
+        GOI <- GOI[lengths(GOI) > 1]
+        pairs <- lapply(GOI, function(groups) {
+            pairs <- combn(groups, 2)
+            matched <- sapply(seq_len(ncol(pairs)), function(i) {
+                any(neighborlookup$NG[neighborlookup$OG == pairs[1, i]] %in%
+                        neighborlookup$NG[neighborlookup$OG == pairs[2, i]])
+            })
+            pairs[, matched]
+        })
+        pairs <- do.call(cbind, pairs)
+        
+        if (ncol(pairs) == 0) break
+        
+        dupPairs <- apply(matrix(duplicated(as.vector(pairs)), nrow = 2), 2, any)
+        pairs <- pairs[, !dupPairs, drop = FALSE]
+        currentGroups <- seqToGeneGroup(pangenome)
+        toChange <- lapply(seq_len(ncol(pairs)), function(i) {
+            which(currentGroups %in% pairs[,i])
+        })
+        currentGroups[unlist(toChange)] <- rep(seq.int(max(currentGroups) + 1, 
+                                                       length.out = length(toChange)),
+                                               lengths(toChange))
+        pangenome <- manualGrouping(pangenome, split(seq_len(nGenes(pangenome)), currentGroups))
+    }
+    pangenome
+}
 #' igraph functions to access through Rcpp
 #' 
 #' This list allows one to access igraph functions without putting igraph in 

@@ -36,7 +36,7 @@ Options options;
 SequenceDB seq_db;
 
 //[[Rcpp::export]]
-IntegerVector cdhitC(List opts) {
+IntegerVector cdhitC(List opts, CharacterVector name) {
     CharacterVector arguments = opts.names();
     std::string argn, argv;
     std::vector<int> clusters;
@@ -53,7 +53,7 @@ IntegerVector cdhitC(List opts) {
     
     seq_db.Read(options.input.c_str(), options);
     seq_db.SortDivide(options);
-    seq_db.DoClustering(options);
+    seq_db.DoClustering(options, as<std::string>(name));
     
     //seq_db.WriteClusters(options.input.c_str(), options.input.c_str(), options);
     clusters = seq_db.GetClusters(options);

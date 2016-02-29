@@ -32,6 +32,8 @@
 //                    
 // =============================================================================
 
+
+#include "progress.h"
 #include "cdhit-common.h"
 #include<valarray>
 #include<stdint.h>
@@ -2932,7 +2934,7 @@ void SequenceDB::ComputeDistance( const Options & options )
 	}
 	fclose( fout );
 }
-void SequenceDB::DoClustering( const Options & options )
+void SequenceDB::DoClustering( const Options & options, std::string name )
 {
 	int i;
 	int NAA = options.NAA;
@@ -2980,6 +2982,9 @@ void SequenceDB::DoClustering( const Options & options )
 
 	Options opts( options );
 	opts.ComputeTableLimits( min_len, max_len, len_n50, mem_need );
+	
+	Progress prog(N, name, 1000);
+	prog.start();
 
 	for(i=0; i<N; ){
 		float redundancy = (rep_seqs.size() + 1.0) / (i + 1.0);
@@ -2998,11 +3003,12 @@ void SequenceDB::DoClustering( const Options & options )
 			m ++;
 		}
 		if( m > N ) m = N;
-		printf( "\rcomparing sequences from  %9i  to  %9i\n", i, m );
-		fflush( stdout );
+		// printf( "\rcomparing sequences from  %9i  to  %9i\n", i, m );
+		// fflush( stdout );
 		for(int ks=i; ks<m; ks++){
 			Sequence *seq = sequences[ks];
 			i = ks + 1;
+			prog.increment();
 			if (seq->state & IS_REDUNDANT) continue;
 			ClusterOne( seq, ks, word_table, param, buffer, options );
 			total_letters -= seq->size;
@@ -3025,20 +3031,21 @@ void SequenceDB::DoClustering( const Options & options )
 			if( word_table.sequences[ word_table.sequences.size()-1 ]->size > len_bound ){
 				break;
 			}
-			float p = (100.0*j)/N;
-			if( p > p0+1E-1 ){ // print only if the percentage changed
-				printf( "\r%4.1f%%", p );
-				fflush( stdout );
-				p0 = p;
-			}
+			// float p = (100.0*j)/N;
+			// if( p > p0+1E-1 ){ // print only if the percentage changed
+			// 	printf( "\r%4.1f%%", p );
+			// 	fflush( stdout );
+			// 	p0 = p;
+			// }
 		}
 		if( word_table.size > tabsize ) tabsize = word_table.size;
 		//if( i && i < m ) printf( "\r---------- %6i remaining sequences to the next cycle\n", m-i );
 		word_table.Clear();
 	}
-	printf( "\n%9i  finished  %9i  clusters\n", sequences.size(), rep_seqs.size() );
-	mem = (mem_need + tabsize*sizeof(IndexCount))/mega;
-	printf( "\nApprixmated maximum memory consumption: %liM\n", mem );
+	// printf( "\n%9i  finished  %9i  clusters\n", sequences.size(), rep_seqs.size() );
+	// mem = (mem_need + tabsize*sizeof(IndexCount))/mega;
+	// printf( "\nApprixmated maximum memory consumption: %liM\n", mem );
+	prog.finish();
 	temp_files.Clear();
 	word_table.Clear();
 
