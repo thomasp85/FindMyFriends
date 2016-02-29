@@ -44,7 +44,7 @@ List neighborhoodSim(IntegerVector members, IntegerVector groups,
                      IntegerVector up, LogicalVector reverse, 
                      IntegerVector width, double threshold, 
                      bool forceParalogues) {
-    int i, j, k, i1, j1, minLength, widthi, widthj, sim;
+    int i, j, k, i1, j1, widthi, widthj, sim;
     double diff;
     
     int nMembers = members.size();
@@ -76,10 +76,9 @@ List neighborhoodSim(IntegerVector members, IntegerVector groups,
             // Check sequence lengths
             widthi = width[i1];
             widthj = width[j1];
-            minLength = widthi < widthj ? widthi : widthj;
             diff = abs(widthi - widthj);
             if (threshold < 1) {
-                if (diff/minLength > threshold)
+                if (diff/std::min(widthi, widthj) > threshold)
                     continue;
             } else {
                 if (diff > threshold)
@@ -221,7 +220,7 @@ DataFrame mergeSims(IntegerVector nI, IntegerVector nP, IntegerVector nX,
 //[[Rcpp::export]]
 IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName) {
     IntegerVector res(width.size());
-    int i, j, k, nMembers, id1, id2, minLength, widthi, widthj;
+    int i, j, k, nMembers, id1, id2, widthi, widthj;
     int maxgroup = 0;
     double diff;
     
