@@ -1,6 +1,9 @@
+
+
 #include <Rcpp.h>
 #include <algorithm>
 #include "fmf-common.h"
+#include "progress.h"
 
 using namespace Rcpp;
 
@@ -173,9 +176,53 @@ DataFrame mergeSims(IntegerVector nI, IntegerVector nP, IntegerVector nX,
     );
 }
 
+// //[[Rcpp::export]]
+// IntegerVector widthSim(IntegerVector groups, IntegerVector width, double threshold) {
+//     int i, j, minLength, widthi, widthj;
+//     double diff;
+//     
+//     int size = groups.size();
+//     
+//     std::deque<int> P;
+//     std::deque<int> I;
+//     std::deque<int> X;
+//     
+//     for (j = 0; j < size - 1; j++) {
+//         R_CheckUserInterrupt();
+//         
+//         P.push_back(I.size());
+//         for (i = j+1; i < size; i++) {
+//             if (groups[j] != groups[i])
+//                 continue;
+//             
+//             // Check sequence lengths
+//             widthi = width[i];
+//             widthj = width[j];
+//             minLength = widthi < widthj ? widthi : widthj;
+//             diff = abs(widthi - widthj);
+//             if (threshold < 1) {
+//                 if (diff/minLength > threshold)
+//                     continue;
+//             } else {
+//                 if (diff > threshold)
+//                     continue;
+//             }
+//             I.push_back(i);
+//             X.push_back(1);
+//         }
+//     }
+//     P.push_back(I.size());
+//     P.push_back(I.size());
+//     
+//     IntegerVector newgroups = getClusters(I, P, X);
+//     return newgroups;
+// }
+
 //[[Rcpp::export]]
-IntegerVector widthSim(IntegerVector groups, IntegerVector width, double threshold) {
-    int i, j, minLength, widthi, widthj;
+IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName) {
+    IntegerVector res(width.size());
+    int i, j, k, nMembers, id1, id2, minLength, widthi, widthj;
+    int maxgroup = 0;
     double diff;
     
     int size = groups.size();
@@ -184,35 +231,56 @@ IntegerVector widthSim(IntegerVector groups, IntegerVector width, double thresho
     std::deque<int> I;
     std::deque<int> X;
     
-    for (j = 0; j < size - 1; j++) {
-        R_CheckUserInterrupt();
-        
-        P.push_back(I.size());
-        for (i = j+1; i < size; i++) {
-            if (groups[j] != groups[i])
-                continue;
-            
-            // Check sequence lengths
-            widthi = width[i];
-            widthj = width[j];
-            minLength = widthi < widthj ? widthi : widthj;
-            diff = abs(widthi - widthj);
-            if (threshold < 1) {
-                if (diff/minLength > threshold)
-                    continue;
-            } else {
-                if (diff > threshold)
-                    continue;
-            }
-            I.push_back(i);
-            X.push_back(1);
-        }
-    }
-    P.push_back(I.size());
-    P.push_back(I.size());
+    Progress prog(size + 1, as<std::string>(progName), 100);
+    prog.start();
     
-    IntegerVector newgroups = getClusters(I, P, X);
-    return newgroups;
+    for (k = 0; k < size; ++k) {
+        IntegerVector group = groups[k];
+        P.clear();
+        I.clear();
+        X.clear();
+        nMembers = group.size();
+        if (nMembers == 1) {
+            res[group[0] - 1] = maxgroup + 1;
+            ++maxgroup;
+        } else {
+            for (j = 0; j < nMembers - 1; ++j) {
+                id1 = group[j] - 1;
+
+                P.push_back(I.size());
+                for (i = j+1; i < nMembers; ++i) {
+                    id2 = group[i] - 1;
+
+                    // Check sequence lengths
+                    widthi = width[id2];
+                    widthj = width[id1];
+                    diff = abs(widthi - widthj);
+                    if (threshold < 1) {
+                        if (diff/std::min(widthi, widthj) > threshold)
+                            continue;
+                    } else {
+                        if (diff > threshold)
+                            continue;
+                    }
+                    I.push_back(i);
+                    X.push_back(1);
+                }
+            }
+            P.push_back(I.size());
+            P.push_back(I.size());
+
+            IntegerVector newgroups = getClusters(I, P, X);
+            newgroups = newgroups + maxgroup;
+            maxgroup = max(newgroups);
+            for (i = 0; i < nMembers; ++i) {
+                res[group[i] - 1] = newgroups[i];
+            }
+        }
+        prog.increment();
+    }
+    prog.finish();
+    
+    return res;
 }
 
 //[[Rcpp::export]]
