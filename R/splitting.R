@@ -50,7 +50,7 @@ setMethod(
         org <- seqToOrg(object)
         containsParalogues <- groupHasParalogues(startGroupingSplit, org)
         
-        prog <- makeProgress(length(startGroupingSplit), 'Splitting   ', 1000, 12)
+        prog <- makeProgress(length(startGroupingSplit), 'Splitting   ', 100, 12)
         easySplits <- lapply(
             which(!containsParalogues), 
             neighborSplitting,
