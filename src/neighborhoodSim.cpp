@@ -60,7 +60,7 @@ List neighborhoodSim(IntegerVector members, IntegerVector groups,
     P.reserve(nMembers + 1);
     
     for (j = 0; j < nMembers - 1; j++) {
-        R_CheckUserInterrupt();
+        // R_CheckUserInterrupt();
         
         j1 = members[j];
         
