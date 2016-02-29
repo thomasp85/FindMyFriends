@@ -25,7 +25,7 @@ progress <- function(progress) {
     currentTime <- as.numeric(Sys.time())
     if (progress$end == progress$prog) {
         createBar(progress)
-    } else if (progress$last > progress$freq || progress$lasttime - currentTime > progress$maxwait) {
+    } else if (progress$last > progress$freq || currentTime - progress$lasttime > progress$maxwait) {
         progress$lasttime <- currentTime
         progress$last <- 0
         createBar(progress)
