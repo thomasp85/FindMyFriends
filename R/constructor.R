@@ -132,7 +132,13 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
         }
         args$geneLocation <- getSeqInfo(geneLocation, geneNames)
     }
-    do.call(new, args)
+    pan <- do.call(new, args)
+    zeroLengths <- which(geneWidth(pan) == 0)
+    if (length(zeroLengths) != 0) {
+        warning('Removing ', length(zeroLengths), ' genes of length 0')
+        pan <- removeGene(pan, ind = zeroLengths)
+    }
+    pan
 }
 
 .pkg_variables$defaults <- list(
