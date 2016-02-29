@@ -33,7 +33,9 @@ setMethod(
         .fillDefaults(defaults(object))
         
         if (is.null(guideGroups)) {
-            guideGroups <- rep(1, nGenes(object))
+            guideGroups <- rep(1L, nGenes(object))
+        } else {
+            guideGroups <- as.integer(guideGroups)
         }
         
         # Presplit by length
@@ -329,7 +331,11 @@ getNeighbors <- function(pg) {
         ungroup() %>% 
         arrange(id)
     
-    as.data.frame(gLoc)[, -(1:2)]
+    gLoc <- as.data.frame(gLoc)[, -(1:2)]
+    gLoc$id <- as.integer(gLoc$id)
+    gLoc$down <- as.integer(gLoc$down)
+    gLoc$up <- as.integer(gLoc$up)
+    gLoc
 }
 #' Determine which gene groups contains paralogues
 #' 
