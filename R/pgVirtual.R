@@ -254,7 +254,68 @@ setMethod(
         }
     }
 )
-
+#' @describeIn pgVirtual Create subsets of pangenomes based on index
+#' 
+#' @param i indices specifying genomes, either integer, numeric, character or 
+#' logical, following the normal rules for indexing objects in R
+#' 
+setMethod(
+    '[', c('pgVirtual', 'integer'),
+    function(x, i) {
+        if (anyDuplicated(i)) {
+            warning('ignoring duplicated indices')
+        }
+        if (any(i > nOrganisms(x))) {
+            warning('ignoring indices out of bound')
+        }
+        remove <- seq_along(x) %in% i
+        removeGene(x, organism = i)
+    }
+)
+#' @describeIn pgVirtual Create subsets of pangenomes based on index
+#' 
+setMethod(
+    '[', c('pgVirtual', 'numeric'),
+    function(x, i) {
+        i <- as.integer(i)
+        if (any(is.na(i))) {
+            stop('index not convertible to integer')
+        }
+        x[i]
+    }
+)
+#' @describeIn pgVirtual Create subsets of pangenomes based on organism name
+#' 
+setMethod(
+    '[', c('pgVirtual', 'character'),
+    function(x, i) {
+        i <- match(i, orgNames(x))
+        if (any(is.na(i))) {
+            stop('Organism names not present')
+        }
+        x[i]
+    }
+)
+#' @describeIn pgVirtual Create subsets of pangenomes based on logical vector
+#' 
+setMethod(
+    '[', c('pgVirtual', 'logical'),
+    function(x, i) {
+        i <- rep(i, length.out = nOrganisms(x))
+        x[which(i)]
+    }
+)
+#' @describeIn pgVirtual Extract sequences from a single organism
+#' 
+setMethod(
+    '[[', 'pgVirtual',
+    function(x, i) {
+        if (length(i) != 1) {
+            stop('i must be of length 1')
+        }
+        genes(x, split = 'organism', subset = i)[[1]]
+    }
+)
 #' @describeIn nGenes The number of genes in the pangenome for pgVirtual 
 #' subclasses.
 #' 
