@@ -347,17 +347,13 @@ getNeighbors <- function(pg) {
 #' @return A logical vector indicating if each gene group in the pangenome 
 #' contains paralogues
 #' 
-#' @importFrom dplyr %>% group_by summarise
-#' 
 #' @noRd
 #' 
 anyParalogues <- function(pangenome) {
-    groups <- data.frame(organism = seqToOrg(pangenome), 
-                         geneGroup = seqToGeneGroup(pangenome))
-    groups <- groups %>%
-        group_by(geneGroup) %>%
-        summarise(paralogues = anyDuplicated(organism) != 0)
-    groups$paralogues
+    dupes <- lapply(split(seqToOrg(pangenome), 
+                          seqToGeneGroup(pangenome)), 
+                    anyDuplicated)
+    unlist(dupes) != 0
 }
 #' @importFrom igraph degree 
 neighborhoodMerge <- function(pangenome, maxLengthDif) {
