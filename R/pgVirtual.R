@@ -436,6 +436,8 @@ setMethod(
 #' 
 #' @param color A metadata name to color the organisms by
 #' 
+#' @importFrom grid grid.newpage grid.draw
+#' 
 setMethod(
     'plotStat', 'pgVirtual',
     function(object, sort = TRUE, color, ...) {
@@ -488,7 +490,8 @@ setMethod(
                                           labels = groups$nGenes)
             
             p <- rbindGtable(ggplotGrob(p1), ggplotGrob(p))
-            gtable:::plot.gtable(p)
+            grid.newpage()
+            grid.draw(p)
             invisible(p)
         } else {
             p
