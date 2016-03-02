@@ -64,6 +64,7 @@ setMethod(
 #' 
 #' @importFrom dplyr bind_rows
 #' @importFrom Biostrings alphabetFrequency
+#' @importFrom Matrix colSums
 #' 
 setMethod(
     'orgStat', 'pgVirtual',

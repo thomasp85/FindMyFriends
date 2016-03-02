@@ -200,13 +200,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // panSim
-NumericMatrix panSim(NumericMatrix pg);
-RcppExport SEXP FindMyFriends_panSim(SEXP pgSEXP) {
+NumericMatrix panSim(IntegerVector P, IntegerVector I, CharacterVector names);
+RcppExport SEXP FindMyFriends_panSim(SEXP PSEXP, SEXP ISEXP, SEXP namesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericMatrix >::type pg(pgSEXP);
-    __result = Rcpp::wrap(panSim(pg));
+    Rcpp::traits::input_parameter< IntegerVector >::type P(PSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type I(ISEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type names(namesSEXP);
+    __result = Rcpp::wrap(panSim(P, I, names));
     return __result;
 END_RCPP
 }

@@ -378,7 +378,7 @@ setAs(
     'pgVirtual', 'ExpressionSet',
     function(from) {
         ExpressionSet(
-            pgMatrix(from),
+            as.matrix(pgMatrix(from)),
             as(orgInfo(from), 'AnnotatedDataFrame'),
             as(groupInfo(from), 'AnnotatedDataFrame')
         )
@@ -393,7 +393,7 @@ setAs(
 setAs(
     'pgVirtual', 'matrix',
     function(from) {
-        pgMatrix(from)
+        as.matrix(pgMatrix(from))
     }
 )
 #' @describeIn getRep Get a representative sequence for each gene group for 
@@ -749,10 +749,12 @@ evolMan <- function(pangenome, order) {
 #' @return A data.frame with one row and the columns Singleton, Accessory, Core
 #' and Total.
 #' 
+#' @importFrom Matrix rowSums
+#' 
 #' @noRd
 #' 
 panGroups <- function(mat) {
-    mat[] <- mat != 0
+    mat <- as(mat, 'nsparseMatrix')
     nGenes <- rowSums(mat)
     data.frame(group = c('Singleton', 'Accessory', 'Core', 'Total'),
                size = c(sum(nGenes == 1),
@@ -776,7 +778,8 @@ panGroups <- function(mat) {
 #' 
 pgSim <- function(pangenome) {
     if (!hasGeneGroups(pangenome)) stop('Gene groups must be defined')
-    panSim(pgMatrix(pangenome))
+    mat <- pgMatrix(pangenome)
+    panSim(mat@p, mat@i, colnames(mat))
 }
 #' Calculate pangenome-based organism distance
 #' 
