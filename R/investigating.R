@@ -116,35 +116,42 @@ setMethod(
 )
 #' @describeIn pcGraph Panchromosome creation for all pgVirtualLoc subclasses
 #' 
-#' @importFrom dplyr %>% group_by arrange mutate transmute ungroup filter summarise n
 #' @importFrom igraph graph_from_data_frame
 #' 
 setMethod(
     'pcGraph', 'pgVirtualLoc',
     function(object) {
-        gInfo <- geneLocation(object)
-        gInfo$gene <- 1:nGenes(object)
-        gInfo$organism <- orgNames(object)[seqToOrg(object)]
-        gInfo$geneGroup <- groupNames(object)[seqToGeneGroup(object)]
+        neighbors <- getNeighbors(object)
+        neighbors$id <- neighbors$id + 1L
+        neighbors$down <- neighbors$down + 1L
+        neighbors$up <- neighbors$up + 1L
+        edges <- data.frame(
+            id = neighbors$id,
+            from = ifelse(neighbors$reverse, neighbors$up, neighbors$id),
+            to = ifelse(neighbors$reverse, neighbors$id, neighbors$up)
+        )
+        edges <- edges[edges$from != 0 & edges$to != 0,]
+        edges$from <- seqToGeneGroup(object)[edges$from]
+        edges$to <- seqToGeneGroup(object)[edges$to]
+        edges$edge.id <- paste(edges$from, edges$to, sep = ';')
+        counts <- table(edges$edge.id)
+        orgs <- lapply(split(seqToOrg(object)[edges$id], edges$edge.id), unique)
+        edges <- edges[match(names(counts), edges$edge.id),]
+        edges$weight <- as.integer(counts)
+        edges$organisms <- split(orgNames(object)[unlist(orgs)], 
+                                 rep(seq_along(orgs), lengths(orgs)))
+        edges$from <- groupNames(object)[edges$from]
+        edges$to <- groupNames(object)[edges$to]
+        edges$id <- NULL
         
-        edges <- gInfo %>% 
-            group_by(organism, contig) %>%
-            arrange(start, end) %>%
-            mutate(up = c(geneGroup[-1], NA), reverse = geneGroup < up) %>%
-            transmute(from = as.character(ifelse(reverse, geneGroup, up)), 
-                      to = as.character(ifelse(reverse, up, geneGroup))) %>%
-            ungroup() %>%
-            filter(!is.na(from) & !is.na(to)) %>%
-            group_by(from, to) %>%
-            summarise(weight = n(), organisms = list(unique(organism)))
+        vertices <- cbind(
+            data.frame(name = groupNames(object), stringsAsFactors = FALSE), 
+            groupInfo(object)
+        )
+        vertices$organisms <- split(orgNames(object)[seqToOrg(object)],
+                                    seqToGeneGroup(object))
         
-        vertices <- gInfo %>%
-            group_by(geneGroup) %>%
-            summarise(nMembers = n(), 
-                      organisms = list(organism), 
-                      strands = list(strand))
-        graph_from_data_frame(as.data.frame(edges), FALSE, 
-                              as.data.frame(vertices))
+        graph_from_data_frame(edges, TRUE, vertices)
     }
 )
 #' @describeIn variableRegions Variable region detection for all pgVirtualLoc
@@ -391,11 +398,12 @@ scaleRange <- function(x, low, high) {
 #' 
 #' @return A list of vectors with each vector holding the members of a cycle
 #' 
-#' @importFrom igraph V degree make_ego_graph bfs neighbors
+#' @importFrom igraph V degree make_ego_graph bfs neighbors as.undirected
 #' 
 #' @noRd
 #' 
 locateCycles <- function(graph, maxLength=4) {
+    graph <- as.undirected(graph)
     potentialSplits <- V(graph)$name[degree(graph) > 2]
     smallGr <- make_ego_graph(graph, order = maxLength, nodes = potentialSplits)
     cycles <- lapply(seq_along(potentialSplits), function(i) {
