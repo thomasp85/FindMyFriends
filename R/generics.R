@@ -699,7 +699,9 @@ setGeneric('kmerSimilarity', def = function(object, ...) {
 #' if the members are not already members of a new group until all members are
 #' part of a new group. This approach ensures that all members of the new 
 #' groupings passes certain conditions when compared to all other members of the
-#' same group.
+#' same group. After the splitting a refinement step is done where gene groups 
+#' with high similarity and sharing a neighbor either up- or downstream are 
+#' merged together to avoid spurius errors resulting from the initial grouping.
 #' 
 #' @param object A pgVirtualLoc subclass
 #'   
