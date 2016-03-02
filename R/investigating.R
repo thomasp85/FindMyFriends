@@ -501,12 +501,13 @@ mergeCycles <- function(cycles) {
 #' 
 summarizeCycles <- function(cycles, graph) {
     graphNames <- V(graph)$name
-    lapply(cycles, function(cycle, graph) {
+    summary <- lapply(cycles, function(cycle, graph) {
         outsideNeighbors <- lapply(cycle, function(v, gr, cycle) {
             n <- graphNames[neighbors(gr, v)]
             n[!n %in% cycle]
         }, gr = graph, cycle = cycle)
         flank <- cycle[lengths(outsideNeighbors) != 0]
+        if (length(flank) == 0) return(NA)
         cycleGraph <- induced_subgraph(graph, cycle)
         cyclic <- all(degree(cycleGraph) <= 2)
         if (length(flank) == 1) {
@@ -530,6 +531,7 @@ summarizeCycles <- function(cycles, graph) {
             graph = cycleGraph
         )
     }, graph = graph)
+    summary[!is.na(summary)]
 }
 #' Convert breath first search into paths
 #' 
