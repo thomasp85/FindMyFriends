@@ -369,32 +369,36 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
     }
     cdhitOpts <- lapply(cdhitOpts, as.character)
     first <- TRUE
+    neighbors <- getNeighbors(pangenome)
+    neighbors$down <- neighbors$down + 1L
+    neighbors$up <- neighbors$up + 1L
+    neighbors <- data.frame(
+        up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
+        down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
+    )
     while (TRUE) {
         pc <- pcGraph(pangenome)
         knots <- which(degree(pc) > 2)
         if (length(knots) == 0) break
         knots <- match(V(pc)$name[knots], groupNames(pangenome))
         geneInd <- which(seqToGeneGroup(pangenome) %in% knots)
-        neighbors <- trailGroups(geneInd, pangenome, 1)
-        neighbors <- split(neighbors, seqToGeneGroup(pangenome)[geneInd])
-        neighbors <- lapply(seq_along(neighbors), function(i) {
-            groupInd <- as.integer(names(neighbors)[i])
-            n <- neighbors[[i]]
-            nNeighbors <- lengths(n)
-            groupPos <- sapply(n, function(nn) which(nn == groupInd))
-            down <- groupPos - 1
-            up <- groupPos + 1
-            down <- unlist(Map(`[`, n[down != 0], down[down != 0]))
-            up <- unlist(Map(`[`, n[up <= nNeighbors], up[up <= nNeighbors]))
-            list(sort(unique(down)), sort(unique(up)))
+        neighborSubset <- neighbors[geneInd, ]
+        neighborSubset$up <- seqToGeneGroup(pangenome)[neighborSubset$up]
+        neighborSubset$down <- seqToGeneGroup(pangenome)[neighborSubset$down]
+        geneIndGroup <- seqToGeneGroup(pangenome)[geneInd]
+        downs <- lapply(split(neighborSubset$down, geneIndGroup), function(i) {
+            sort(unique(na.omit(i)))
         })
-        neighbors <- unlist(neighbors, recursive = FALSE)
-        neighbors <- unique(neighbors[lengths(neighbors) > 1])
+        ups <- lapply(split(neighborSubset$up, geneIndGroup), function(i) {
+            sort(unique(na.omit(i)))
+        })
+        neighborGroups <- c(downs, ups)
+        neighborGroups <- unique(neighborGroups[lengths(neighborGroups) > 1])
         neighborlookup <- data.frame(
-            OG = unlist(neighbors), 
-            NG = rep(seq_along(neighbors), lengths(neighbors))
+            OG = unlist(neighborGroups),
+            NG = rep(seq_along(neighborGroups), lengths(neighborGroups))
         )
-        GOI <- unique(unlist(neighbors))
+        GOI <- unique(unlist(neighborGroups))
         repGOI <- getRep(pangenome, 'longest')[GOI]
         if (first) {
             first <- FALSE
@@ -427,6 +431,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
                                                lengths(toChange))
         pangenome <- manualGrouping(pangenome, split(seq_len(nGenes(pangenome)), currentGroups))
     }
+    
     pangenome
 }
 #' igraph functions to access through Rcpp
