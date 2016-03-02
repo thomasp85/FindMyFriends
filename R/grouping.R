@@ -184,7 +184,7 @@ setMethod(
                                   upperLimit = lowerLimit)
             groups <- lapply(split(groups, groupsGroups), unlist)
         }
-        cat('\nGrouping resulted in ', length(groups), ' gene groups', sep = '')
+        message('Grouping resulted in ', length(groups), ' gene groups')
         manualGrouping(object, groups)
     }
 )
@@ -227,7 +227,7 @@ setMethod(
         } else {
             groups <- split(seq_len(nGenes(object)), unlist(groups))
         }
-        cat('\nPreclustering resulted in ', length(groups), ' gene groups\n', sep = '')
+        message('Preclustering resulted in ', length(groups), ' gene groups')
         groups
     }
 )

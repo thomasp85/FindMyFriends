@@ -43,7 +43,7 @@ setMethod(
         grouping <- widthSim(split(seq_len(nGenes(object)), seqToGeneGroup(object)), widths, maxLengthDif, 'Presplitting')
         object <- manualGrouping(object, as.integer(grouping))
         rm(grouping)
-        cat('\nPresplitting resulted in ', nGeneGroups(object), ' gene groups\n', sep = '')
+        message('Presplitting resulted in ', nGeneGroups(object), ' gene groups')
         
         gLoc <- getNeighbors(object)
         startGrouping <- seqToGeneGroup(object)
@@ -97,9 +97,9 @@ setMethod(
             pending[currentRound] <- FALSE
         }
         object <- manualGrouping(object, split(seq_len(nGenes(object)), finalGrouping))
-        cat('\nSplitting resulted in ', nGeneGroups(object), ' gene groups\n', sep = '')
+        message('Splitting resulted in ', nGeneGroups(object), ' gene groups')
         object <- neighborhoodMerge(object, maxLengthDif)
-        cat('\nMerging resulted in ', nGeneGroups(object), ' gene groups\n', sep = '')
+        message('Merging resulted in ', nGeneGroups(object), ' gene groups')
         object
     }
 )
