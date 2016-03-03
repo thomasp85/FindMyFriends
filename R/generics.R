@@ -536,11 +536,14 @@ setGeneric('pgMatrix', def = function(object) {
 #' @examples 
 #' testPG <- .loadPgExample()
 #' 
+#' # Too heavy to include
+#' \dontrun{
 #' # Generate similarity matrix
 #' simMat <- kmerSimilarity(testPG, lowerLimit=0.75)
 #' 
 #' # Group genes
 #' testPG <- graphGrouping(testPG, simMat)
+#' }
 #' 
 #' @family grouping algorithms
 #' 
@@ -570,7 +573,10 @@ setGeneric('graphGrouping', def = function(object, ...) {
 #' @examples 
 #' testPG <- .loadPgExample()
 #' 
+#' # Too heavy to include
+#' \dontrun{
 #' testPG <- gpcGrouping(testPG)
+#' }
 #' 
 #' @family grouping algorithms
 #'   
@@ -632,7 +638,10 @@ setGeneric('manualGrouping', def = function(object, groups) {
 #' @examples 
 #' testPG <- .loadPgExample()
 #' 
+#' # Too heavy to include
+#' \dontrun{
 #' kmerSim <- kmerSimilarity(testPG, lowerLimit=0.75)
+#' }
 #' 
 #' @export
 #' 
@@ -669,7 +678,10 @@ setGeneric('kmerSimilarity', def = function(object, ...) {
 #' @examples 
 #' testPG <- .loadPgExample(geneLoc=TRUE, withGroups=TRUE)
 #' 
+#' # Too heavy to run
+#' \dontrun{
 #' testPG <- neighborhoodSplit(testPG, lowerLimit=0.75)
+#' }
 #' 
 #' @export
 #' 
@@ -735,8 +747,10 @@ setGeneric('kmerLink', def = function(object, ...) {
 #' genomeFiles <- list.files(location, full.names = TRUE, pattern = '*.fasta')[6:10]
 #' pg2 <- pangenome(genomeFiles, translated = TRUE, geneLocation = 'prodigal')
 #' 
-#' # Combine the two
+#' # Combine the two (too computational heavy to include)
+#' \dontrun{
 #' pg3 <- addGenomes(pg, pg2, nsParam = list(lowerLimit = 0.8))
+#' }
 #' 
 #' @export
 #' 
@@ -1007,7 +1021,10 @@ setGeneric('pcGraph', def = function(object) {
 #' @examples 
 #' testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 #' 
+#' # Too heavy to include
+#' \dontrun{
 #' regions <- variableRegions(testPG)
+#' }
 #' 
 #' # Have a look at the first region
 #' regions[[1]]
