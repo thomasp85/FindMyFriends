@@ -381,15 +381,13 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
     }
     cdhitOpts <- lapply(cdhitOpts, as.character)
     first <- TRUE
-    neighbors <- getNeighbors(pangenome)
-    neighbors$down <- neighbors$down + 1L
-    neighbors$up <- neighbors$up + 1L
+    neighbors <- getNeighbors(pangenome, zeroInd = FALSE)
     neighbors <- data.frame(
         up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
         down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
     )
     while (TRUE) {
-        pc <- pcGraph(pangenome)
+        pc <- pcGraph(pangenome, slim = T)
         knots <- which(degree(pc) > 2)
         if (length(knots) == 0) break
         knots <- match(V(pc)$name[knots], groupNames(pangenome))
