@@ -134,6 +134,7 @@ setMethod(
 setMethod(
     'kmerSplit', 'pgVirtual',
     function(object, kmerSize, lowerLimit, maxLengthDif, pParam) {
+        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         
         if (missing(pParam)) pParam <- SerialParam()
@@ -143,7 +144,11 @@ setMethod(
                               kmerSize = kmerSize, lowerLimit = lowerLimit, 
                               maxLengthDif = maxLengthDif, BPPARAM = pParam)
         newGroups <- unlist(newGroups, recursive = FALSE)
-        manualGrouping(object, newGroups)
+        object <- manualGrouping(object, newGroups)
+        time2 <- proc.time()['elapsed']
+        message('Splitting resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time2 - time1), ' elapsed)')
+        object
     }
 )
 

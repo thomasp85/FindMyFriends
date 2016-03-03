@@ -15,10 +15,15 @@ NULL
 setMethod(
     'graphGrouping', 'pgVirtual',
     function(object, similarity, algorithm, ...) {
+        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         
         members <- igGroup(similarity, algorithm, ...)
-        groupGenes(object, as.integer(members))
+        object <- groupGenes(object, as.integer(members))
+        time2 <- proc.time()['elapsed']
+        message('Grouping resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time2 - time1), ' elapsed)')
+        object
     }
 )
 
@@ -54,6 +59,7 @@ setMethod(
     'gpcGrouping', 'pgVirtual',
     function(object, lowMem, kmerSize, tree, lowerLimit, pParam, cacheDB,
              precluster = TRUE, ...) {
+        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         
         if (precluster) {
@@ -62,7 +68,7 @@ setMethod(
         } else {
             clusters <- NA
         }
-        
+        time2 <- proc.time()['elapsed']
         args <- mget(ls())
         args$lowMem <- NULL
         args$object <- NULL
@@ -91,7 +97,12 @@ setMethod(
             args$er <- getExRep(genes(object), spectrumKernel(kmerSize))
         }
         groups <- do.call(recurseCompare, args)
-        manualGrouping(object, groups)
+        object <- manualGrouping(object, groups)
+        time3 <- proc.time()['elapsed']
+        message('Grouping resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time3 - time2), ' elapsed)')
+        message('Total time elapsed was ', formatSeconds(time3 - time1))
+        object
     }
 )
 
@@ -144,9 +155,12 @@ setMethod(
     'cdhitGrouping', 'pgVirtual',
     function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize, 
              cdhitOpts, cdhitIter = FALSE, nrep = 1) {
+        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         groups <- precluster(object, kmerSize[1], maxLengthDif, geneChunkSize, 
                              cdhitOpts)
+        
+        time2 <- proc.time()['elapsed']
         
         if (cdhitIter) {
             cdhitOpts$l <- kmerSize[1]
@@ -184,14 +198,19 @@ setMethod(
                                   upperLimit = lowerLimit)
             groups <- lapply(split(groups, groupsGroups), unlist)
         }
-        message('Grouping resulted in ', length(groups), ' gene groups')
-        manualGrouping(object, groups)
+        object <- manualGrouping(object, groups)
+        time3 <- proc.time()['elapsed']
+        message('Grouping resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time3 - time2), ' elapsed)')
+        message('Total time elapsed was ', formatSeconds(time3 - time1))
+        object
     }
 )
 setMethod(
     'precluster', 'pgVirtual',
     precluster <- function(object, kmerSize, maxLengthDif, geneChunkSize, 
                            cdhitOpts) {
+        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         cdhitOpts$n <- kmerSize
         cdhitOpts$l <- kmerSize
@@ -227,7 +246,9 @@ setMethod(
         } else {
             groups <- split(seq_len(nGenes(object)), unlist(groups))
         }
-        message('Preclustering resulted in ', length(groups), ' gene groups')
+        time2 <- proc.time()['elapsed']
+        message('Preclustering resulted in ', length(groups), ' gene groups (',
+                formatSeconds(time2 - time1), ' elapsed)')
         groups
     }
 )
