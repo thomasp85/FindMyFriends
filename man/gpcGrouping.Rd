@@ -59,7 +59,10 @@ compared multiple times.
 \examples{
 testPG <- .loadPgExample()
 
+# Too heavy to include
+\dontrun{
 testPG <- gpcGrouping(testPG)
+}
 
 }
 \seealso{

@@ -65,8 +65,10 @@ unzip(system.file('extdata', 'Mycoplasma.zip', package = 'FindMyFriends'),
 genomeFiles <- list.files(location, full.names = TRUE, pattern = '*.fasta')[6:10]
 pg2 <- pangenome(genomeFiles, translated = TRUE, geneLocation = 'prodigal')
 
-# Combine the two
+# Combine the two (too computational heavy to include)
+\dontrun{
 pg3 <- addGenomes(pg, pg2, nsParam = list(lowerLimit = 0.8))
+}
 
 }
 
