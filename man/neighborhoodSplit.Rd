@@ -64,7 +64,10 @@ pgVirtualLoc subclasses
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withGroups=TRUE)
 
+# Too heavy to run
+\dontrun{
 testPG <- neighborhoodSplit(testPG, lowerLimit=0.75)
+}
 
 }
 \seealso{

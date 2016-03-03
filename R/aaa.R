@@ -161,7 +161,8 @@ globalVariables(
 #' @rdname fillDefaults
 #' 
 .fillDefaults <- function(def) {
-    args <- as.list(sys.frame(-1))
+    frame <- sys.frame(-1)
+    args <- as.list(frame)
     for (i in names(args)) {
         if (identical(args[[i]], quote(expr = )) && !is.null(def[[i]])) {
             if (!is.null(def$verbose) && def$verbose) {
@@ -669,7 +670,7 @@ kmerDist <- function(pangenome, kmerSize, chunkSize = 100, pParam,
 #' 
 #' @return An ExplicitRepresentationDense object.
 #' 
-#' @importFrom S4Vectors unstrsplit
+#' @import S4Vectors
 #' @importFrom Biostrings AAStringSet DNAStringSet
 #' @importFrom kebabs getExRep spectrumKernel
 #' 
@@ -879,7 +880,7 @@ cutK <- function(x, k) {
 #' 
 #' @noRd
 #' 
-#' @importFrom IRanges PartitioningByEnd
+#' @import IRanges
 #' @importClassesFrom Biostrings AAStringSetList DNAStringSetList RNAStringSetList BStringSetList
 #' 
 splitStringSet <- function(x, f) {
@@ -953,18 +954,20 @@ rbindGtable <- function(..., size = "max", z = NULL) {
 #' 
 #' @return A gtable object
 #' 
+#' @importFrom gtable gtable_add_cols
+#' @importFrom grid unit unit.c
 #' @noRd
 #' 
 rbind_gtable <- function(x, y, size = "max") {
     if (nrow(x) == 0) return(y)
     if (nrow(y) == 0) return(x)
     if (ncol(x) > ncol(y)) {
-        y <- gtable_add_cols(y, rep(grid::unit(1e-6, 'mm'), ncol(x) - ncol(y)))
+        y <- gtable_add_cols(y, rep(unit(1e-6, 'mm'), ncol(x) - ncol(y)))
         background <- grep('background', y$layout$name)
         y$layout$r[background] <- ncol(y)
     }
     if (ncol(x) < ncol(y)) {
-        x <- gtable_add_cols(x, rep(grid::unit(1e-6, 'mm'), ncol(y) - ncol(x)))
+        x <- gtable_add_cols(x, rep(unit(1e-6, 'mm'), ncol(y) - ncol(x)))
         background <- grep('background', x$layout$name)
         x$layout$r[background] <- ncol(x)
     }

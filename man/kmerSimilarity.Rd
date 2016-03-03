@@ -49,7 +49,10 @@ to the pangenome.
 \examples{
 testPG <- .loadPgExample()
 
+# Too heavy to include
+\dontrun{
 kmerSim <- kmerSimilarity(testPG, lowerLimit=0.75)
+}
 
 }
 

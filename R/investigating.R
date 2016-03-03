@@ -283,7 +283,7 @@ setMethod(
 #' 
 #' @param transform A transformation function to apply to the similarities
 #' 
-#' @importFrom Biostrings unlist
+#' @import BiocGenerics
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
 #' @importFrom igraph graph_from_adjacency_matrix V E plot.igraph
 #' 

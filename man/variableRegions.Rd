@@ -53,7 +53,10 @@ subclasses
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 
+# Too heavy to include
+\dontrun{
 regions <- variableRegions(testPG)
+}
 
 # Have a look at the first region
 regions[[1]]

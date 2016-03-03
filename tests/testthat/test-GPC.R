@@ -6,6 +6,7 @@ context("GPC and helpers")
 pg <- .loadPgExample()
 
 test_that("gpcGrouping works", {
+    skip_on_os('win')
     set.seed(1)
     pg1 <- gpcGrouping(pg)
     set.seed(1)
