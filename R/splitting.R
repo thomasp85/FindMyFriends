@@ -30,6 +30,7 @@ setMethod(
     'neighborhoodSplit', 'pgVirtualLoc',
     function(object, flankSize, forceParalogues, kmerSize, lowerLimit, 
              maxLengthDif, guideGroups = NULL) {
+        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         
         if (is.null(guideGroups)) {
@@ -43,7 +44,12 @@ setMethod(
         grouping <- widthSim(split(seq_len(nGenes(object)), seqToGeneGroup(object)), widths, maxLengthDif, 'Presplitting')
         object <- manualGrouping(object, as.integer(grouping))
         rm(grouping)
-        message('Presplitting resulted in ', nGeneGroups(object), ' gene groups')
+        time2 <- proc.time()['elapsed']
+        message('Presplitting resulted in ', 
+                nGeneGroups(object),
+                ' gene groups (',
+                formatSeconds(time2 - time1),
+                ' elapsed)')
         
         gLoc <- getNeighbors(object)
         startGrouping <- seqToGeneGroup(object)
@@ -97,9 +103,14 @@ setMethod(
             pending[currentRound] <- FALSE
         }
         object <- manualGrouping(object, split(seq_len(nGenes(object)), finalGrouping))
-        message('Splitting resulted in ', nGeneGroups(object), ' gene groups')
+        time3 <- proc.time()['elapsed']
+        message('Splitting resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time3 - time2), ' elapsed)')
         object <- neighborhoodMerge(object, maxLengthDif)
-        message('Merging resulted in ', nGeneGroups(object), ' gene groups')
+        time4 <- proc.time()['elapsed']
+        message('Merging resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time4 - time3), ' elapsed)')
+        message('Total time elapsed was ', formatSeconds(time4 - time1))
         object
     }
 )
