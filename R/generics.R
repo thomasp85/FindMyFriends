@@ -1006,6 +1006,9 @@ setGeneric('orgStat', def = function(object, ...) {
 #' 
 #' @param object A pgVirtualLoc subclass
 #' 
+#' @param slim Should the returned graph be stripped of all metadata and only
+#' capture gene group connectivity. Defaults to FALSE
+#' 
 #' @return An igraph object
 #' 
 #' @examples 
@@ -1015,7 +1018,7 @@ setGeneric('orgStat', def = function(object, ...) {
 #' 
 #' @export
 #' 
-setGeneric('pcGraph', def = function(object) {
+setGeneric('pcGraph', def = function(object, ...) {
     standardGeneric('pcGraph')
 })
 #' Detect regions of high variability in the panchromosome

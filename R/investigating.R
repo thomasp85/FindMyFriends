@@ -120,38 +120,62 @@ setMethod(
 #' 
 setMethod(
     'pcGraph', 'pgVirtualLoc',
-    function(object) {
-        neighbors <- getNeighbors(object)
-        neighbors$id <- neighbors$id + 1L
-        neighbors$down <- neighbors$down + 1L
-        neighbors$up <- neighbors$up + 1L
+    function(object, slim = FALSE) {
+        neighbors <- getNeighbors(object, zeroInd = FALSE)
+        geneGroups <- seqToGeneGroup(object)
+        gGroupNames <- groupNames(object)
         edges <- data.frame(
-            id = neighbors$id,
-            from = ifelse(neighbors$reverse, neighbors$up, neighbors$id),
-            to = ifelse(neighbors$reverse, neighbors$id, neighbors$up)
+            from = neighbors$id,
+            to = neighbors$up
         )
-        edges <- edges[edges$from != 0 & edges$to != 0,]
-        edges$from <- seqToGeneGroup(object)[edges$from]
-        edges$to <- seqToGeneGroup(object)[edges$to]
-        edges$edge.id <- paste(edges$from, edges$to, sep = ';')
+        edges <- edges[edges$to != 0,]
+        edges$from <- geneGroups[edges$from]
+        edges$to <- geneGroups[edges$to]
+        sortGroups <- edges$from < edges$to
+        edges$edge.id <- paste(
+            ifelse(sortGroups, edges$from, edges$to),
+            ifelse(sortGroups, edges$to, edges$from),
+            sep = ';'
+        )
+        if (slim) {
+            edges <- edges[!duplicated(edges$edge.id), c('from', 'to')]
+            edges$from <- gGroupNames[edges$from]
+            edges$to <- gGroupNames[edges$to]
+            
+            return(graph_from_data_frame(edges, FALSE))
+        }
+        
         counts <- table(edges$edge.id)
         orgs <- lapply(split(seqToOrg(object)[edges$id], edges$edge.id), unique)
-        edges <- edges[match(names(counts), edges$edge.id),]
+        edges <- edges[match(names(counts), edges$edge.id), c('from', 'to')]
         edges$weight <- as.integer(counts)
         edges$organisms <- split(orgNames(object)[unlist(orgs)], 
                                  rep(seq_along(orgs), lengths(orgs)))
-        edges$from <- groupNames(object)[edges$from]
-        edges$to <- groupNames(object)[edges$to]
-        edges$id <- NULL
+        edges$from <- gGroupNames[edges$from]
+        edges$to <- gGroupNames[edges$to]
+        
+        upAndDown <- data.frame(
+            id = neighbors$id,
+            up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
+            down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
+        )
+        upAndDown <- upAndDown[upAndDown$up != 0 && upAndDown$down != 0, ]
+        upAndDown$up <- gGroupNames[geneGroups[upAndDown$up]]
+        upAndDown$down <- gGroupNames[geneGroups[upAndDown$down]]
+        groups <- gGroupNames[geneGroups[upAndDown$id]]
+        orgs <- orgNames(object)[seqToOrg(object)[upAndDown$id]]
+        orgs <- split(orgs, groups)
         
         vertices <- cbind(
             data.frame(name = groupNames(object), stringsAsFactors = FALSE), 
             groupInfo(object)
         )
-        vertices$organisms <- split(orgNames(object)[seqToOrg(object)],
-                                    seqToGeneGroup(object))
+        upAndDownOrder <- match(names(groups), vertices$name)
+        vertices$organisms[upAndDownOrder] <- orgs
+        vertices$upstream[upAndDownOrder] <- split(upAndDown$up, groups)
+        vertices$downstream[upAndDownOrder] <- split(upAndDown$down, groups)
         
-        graph_from_data_frame(edges, TRUE, vertices)
+        graph_from_data_frame(edges, FALSE, vertices)
     }
 )
 #' @describeIn variableRegions Variable region detection for all pgVirtualLoc
@@ -403,7 +427,7 @@ scaleRange <- function(x, low, high) {
 #' @noRd
 #' 
 locateCycles <- function(graph, maxLength=4) {
-    graph <- as.undirected(graph)
+    graph <- graph
     potentialSplits <- V(graph)$name[degree(graph) > 2]
     smallGr <- make_ego_graph(graph, order = maxLength, nodes = potentialSplits)
     cycles <- lapply(seq_along(potentialSplits), function(i) {
