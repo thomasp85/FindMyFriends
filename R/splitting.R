@@ -324,7 +324,7 @@ extractCliques <- function(edges, nNodes) {
 #' 
 #' @noRd
 #' 
-getNeighbors <- function(pg) {
+getNeighbors <- function(pg, zeroInd = TRUE) {
     oldOptions <- options(dplyr.show_progress = FALSE)
     on.exit({
         options(oldOptions)
@@ -335,9 +335,9 @@ getNeighbors <- function(pg) {
     
     gLoc <- gLoc %>% group_by(org, contig) %>% 
         arrange(start, end) %>% 
-        transmute(id = id-1, 
-                  down = c(-1, id[-n()]), 
-                  up = c(id[-1], -1), 
+        transmute(id = id, 
+                  down = c(0, id[-n()]), 
+                  up = c(id[-1], 0), 
                   reverse = strand == -1) %>% 
         ungroup() %>% 
         arrange(id)
@@ -346,6 +346,11 @@ getNeighbors <- function(pg) {
     gLoc$id <- as.integer(gLoc$id)
     gLoc$down <- as.integer(gLoc$down)
     gLoc$up <- as.integer(gLoc$up)
+    if (zeroInd) {
+        gLoc$id <- gLoc$id - 1L
+        gLoc$down <- gLoc$down - 1L
+        gLoc$up <- gLoc$up - 1L
+    }
     gLoc
 }
 #' Determine which gene groups contains paralogues
