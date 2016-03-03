@@ -1,3 +1,7 @@
+Version 1.1.6
+________________________________________________________________________________
+- Skips some long running examples and tests to cut down on check time
+
 Version 1.1.5
 ________________________________________________________________________________
 - Bug fix: .fillDefaults now correctly extracts the frame in advance
