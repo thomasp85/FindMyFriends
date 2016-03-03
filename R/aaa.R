@@ -1112,3 +1112,31 @@ convertGrouping <- function(groups) {
     }
     members
 }
+formatSeconds <- function(sec) {
+    names <- c('day', 'hour', 'minute', 'second')
+    time <- c(0, 0, 0, 0)
+    if (sec >= 86400) {
+        time[1] <- floor(sec / 86400)
+        sec <- sec %% 86400
+    }
+    if (sec >= 3600) {
+        time[2] <- floor(sec / 3600)
+        sec <- sec %% 3600
+    }
+    if (sec >= 60) {
+        time[3] <- floor(sec / 60)
+        sec <- sec %% 60
+    }
+    time[4] <- round(sec, 3)
+    names <- paste0(names, ifelse(time == 1, '', 's'))
+    names <- names[time != 0]
+    time <- time[time != 0]
+    combTime <- paste(time, names)
+    if (length(combTime) > 1) {
+        paste(paste(combTime[-length(combTime)], collapse = ', '), 
+              tail(combTime, 1), 
+              sep = ' and ')
+    } else {
+        combTime
+    }
+}
