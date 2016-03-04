@@ -193,7 +193,7 @@ setMethod(
     function(object, flankSize) {
         .fillDefaults(defaults(object))
         
-        graph <- pcGraph(object)
+        graph <- pcGraph(object, slim = TRUE)
         regions <- locateCycles(graph, flankSize)
         regions <- mergeCycles(regions)
         summarizeCycles(regions, graph)
