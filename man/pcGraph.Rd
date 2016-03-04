@@ -6,12 +6,17 @@
 \alias{pcGraph,pgVirtualLoc-method}
 \title{Calculate the panchromosome graph}
 \usage{
-pcGraph(object)
+pcGraph(object, ...)
 
-\S4method{pcGraph}{pgVirtualLoc}(object)
+\S4method{pcGraph}{pgVirtualLoc}(object, slim = FALSE)
 }
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
+
+\item{...}{parameters passed on}
+
+\item{slim}{Should the returned graph be stripped of all metadata and only
+capture gene group connectivity. Defaults to FALSE}
 }
 \value{
 An igraph object

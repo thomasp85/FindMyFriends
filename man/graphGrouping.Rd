@@ -52,7 +52,7 @@ testPG <- graphGrouping(testPG, simMat)
 
 }
 \seealso{
-Other grouping algorithms: \code{\link{gpcGrouping}},
-  \code{\link{manualGrouping}}
+Other grouping algorithms: \code{\link{cdhitGrouping}},
+  \code{\link{gpcGrouping}}, \code{\link{manualGrouping}}
 }
 

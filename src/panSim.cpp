@@ -5,10 +5,12 @@
 using namespace Rcpp;
 
 //[[Rcpp::export]]
-NumericMatrix panSim(NumericMatrix pg) {
-    NumericMatrix res(pg.ncol(), pg.ncol());
-    List dimnames = pg.attr("dimnames");
-    res.attr("dimnames") = List::create(dimnames[1], dimnames[1]);
+NumericMatrix panSim(IntegerVector P, IntegerVector I, CharacterVector names) {
+    NumericMatrix res(P.size() - 1, P.size() - 1);
+    res.attr("dimnames") = List::create(names, names);
+    std::vector<int> setContainer;
+    setContainer.reserve(P.size());
+    IntegerVector::iterator iterI = I.begin();
     int i;
     int j;
     int k;
@@ -16,18 +18,16 @@ NumericMatrix panSim(NumericMatrix pg) {
     int total;
     int iVal;
     int jVal;
-    for(i=0; i < pg.ncol(); i++) {
-        res(i,i) = 1;
-        for(j=i+1; j < pg.ncol(); j++) {
-            sim = 0;
-            total = 0;
-            for(k=0; k < pg.nrow(); k++) {
-                iVal = pg(k,i);
-                jVal = pg(k,j);
-                if(iVal == 0 && jVal == 0) continue;
-                if(iVal != 0 && jVal != 0) sim++;
-                total++;
-            }
+    for(i = 0; i < P.size() - 1; i++) {
+        res(i, i) = 1;
+        if (i == P.size() - 2) break;
+        for(j = i + 1; j < P.size() - 1; j++) {
+            setContainer.clear();
+            std::set_intersection(iterI + P[i], iterI + P[i + 1] - 1, iterI + P[j], iterI + P[j + 1] - 1, std::back_inserter(setContainer));
+            sim = setContainer.size();
+            setContainer.clear();
+            std::set_union(iterI + P[i], iterI + P[i + 1] - 1, iterI + P[j], iterI + P[j + 1] - 1, std::back_inserter(setContainer));
+            total = setContainer.size();
             res(i,j) = double(sim)/total;
             res(j,i) = res(i,j);
         }

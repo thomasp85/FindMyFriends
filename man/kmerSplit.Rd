@@ -47,8 +47,10 @@ subclasses
 # Get a grouped pangenome
 pg <- .loadPgExample(withGroups = TRUE)
 
-# Split groups by similarity
+\dontrun{
+# Split groups by similarity (Too heavy to include)
 pg <- kmerSplit(pg, lowerLimit = 0.8)
+}
 
 }
 \seealso{
