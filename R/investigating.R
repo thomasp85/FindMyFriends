@@ -149,7 +149,7 @@ setMethod(
         }
         
         counts <- table(edges$edge.id)
-        orgs <- lapply(split(seqToOrg(object)[edges$id], edges$edge.id), unique)
+        orgs <- lapply(split(seqToOrg(object)[edges$from], edges$edge.id), unique)
         edges <- edges[match(names(counts), edges$edge.id), c('from', 'to')]
         edges$weight <- as.integer(counts)
         edges$organisms <- split(orgNames(object)[unlist(orgs)], 
@@ -162,7 +162,8 @@ setMethod(
             up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
             down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
         )
-        upAndDown <- upAndDown[upAndDown$up != 0 && upAndDown$down != 0, ]
+        upAndDown$up[upAndDown$up == 0] <- NA
+        upAndDown$down[upAndDown$down == 0] <- NA
         upAndDown$up <- gGroupNames[geneGroups[upAndDown$up]]
         upAndDown$down <- gGroupNames[geneGroups[upAndDown$down]]
         groups <- gGroupNames[geneGroups[upAndDown$id]]
@@ -173,7 +174,7 @@ setMethod(
             data.frame(name = groupNames(object), stringsAsFactors = FALSE), 
             groupInfo(object)
         )
-        upAndDownOrder <- match(names(groups), vertices$name)
+        upAndDownOrder <- match(names(orgs), vertices$name)
         vertices$organisms[upAndDownOrder] <- orgs
         vertices$upstream[upAndDownOrder] <- split(upAndDown$up, groups)
         vertices$downstream[upAndDownOrder] <- split(upAndDown$down, groups)
