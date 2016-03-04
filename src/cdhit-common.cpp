@@ -440,31 +440,32 @@ void Options::Print()
 	printf( "print = %i\n", print );
 }
 
-void bomb_error(const char *message)
-{
-	fprintf( stderr, "\nFatal Error:\n%s\nProgram halted !!\n\n", message );
-	temp_files.Clear();
-	exit (1);
-} // END void bomb_error
-
-void bomb_error(const char *message, const char *message2)
-{
-	fprintf( stderr, "\nFatal Error:\n%s %s\nProgram halted !!\n\n", message, message2 );
-	temp_files.Clear();
-	exit (1);
-} // END void bomb_error
-
-
-void bomb_warning(const char *message)
-{
-	fprintf( stderr, "\nWarning:\n%s\nNot fatal, but may affect results !!\n\n", message );
-} // END void bomb_warning
-
-
-void bomb_warning(const char *message, const char *message2)
-{
-	fprintf( stderr, "\nWarning:\n%s %s\nNot fatal, but may affect results !!\n\n", message, message2 );
-} // END void bomb_warning
+// MOVED TO cdhit-bombs.cpp ____________________________________________________
+// void bomb_error(const char *message)
+// {
+// 	fprintf( stderr, "\nFatal Error:\n%s\nProgram halted !!\n\n", message );
+// 	temp_files.Clear();
+// 	exit (1);
+// } // END void bomb_error
+// 
+// void bomb_error(const char *message, const char *message2)
+// {
+// 	fprintf( stderr, "\nFatal Error:\n%s %s\nProgram halted !!\n\n", message, message2 );
+// 	temp_files.Clear();
+// 	exit (1);
+// } // END void bomb_error
+// 
+// 
+// void bomb_warning(const char *message)
+// {
+// 	fprintf( stderr, "\nWarning:\n%s\nNot fatal, but may affect results !!\n\n", message );
+// } // END void bomb_warning
+// 
+// 
+// void bomb_warning(const char *message, const char *message2)
+// {
+// 	fprintf( stderr, "\nWarning:\n%s %s\nNot fatal, but may affect results !!\n\n", message, message2 );
+// } // END void bomb_warning
 
 void format_seq(char *seq)
 {
@@ -3289,7 +3290,9 @@ void make_comp_short_word_index(int NAA, int *NAAN_array, Vector<int> &Comp_AAN_
 	}
 } // make_comp_short_word_index
 
-
+void clear_temps() {
+    temp_files.Clear();
+}
 
 /////////////////////////// END ALL ////////////////////////
 

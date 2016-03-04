@@ -359,6 +359,7 @@ struct Options
 };
 
 void bomb_error(const char *message);
+void clear_temps();
 
 struct Sequence
 {
