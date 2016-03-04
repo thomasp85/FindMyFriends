@@ -30,14 +30,16 @@ progress <- function(progress) {
         progress$last <- 0
         createBar(progress)
     }
-    flush.console()
 }
+#' @importFrom utils flush.console
 createBar <- function(progress) {
-    p <- round(progress$prog / progress$end * 50)
-    whites <- paste(rep(' ', nchar(progress$end) - nchar(progress$prog)), collapse = '')
-    pString <- paste(c(rep('=', p), rep(' ', 50 - p)), collapse = '')
-    pString <- paste0(progress$name, ' |', pString, '| ')
-    pString <- paste0('\r', pString, whites, progress$prog, '/', progress$end)
-    cat(pString)
-    flush.console()
+    if (interactive()) {
+        p <- round(progress$prog / progress$end * 50)
+        whites <- paste(rep(' ', nchar(progress$end) - nchar(progress$prog)), collapse = '')
+        pString <- paste(c(rep('=', p), rep(' ', 50 - p)), collapse = '')
+        pString <- paste0(progress$name, ' |', pString, '| ')
+        pString <- paste0('\r', pString, whites, progress$prog, '/', progress$end)
+        cat(pString)
+        flush.console()
+    }
 }

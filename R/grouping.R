@@ -342,13 +342,13 @@ groupToGraph <- function(pangenome, groups, er, lowerLimit) {
 #' 
 #' @noRd
 #' 
-cdhit <- function(seqs, options, name = 'CD-Hit') {
+cdhit <- function(seqs, options, name = 'CD-Hit', showProgress = interactive()) {
     options$i <- tempfile()
     writeXStringSet(seqs, options$i)
     switch(
         class(seqs),
-        AAStringSet = cdhitC(options, name) + 1,
-        DNAStringSet = cdhitestC(options, name) + 1,
+        AAStringSet = cdhitC(options, name, showProgress) + 1,
+        DNAStringSet = cdhitestC(options, name, showProgress) + 1,
         stop('seqs must be either AAStringSet or DNAStringSet')
     )
 }

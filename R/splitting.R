@@ -41,7 +41,7 @@ setMethod(
         
         # Presplit by length
         widths <- geneWidth(object)
-        grouping <- widthSim(split(seq_len(nGenes(object)), seqToGeneGroup(object)), widths, maxLengthDif, 'Presplitting')
+        grouping <- widthSim(split(seq_len(nGenes(object)), seqToGeneGroup(object)), widths, maxLengthDif, 'Presplitting', interactive())
         object <- manualGrouping(object, as.integer(grouping))
         rm(grouping)
         time2 <- proc.time()['elapsed']
