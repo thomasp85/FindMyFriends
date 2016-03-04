@@ -2,6 +2,11 @@
 % Please edit documentation in R/pgVirtual.R
 \docType{class}
 \name{pgVirtual-class}
+\alias{[,pgVirtual,character,ANY,ANY-method}
+\alias{[,pgVirtual,integer,ANY,ANY-method}
+\alias{[,pgVirtual,logical,ANY,ANY-method}
+\alias{[,pgVirtual,numeric,ANY,ANY-method}
+\alias{[[,pgVirtual,ANY,ANY-method}
 \alias{as}
 \alias{length,pgVirtual-method}
 \alias{pgVirtual-class}
@@ -12,6 +17,16 @@
 
 \S4method{show}{pgVirtual}(object)
 
+\S4method{[}{pgVirtual,integer,ANY,ANY}(x, i)
+
+\S4method{[}{pgVirtual,numeric,ANY,ANY}(x, i)
+
+\S4method{[}{pgVirtual,character,ANY,ANY}(x, i)
+
+\S4method{[}{pgVirtual,logical,ANY,ANY}(x, i)
+
+\S4method{[[}{pgVirtual,ANY,ANY}(x, i)
+
 as(object, Class='ExpressionSet')
 
 as(object, Class='matrix')
@@ -20,6 +35,9 @@ as(object, Class='matrix')
 \item{x}{A pgVirtual subclass object}
 
 \item{object}{A pgVirtual subclass object}
+
+\item{i}{indices specifying genomes, either integer, numeric, character or 
+logical, following the normal rules for indexing objects in R}
 
 \item{Class}{The class to coerce pgVirtual subclasses to. Outside of the
 FindMyFriends class tree only 'ExpressionSet' and 'matrix' is implemented.}
@@ -105,6 +123,16 @@ classes when trying to implement new ones
 organisms it contain
 
 \item \code{show}: Basic information about the pangenome
+
+\item \code{[}: Create subsets of pangenomes based on index
+
+\item \code{[}: Create subsets of pangenomes based on index
+
+\item \code{[}: Create subsets of pangenomes based on organism name
+
+\item \code{[}: Create subsets of pangenomes based on logical vector
+
+\item \code{[[}: Extract sequences from a single organism
 }}
 \section{Slots}{
 

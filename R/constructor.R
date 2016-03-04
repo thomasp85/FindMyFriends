@@ -87,8 +87,22 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
     }
     sequenceFileLength <- as.integer(nSeqs(paths))
     if (lowMem) {
-        args$seqIndex <- fasta.index(paths, 
-                                     seqtype = if (translated) 'AA' else 'DNA')
+        if (length(paths) > 2000) {
+            splits <- rep(seq_len(ceiling(length(paths) / 2000)), each = 2000, 
+                          length.out = length(paths))
+            fi <- lapply(split(paths, splits), function(p) {
+                fasta.index(p, 
+                            seqtype = if (translated) 'AA' else 'DNA')
+            })
+            args$seqIndex <- Reduce(function(l, r) {
+                r$recno <- r$recno + max(l$recno)
+                r$fileno <- r$fileno + max(l$fileno)
+                rbind(l, r)
+            }, x = fi)
+        } else {
+            args$seqIndex <- fasta.index(paths, 
+                                         seqtype = if (translated) 'AA' else 'DNA')
+        }
     } else {
         args$sequences <- if (translated) {
             readAAStringSet(paths)
@@ -110,8 +124,6 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
         row.names = orgNames, 
         check.names = FALSE, 
         stringsAsFactors = FALSE)
-    args$matrix <- matrix(nrow = 0, ncol = length(paths), 
-                          dimnames = list(NULL, orgNames))
     if (!is.null(geneLocation)) {
         geneNames <- if (lowMem) {
             args$seqIndex$desc
@@ -120,13 +132,19 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
         }
         args$geneLocation <- getSeqInfo(geneLocation, geneNames)
     }
-    do.call(new, args)
+    pan <- do.call(new, args)
+    zeroLengths <- which(geneWidth(pan) == 0)
+    if (length(zeroLengths) != 0) {
+        warning('Removing ', length(zeroLengths), ' genes of length 0')
+        pan <- removeGene(pan, ind = zeroLengths)
+    }
+    pan
 }
 
 .pkg_variables$defaults <- list(
     groupPrefix = 'OG',
     nextGroup = 1,
-    kmerSize = 4,
+    kmerSize = 5,
     lowerLimit = 0.5,
     algorithm = 'infomap',
     flankSize = 4,
@@ -134,5 +152,7 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
     forceParalogues = TRUE,
     rescale = TRUE,
     transform = FALSE,
-    maxLengthDif = 0.1
+    maxLengthDif = 0.1,
+    geneChunkSize = 1e6,
+    cdhitOpts = list()
 )

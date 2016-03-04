@@ -8,7 +8,7 @@ NULL
 #' @param vicinity An integer given the number of flanking gene groups to 
 #' traverse
 #' 
-#' @importFrom dplyr %>% group_by arrange mutate ungroup do
+#' @importFrom dplyr %>% group_by_ arrange_ mutate_ ungroup do
 #' 
 setMethod(
     'groupStat', 'pgVirtual',
@@ -29,15 +29,15 @@ setMethod(
         
         if (hasGeneInfo(object)) {
             info <- gInfo %>% 
-                group_by(organism, contig) %>%
-                arrange(start, end) %>%
-                mutate(backward = collectNeighbors(geneGroup, 'b', vicinity), 
-                       forward = collectNeighbors(geneGroup, 'f', vicinity)) %>%
+                group_by_(~organism, ~contig) %>%
+                arrange_(~start, ~end) %>%
+                mutate_(backward = ~collectNeighbors(geneGroup, 'b', vicinity), 
+                       forward = ~collectNeighbors(geneGroup, 'f', vicinity)) %>%
                 ungroup() %>%
-                group_by(geneGroup)
+                group_by_(~geneGroup)
         } else {
             info <- gInfo %>%
-                group_by(geneGroup)
+                group_by_(~geneGroup)
         }
         info <- info %>%
             do(groupInfo = {
@@ -51,7 +51,7 @@ setMethod(
                     forward = if (is.null(.$forward)) NA else .$forward
                 )
             }) %>%
-            arrange(match(geneGroup, groupNames(object)))
+            arrange_(~match(geneGroup, groupNames(object)))
         info$groupInfo
     }
 )
@@ -64,6 +64,7 @@ setMethod(
 #' 
 #' @importFrom dplyr bind_rows
 #' @importFrom Biostrings alphabetFrequency
+#' @importFrom Matrix colSums
 #' 
 setMethod(
     'orgStat', 'pgVirtual',
@@ -115,35 +116,70 @@ setMethod(
 )
 #' @describeIn pcGraph Panchromosome creation for all pgVirtualLoc subclasses
 #' 
-#' @importFrom dplyr %>% group_by arrange mutate transmute ungroup filter summarise n
+#' @param slim Should the returned graph be stripped of all metadata and only
+#' capture gene group connectivity. Defaults to FALSE
+#' 
 #' @importFrom igraph graph_from_data_frame
 #' 
 setMethod(
     'pcGraph', 'pgVirtualLoc',
-    function(object) {
-        gInfo <- geneLocation(object)
-        gInfo$gene <- 1:nGenes(object)
-        gInfo$organism <- orgNames(object)[seqToOrg(object)]
-        gInfo$geneGroup <- groupNames(object)[seqToGeneGroup(object)]
+    function(object, slim = FALSE) {
+        neighbors <- getNeighbors(object, zeroInd = FALSE)
+        geneGroups <- seqToGeneGroup(object)
+        gGroupNames <- groupNames(object)
+        edges <- data.frame(
+            from = neighbors$id,
+            to = neighbors$up
+        )
+        edges <- edges[edges$to != 0,]
+        edges$from <- geneGroups[edges$from]
+        edges$to <- geneGroups[edges$to]
+        sortGroups <- edges$from < edges$to
+        edges$edge.id <- paste(
+            ifelse(sortGroups, edges$from, edges$to),
+            ifelse(sortGroups, edges$to, edges$from),
+            sep = ';'
+        )
+        if (slim) {
+            edges <- edges[!duplicated(edges$edge.id), c('from', 'to')]
+            edges$from <- gGroupNames[edges$from]
+            edges$to <- gGroupNames[edges$to]
+            
+            return(graph_from_data_frame(edges, FALSE))
+        }
         
-        edges <- gInfo %>% 
-            group_by(organism, contig) %>%
-            arrange(start, end) %>%
-            mutate(up = c(geneGroup[-1], NA), reverse = geneGroup < up) %>%
-            transmute(from = ifelse(reverse, geneGroup, up), 
-                      to = ifelse(reverse, up, geneGroup)) %>%
-            ungroup() %>%
-            filter(!is.na(from) & !is.na(to)) %>%
-            group_by(from, to) %>%
-            summarise(weight = n(), organisms = list(unique(organism)))
+        counts <- table(edges$edge.id)
+        orgs <- lapply(split(seqToOrg(object)[edges$from], edges$edge.id), unique)
+        edges <- edges[match(names(counts), edges$edge.id), c('from', 'to')]
+        edges$weight <- as.integer(counts)
+        edges$organisms <- split(orgNames(object)[unlist(orgs)], 
+                                 rep(seq_along(orgs), lengths(orgs)))
+        edges$from <- gGroupNames[edges$from]
+        edges$to <- gGroupNames[edges$to]
         
-        vertices <- gInfo %>%
-            group_by(geneGroup) %>%
-            summarise(nMembers = n(), 
-                      organisms = list(organism), 
-                      strands = list(strand))
-        graph_from_data_frame(as.data.frame(edges), FALSE, 
-                              as.data.frame(vertices))
+        upAndDown <- data.frame(
+            id = neighbors$id,
+            up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
+            down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
+        )
+        upAndDown$up[upAndDown$up == 0] <- NA
+        upAndDown$down[upAndDown$down == 0] <- NA
+        upAndDown$up <- gGroupNames[geneGroups[upAndDown$up]]
+        upAndDown$down <- gGroupNames[geneGroups[upAndDown$down]]
+        groups <- gGroupNames[geneGroups[upAndDown$id]]
+        orgs <- orgNames(object)[seqToOrg(object)[upAndDown$id]]
+        orgs <- split(orgs, groups)
+        
+        vertices <- cbind(
+            data.frame(name = groupNames(object), stringsAsFactors = FALSE), 
+            groupInfo(object)
+        )
+        upAndDownOrder <- match(names(orgs), vertices$name)
+        vertices$organisms[upAndDownOrder] <- orgs
+        vertices$upstream[upAndDownOrder] <- split(upAndDown$up, groups)
+        vertices$downstream[upAndDownOrder] <- split(upAndDown$down, groups)
+        
+        graph_from_data_frame(edges, FALSE, vertices)
     }
 )
 #' @describeIn variableRegions Variable region detection for all pgVirtualLoc
@@ -157,7 +193,7 @@ setMethod(
     function(object, flankSize) {
         .fillDefaults(defaults(object))
         
-        graph <- pcGraph(object)
+        graph <- pcGraph(object, slim = TRUE)
         regions <- locateCycles(graph, flankSize)
         regions <- mergeCycles(regions)
         summarizeCycles(regions, graph)
@@ -295,7 +331,7 @@ setMethod(
 #' @return A list of integer vectors with gene group indexes for each gene 
 #' queried
 #' 
-#' @importFrom dplyr %>% filter group_by arrange do
+#' @importFrom dplyr %>% filter_ group_by_ arrange_ do
 #' 
 #' @noRd
 #' 
@@ -311,9 +347,9 @@ trailGroups <- function(genes, pg, vicinity) {
     info$group <- seqToGeneGroup(pg)
     info$organism <- seqToOrg(pg)
     info <- info %>%
-        filter(paste(organism, contig, sep = '>') %in% locations) %>%
-        group_by(organism, contig) %>%
-        arrange(start, end) %>%
+        filter_(~paste(organism, contig, sep = '>') %in% locations) %>%
+        group_by_(~organism, ~contig) %>%
+        arrange_(~start, ~end) %>%
         do(trail = {
             geneInd <- which(.$gene %in% genes)
             res <- lapply(geneInd, function(x) {
@@ -341,7 +377,7 @@ trailGroups <- function(genes, pg, vicinity) {
 #' 
 #' @return An igraph object
 #' 
-#' @importFrom dplyr %>% group_by summarise
+#' @importFrom dplyr %>% group_by_ summarise_
 #' @importFrom igraph graph_from_data_frame
 #' 
 #' @noRd
@@ -351,8 +387,8 @@ trailsToGraph <- function(trails) {
     edges <- data.frame(from = trails[-length(trails)], to = trails[-1])
     edges <- edges[!is.na(edges$from) & !is.na(edges$to),]
     edges <- edges %>%
-        group_by(from, to) %>%
-        summarise(weight = length(from))
+        group_by_(~from, ~to) %>%
+        summarise_(weight = ~length(from))
     graph_from_data_frame(edges)
 }
 
@@ -390,7 +426,7 @@ scaleRange <- function(x, low, high) {
 #' 
 #' @return A list of vectors with each vector holding the members of a cycle
 #' 
-#' @importFrom igraph V degree make_ego_graph bfs neighbors
+#' @importFrom igraph V degree make_ego_graph bfs neighbors as.undirected
 #' 
 #' @noRd
 #' 
@@ -492,12 +528,13 @@ mergeCycles <- function(cycles) {
 #' 
 summarizeCycles <- function(cycles, graph) {
     graphNames <- V(graph)$name
-    lapply(cycles, function(cycle, graph) {
+    summary <- lapply(cycles, function(cycle, graph) {
         outsideNeighbors <- lapply(cycle, function(v, gr, cycle) {
             n <- graphNames[neighbors(gr, v)]
             n[!n %in% cycle]
         }, gr = graph, cycle = cycle)
         flank <- cycle[lengths(outsideNeighbors) != 0]
+        if (length(flank) == 0) return(NA)
         cycleGraph <- induced_subgraph(graph, cycle)
         cyclic <- all(degree(cycleGraph) <= 2)
         if (length(flank) == 1) {
@@ -521,6 +558,7 @@ summarizeCycles <- function(cycles, graph) {
             graph = cycleGraph
         )
     }, graph = graph)
+    summary[!is.na(summary)]
 }
 #' Convert breath first search into paths
 #' 
@@ -544,6 +582,41 @@ getRoute <- function(start, fathers) {
     }
     start
 }
+#' Convert a sorted vector of groups to a vector of neighbors
+#' 
+#' This function takes a vector of gene groups, sorted by location, and converts
+#' it to a vector of neighbors in either direction.
+#' 
+#' @param groups A vector of gene group indexes
+#' 
+#' @param dir Either 'f' for forward or 'b' for backward
+#' 
+#' @param n The number of neighbors to collect for each gene
+#' 
+#' @return A character vector with neighbors separated by ';'. If the neighbors
+#' 'falls of' the end of the vector they will be substituted by NA
+#' 
+#' @noRd
+#' 
+collectNeighbors <- function(groups, dir, n) {
+    if (dir == 'b') {
+        groups <- rev(groups)
+    }
+    groups <- c(groups[-1], NA_character_)
+    res <- groups
+    n <- n - 1
+    while (n) {
+        groups <- c(groups[-1], NA_character_)
+        res <- paste(res, groups, sep = ';')
+        n <- n - 1
+    }
+    if (dir == 'b') {
+        rev(res)
+    } else {
+        res
+    }
+}
+#' @importFrom dplyr %>% group_by_ arrange_ mutate_ ungroup do transmute_ filter_
 orgGraphs <- function(object) {
     oldOptions <- options(dplyr.show_progress = FALSE)
     on.exit({
@@ -555,15 +628,15 @@ orgGraphs <- function(object) {
     gInfo$geneGroup <- groupNames(object)[seqToGeneGroup(object)]
     
     prep <- gInfo %>% 
-        group_by(organism, contig) %>%
-        arrange(start, end) %>%
-        mutate(up = c(gene[-1], NA), 
-               reverse = gene < up, 
-               down = c(NA, gene[-n()])) %>%
+        group_by_(~organism, ~contig) %>%
+        arrange_(~start, ~end) %>%
+        mutate_(up = ~c(gene[-1], NA), 
+               reverse = ~gene < up, 
+               down = ~c(NA, gene[-n()])) %>%
         ungroup()
     
     vertices <- prep %>%
-        group_by(organism) %>%
+        group_by_(~organism) %>%
         do(nodes = {data.frame(
             gene = .$gene, 
             geneGroup = .$geneGroup, 
@@ -576,10 +649,10 @@ orgGraphs <- function(object) {
     names(nodes) <- vertices$organism
     
     graphs <- prep %>%
-        group_by(organism) %>%
-        transmute(from = ifelse(reverse, gene, up), 
-                  to = ifelse(reverse, up, gene)) %>%
-        filter(!is.na(from) & !is.na(to)) %>%
+        group_by_(~organism) %>%
+        transmute_(from = ~ifelse(reverse, gene, up), 
+                  to = ~ifelse(reverse, up, gene)) %>%
+        filter_(~!is.na(from) & !is.na(to)) %>%
         do(graph = {
             graph_from_data_frame(
                 data.frame(from = .$from, to = .$to), 

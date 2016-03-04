@@ -1,34 +1,8 @@
 globalVariables(
     names = c(
-        '.',
-        'annot',
-        'backward',
-        'contig',
-        'desc',
-        'forward',
-        'from',
-        'gene',
-        'geneGroup',
-        'group',
-        'location',
-        'n',
-        'name',
-        'ontology',
-        'org',
-        'org1',
-        'org2',
-        'organism',
-        'reverse',
-        'Similarity',
-        'size',
-        'strand',
-        'to',
-        'up',
-        'x',
-        'xend',
-        'y',
-        'yend')
+        '.'
     )
+)
 .pkg_variables <- new.env()
 #' Load an example pangenome
 #' 
@@ -67,6 +41,7 @@ globalVariables(
 #' # Create with paralogue links
 #' .loadPgExample(withGroups=TRUE, withParalogues=TRUE)
 #' 
+#' @importFrom utils unzip
 #' @export
 #' 
 #' @rdname loadPgExample
@@ -300,6 +275,8 @@ lkParallelLM <- function(pangenome, kmerSize, pParam, nSplits, diag = FALSE,
 #' @return A list with two elements: 'combs' contains all combinations of chunks 
 #' and 'chunks' contain the start end end indices of the elements in each chunk.
 #' 
+#' @importFrom utils combn
+#' 
 #' @noRd
 #' 
 getChunks <- function(size, nSplits) {
@@ -335,7 +312,7 @@ getChunks <- function(size, nSplits) {
 #' 
 #' @return A sparse matrix with combined results
 #' 
-#' @importFrom dplyr %>% arrange group_by do
+#' @importFrom dplyr %>% arrange_ group_by_ do
 #' @importFrom Matrix Matrix
 #' 
 #' @noRd
@@ -349,9 +326,9 @@ weaveChunks <- function(squares, split) {
         return(squares[[1]])
     }
     res <- split$combs %>%
-        arrange(col) %>%
-        group_by(col) %>%
-        arrange(row) %>%
+        arrange_(~col) %>%
+        group_by_(~col) %>%
+        arrange_(~row) %>%
         do(cols = {
             nCol <- ncol(squares[[.$origInd[1]]])
             missingRows <- split$chunks[.$row[1], 1] - 1
@@ -399,11 +376,13 @@ weaveChunks <- function(squares, split) {
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
 #' @importFrom BiocParallel bpworkers
 #' @importFrom igraph components graph_from_adjacency_matrix
+#' @importFrom Biostrings order
+#' @importFrom stats is.leaf runif
 #' 
 #' @noRd
 #' 
-recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB, 
-                           pParam) {
+recurseCompare <- function(pangenome, tree, er, clusters, kmerSize, lowerLimit, 
+                           cacheDB, pParam) {
     args <- mget(ls())
     args$tree <- NULL
     
@@ -433,6 +412,7 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB,
         group2 <- do.call(recurseCompare, append(args, list(tree = tree[[2]])))
         groups <- c(group1, group2)
     }
+    groups <- mergeGroups(groups, clusters)
     represent <- sapply(groups, function(x) {
         x[sample.int(length(x), size = 1L)]
     })
@@ -440,28 +420,36 @@ recurseCompare <- function(pangenome, tree, er, kmerSize, lowerLimit, cacheDB,
     if (length(unlist(groups)) > 1e6 || runif(1) < 0.01) 
         gc() # Ensures always gc() when ngenes reaches 1mill
     
+    gen <- genes(pangenome, subset = represent)
     if (missing(er)) {
-        erRep <- getExRep(genes(pangenome, subset = represent), 
-                          spectrumKernel(kmerSize))
+        erRep <- getExRep(gen,  spectrumKernel(kmerSize))
     } else {
         erRep <- er[represent,]
     }
-    if (missing(pParam)) {
-        sim <- linearKernel(erRep, sparse = TRUE, lowerLimit = lowerLimit, 
-                            diag = FALSE)
-    } else {
-        sim <- lkParallel(erRep, pParam, nSplits = bpworkers(pParam), 
-                          diag = FALSE, lowerLimit = lowerLimit)
-    }
-    gr <- graph_from_adjacency_matrix(sim, mode = 'lower', 
-                                      weighted = TRUE, 
-                                      diag = FALSE)
-    members <- components(gr)$membership
+    members <- lkFMF(erRep, order = order(gen), lowerLimit = lowerLimit, 
+                 upperLimit = lowerLimit)
+    rm(gen)
     newGroups <- lapply(split(groups, members), unlist)
     if (!missing(cacheDB)) {
         dbInsert(cacheDB, key, newGroups)
     }
     newGroups
+}
+#' @importFrom igraph make_undirected_graph
+mergeGroups <- function(groups, clusters) {
+    if (is.na(clusters)) {
+        return(groups)
+    }
+    inds <- unlist(groups)
+    if (length(unique(clusters[inds])) == length(inds)) {
+        return(groups)
+    }
+    clusters <- rbind(rep(seq_along(groups), lengths(groups)),
+                      clusters[unlist(groups)] + length(groups))
+    edges <- as.integer(clusters)
+    gr <- make_undirected_graph(edges)
+    groupClusters <- components(gr)$membership[seq_along(groups)]
+    lapply(split(groups, groupClusters), unlist)
 }
 #' Parallel version of recurseCompare
 #' 
@@ -534,6 +522,8 @@ recurseCompPar <- function(pangenome, tree, er, kmerSize, lowerLimit, pParam,
 #' 
 #' @return upper with the leafs filled with lowerRes
 #' 
+#' @importFrom stats is.leaf
+#' 
 #' @noRd
 #' 
 fillTree <- function(upper, lowerRes) {
@@ -570,6 +560,8 @@ fillTree <- function(upper, lowerRes) {
 #' @param pParam A BiocParallelParam subclass
 #' 
 #' @return A dendrogram object
+#' 
+#' @importFrom stats hclust as.dendrogram
 #' 
 #' @noRd
 #' 
@@ -629,6 +621,8 @@ kmerSim <- function(pangenome, kmerSize, chunkSize = 100, pParam) {
 #' a valid value for the method parameter of dist().
 #' 
 #' @return A distance matrix
+#' 
+#' @importFrom stats as.dist dist
 #' 
 #' @noRd
 #' 
@@ -836,6 +830,8 @@ getSeqInfo <- function(format, desc) {
 #' 
 #' @return A dendrogram
 #' 
+#' @importFrom stats is.leaf
+#' 
 #' @noRd
 #' 
 cutK <- function(x, k) {
@@ -1013,6 +1009,8 @@ rbind_gtable <- function(x, y, size = "max") {
 #' # Parse the file
 #' readAnnot(annot)
 #' 
+#' @importFrom dplyr %>% mutate_ group_by_ summarise_
+#' @importFrom utils read.table
 #' @export
 #' 
 readAnnot <- function(file) {
@@ -1020,10 +1018,10 @@ readAnnot <- function(file) {
                        stringsAsFactors = FALSE)
     names(data) <- c('name', 'annot', 'desc')
     data <- data %>% 
-        mutate(ontology = grepl('GO:', annot)) %>%
-        group_by(name) %>%
-        summarise(description = desc[1], GO = I(list(annot[ontology])), 
-                  EC = I(list(annot[!ontology])))
+        mutate_(ontology = ~grepl('GO:', annot)) %>%
+        group_by_(~name) %>%
+        summarise_(description = ~desc[1], GO = ~I(list(annot[ontology])), 
+                  EC = ~I(list(annot[!ontology])))
     data <- as.data.frame(data)
     data$GO <- unclass(data$GO)
     data$EC <- unclass(data$EC)
@@ -1072,53 +1070,17 @@ transformSim <- function(similarity, low, rescale, transform) {
 #' 
 #' @param object A pgVirtual subclass
 #' 
-#' @return A matrix with number of rows equal to the number of gene groups and 
-#' number of columns equal to the number of organisms. Each cell holds the count
-#' of genes for the combination.
+#' @return A dgCMatrix with organisms in columns and gene groups in rows
 #' 
-#' @importFrom reshape2 acast
+#' @importFrom Matrix sparseMatrix
 #' 
 #' @noRd
 #' 
 getPgMatrix <- function(object) {
-    calcPgMatrix(seqToOrg(object), seqToGeneGroup(object), groupNames(object),
-                 orgNames(object))
-}
-#' Calculate pangenome matrix directly
-#' 
-#' This function calculates a pangenome matrix based on the basic information
-#' available in a pgVirtual subclass. Depending on the class implementation,
-#' better approaches might be available, but this approach is ensured to be 
-#' possible.
-#' 
-#' @param seqToOrg An integer vector with organism membership
-#' 
-#' @param seqToGeneGroup An integer vector with gene group membership
-#' 
-#' @param groupNames The names of the gene groups
-#' 
-#' @param orgNames The names of the organisms
-#' 
-#' @return A matrix with number of rows equal to the number of gene groups and 
-#' number of columns equal to the number of organisms. Each cell holds the count
-#' of genes for the combination.
-#' 
-#' @importFrom reshape2 acast
-#' 
-#' @noRd
-#' 
-calcPgMatrix <- function(seqToOrg, seqToGeneGroup, groupNames, orgNames) {
-    if (length(seqToGeneGroup) == 0) {
-        return(matrix(nrow = 0, ncol = length(orgNames), 
-                      dimnames = list(NULL, orgNames)))
-    }
-    matRes <- matrix(0, ncol = length(orgNames), nrow = length(groupNames), 
-                     dimnames = list(groupNames, orgNames))
-    pgmat <- acast(data.frame(seqToOrg = seqToOrg, 
-                              seqToGeneGroup = seqToGeneGroup), 
-                   seqToGeneGroup ~ seqToOrg, length, value.var = 'seqToOrg')
-    matRes[as.integer(rownames(pgmat)), as.integer(colnames(pgmat))] <- pgmat
-    matRes
+    mat <- createPanMatrix(seqToOrg(object), seqToGeneGroup(object))
+    sparseMatrix(i = mat$i, p = mat$p, x = mat$x, 
+                 dims = c(nGeneGroups(object), nOrganisms(object)),
+                 dimnames = list(groupNames(object), orgNames(object)))
 }
 #' Convert between list and vector type indexing
 #' 
@@ -1133,11 +1095,39 @@ calcPgMatrix <- function(seqToOrg, seqToGeneGroup, groupNames, orgNames) {
 #' @noRd
 #' 
 convertGrouping <- function(groups) {
-    if(is.list(groups)) {
+    if (is.list(groups)) {
         members <- rep(seq_along(groups), lengths(groups))
         members[unlist(groups)] <- as.integer(members)
     } else {
         members <- split(seq_along(groups), groups)
     }
     members
+}
+formatSeconds <- function(sec) {
+    names <- c('day', 'hour', 'minute', 'second')
+    time <- c(0, 0, 0, 0)
+    if (sec >= 86400) {
+        time[1] <- floor(sec / 86400)
+        sec <- sec %% 86400
+    }
+    if (sec >= 3600) {
+        time[2] <- floor(sec / 3600)
+        sec <- sec %% 3600
+    }
+    if (sec >= 60) {
+        time[3] <- floor(sec / 60)
+        sec <- sec %% 60
+    }
+    time[4] <- round(sec, 3)
+    names <- paste0(names, ifelse(time == 1, '', 's'))
+    names <- names[time != 0]
+    time <- time[time != 0]
+    combTime <- paste(time, names)
+    if (length(combTime) > 1) {
+        paste(paste(combTime[-length(combTime)], collapse = ', '), 
+              tail(combTime, 1), 
+              sep = ' and ')
+    } else {
+        combTime
+    }
 }

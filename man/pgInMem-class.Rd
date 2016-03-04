@@ -35,13 +35,10 @@ defined by subclasses:
 
 \describe{
 \item{\code{seqToOrg}}{An integer vector that reference all genes to a specific 
-organism (column in the pangenome matrix)}
+organism.}
 
 \item{\code{seqToGeneGroup}}{An integer vector that references all genes to a 
-specific gene group (row in the pangenome matrix)}
-
-\item{\code{matrix}}{A matrix given gene count with organisms as columns and gene 
-groups as rows.}
+specific gene group.}
 
 \item{\code{groupInfo}}{A data.frame storing metadata information about gene groups.}
 
