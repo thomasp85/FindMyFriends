@@ -63,15 +63,15 @@ setMethod(
     function(object, split, subset) {
         if (missing(subset)) {
             if (translated(object)) {
-                readAAStringSet(object@seqIndex)
+                safeAAread(object@seqIndex)
             } else {
-                readDNAStringSet(object@seqIndex)
+                safeDNAread(object@seqIndex)
             }
         } else {
             if (translated(object)) {
-                readAAStringSet(object@seqIndex[subset,]) 
+                safeAAread(object@seqIndex[subset,]) 
             } else {
-                readDNAStringSet(object@seqIndex[subset,])
+                safeDNAread(object@seqIndex[subset,])
             }
         }
     }
@@ -157,3 +157,35 @@ setMethod(
                        seqIndex = rbind(pg1@seqIndex, pg2@seqIndex), ...)
     }
 )
+
+## HELPERS
+
+safeAAread <- function(index) {
+    if (length(unique(index$fileno)) > 2000) {
+        nIndex <- index[order(index$fileno), ]
+        splits <- rep(seq_len(ceiling(length(unique(index$fileno)) / 2000)), 
+                      each = 2000, length.out = nrow(nIndex))
+        seqs <- lapply(split(seq_len(nrow(nIndex)), splits), function(i) {
+            readAAStringSet(nIndex[i,])
+        })
+        seqs <- Reduce(c, seqs)
+        seqs[match(nIndex$recno, index$recno)]
+    } else {
+        readAAStringSet(index)
+    }
+}
+
+safeDNAread <- function(index) {
+    if (length(unique(index$fileno)) > 2000) {
+        nIndex <- index[order(index$fileno), ]
+        splits <- rep(seq_len(ceiling(length(unique(index$fileno)) / 2000)), 
+                      each = 2000, length.out = nrow(nIndex))
+        seqs <- lapply(split(seq_len(nrow(nIndex)), splits), function(i) {
+            readDNAStringSet(nIndex[i,])
+        })
+        seqs <- Reduce(c, seqs)
+        seqs[match(nIndex$recno, index$recno)]
+    } else {
+        readDNAStringSet(index)
+    }
+}

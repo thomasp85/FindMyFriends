@@ -8,8 +8,8 @@
 \usage{
 neighborhoodSplit(object, ...)
 
-\S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize, minFlank,
-  forceParalogues, kmerSize, lowerLimit, maxLengthDif, guideGroups = NULL)
+\S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize, forceParalogues,
+  kmerSize, lowerLimit, maxLengthDif, guideGroups = NULL)
 }
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
@@ -18,8 +18,6 @@ neighborhoodSplit(object, ...)
 
 \item{flankSize}{The number of flanking genes on each side of the gene to use
 for comparison.}
-
-\item{minFlank}{The lowest number of matching genes on either side to allow}
 
 \item{forceParalogues}{Force similarity of paralogue genes to 0}
 
@@ -54,7 +52,9 @@ similarity and neighborhood synteny. The cliques are then added as new groups
 if the members are not already members of a new group until all members are
 part of a new group. This approach ensures that all members of the new 
 groupings passes certain conditions when compared to all other members of the
-same group.
+same group. After the splitting a refinement step is done where gene groups 
+with high similarity and sharing a neighbor either up- or downstream are 
+merged together to avoid spurius errors resulting from the initial grouping.
 }
 \section{Methods (by class)}{
 \itemize{

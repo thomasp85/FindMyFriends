@@ -29,13 +29,10 @@ NULL
 #' }
 #' 
 #' @slot seqToOrg An integer vector that reference all genes to a specific 
-#' organism (column in the pangenome matrix)
+#' organism.
 #' 
 #' @slot seqToGeneGroup An integer vector that references all genes to a 
-#' specific gene group (row in the pangenome matrix)
-#' 
-#' @slot matrix A matrix given gene count with organisms as columns and gene 
-#' groups as rows.
+#' specific gene group.
 #' 
 #' @slot groupInfo A data.frame storing metadata information about gene groups.
 #' 
@@ -51,23 +48,13 @@ setClass(
     slots = list(
         seqToOrg = 'integer',
         seqToGeneGroup = 'integer',
-        matrix = 'matrix',
         groupInfo = 'data.frame',
         orgInfo = 'data.frame'
     ),
     validity = function(object) {
-        pgDims <- dim(object@matrix)
-        if (length(object@seqToOrg) != 0) {
-            if (max(object@seqToOrg) > pgDims[2]) {
-                return('Reference to non-existing organism')
-            }
-        }
         if (length(object@seqToGeneGroup) != 0) {
             if (length(object@seqToOrg) != length(object@seqToGeneGroup)) {
                 return('Gene indexes of different length')
-            }
-            if (max(object@seqToGeneGroup) > pgDims[1]) {
-                return('Reference to non-existing gene group')
             }
         }
         return(TRUE)
@@ -75,7 +62,6 @@ setClass(
     prototype = list(
         seqToOrg = integer(),
         seqToGeneGroup = integer(),
-        matrix = matrix(0L, nrow = 0, ncol = 0),
         groupInfo = data.frame(),
         orgInfo = data.frame()
     )
@@ -115,7 +101,6 @@ setMethod(
     'orgNames<-', 'pgInMem',
     function(object, value) {
         rownames(object@orgInfo) <- value
-        colnames(object@matrix) <- value
         object
     }
 )
@@ -133,7 +118,6 @@ setMethod(
     'groupNames<-', 'pgInMem',
     function(object, value) {
         rownames(object@groupInfo) <- value
-        rownames(object@matrix) <- value
         object
     }
 )
@@ -178,7 +162,6 @@ setMethod(
     function(object, seqToGeneGroup) {
         object <- callNextMethod()
         object@seqToGeneGroup <- seqToGeneGroup
-        object@matrix <- getPgMatrix(object)
         object
     }
 )
@@ -207,7 +190,6 @@ setMethod(
             object@seqToOrg <- removeIndex(object@seqToOrg, removedOrgs)
             orgInfo(object) <- orgInfo(object)[-removedOrgs, , drop = FALSE]
         }
-        object@matrix <- getPgMatrix(object)
         if (inherits(object, 'pgInMemLoc')) {
             object@geneLocation <- object@geneLocation[-ind, , drop = FALSE]
         }
@@ -271,19 +253,7 @@ setMethod(
             seqToGeneGroup = as.integer(geneGrouping),
             orgInfo = orgInfo,
             groupInfo = groupInfo,
-            matrix = calcPgMatrix(seqToOrg, geneGrouping, rownames(groupInfo), 
-                                  rownames(orgInfo)),
             ...
         )
-    }
-)
-### PERFORMANCE OVERWRITE
-
-#' @describeIn pgMatrix Get pangenome matrix for pgInMem and subclasses
-#' 
-setMethod(
-    'pgMatrix', 'pgInMem',
-    function(object) {
-        object@matrix
     }
 )
