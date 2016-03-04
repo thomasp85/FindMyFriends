@@ -51,8 +51,10 @@ setMethod(
 #' directory where cached results should be stored. If omitted caching will not
 #' be done. Highly recommended for long running instances.
 #' 
-#' @importFrom kebabs getExRep spectrumKernel
+#' @param precluster Logical. Should genes be preclustered using CD-Hit. 
+#' Defaults to TRUE.
 #' 
+#' @importFrom kebabs getExRep spectrumKernel
 #' @importFrom stats as.dendrogram
 #' @importFrom filehash dbCreate dbInit
 #' 
@@ -150,8 +152,16 @@ setMethod(
 #' other parameters given to this function and all values in cdhitOpts will be
 #' converted to character using as.character
 #' 
+#' @param cdhitIter Logical. Should the preclustered groups be grouped by 
+#' gradually lowering the threshold in CD-Hit or by directly calculating kmer
+#' similarities between all preclusters and group by that. Defaults to TRUE
+#' 
+#' @param nrep If \code{cdhitIter = TRUE}, controls how many iterations should
+#' be performed at each threshold level. Defaults to 1.
+#' 
 #' @importFrom Biostrings order
 #' @importFrom kebabs getExRep spectrumKernel
+#' 
 setMethod(
     'cdhitGrouping', 'pgVirtual',
     function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize, 

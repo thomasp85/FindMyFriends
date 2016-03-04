@@ -9,7 +9,7 @@
 cdhitGrouping(object, ...)
 
 \S4method{cdhitGrouping}{pgVirtual}(object, kmerSize, lowerLimit, maxLengthDif,
-  geneChunkSize, cdhitOpts, cdhitIter = FALSE, nrep = 1)
+  geneChunkSize, cdhitOpts, cdhitIter = TRUE, nrep = 1)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -37,6 +37,13 @@ named list with names corresponding to the arguments expected in the CD-HIT
 algorithm (without the dash). i, n and s/S will be overwritten based on the
 other parameters given to this function and all values in cdhitOpts will be
 converted to character using as.character}
+
+\item{cdhitIter}{Logical. Should the preclustered groups be grouped by 
+gradually lowering the threshold in CD-Hit or by directly calculating kmer
+similarities between all preclusters and group by that. Defaults to TRUE}
+
+\item{nrep}{If \code{cdhitIter = TRUE}, controls how many iterations should
+be performed at each threshold level. Defaults to 1.}
 }
 \value{
 An object of the same class as 'object'.

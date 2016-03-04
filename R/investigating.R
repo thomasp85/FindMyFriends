@@ -116,6 +116,9 @@ setMethod(
 )
 #' @describeIn pcGraph Panchromosome creation for all pgVirtualLoc subclasses
 #' 
+#' @param slim Should the returned graph be stripped of all metadata and only
+#' capture gene group connectivity. Defaults to FALSE
+#' 
 #' @importFrom igraph graph_from_data_frame
 #' 
 setMethod(

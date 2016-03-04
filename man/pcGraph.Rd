@@ -13,6 +13,8 @@ pcGraph(object, ...)
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
 
+\item{...}{parameters passed on}
+
 \item{slim}{Should the returned graph be stripped of all metadata and only
 capture gene group connectivity. Defaults to FALSE}
 }

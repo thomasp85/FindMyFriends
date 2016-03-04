@@ -29,13 +29,10 @@ NULL
 #' }
 #' 
 #' @slot seqToOrg An integer vector that reference all genes to a specific 
-#' organism (column in the pangenome matrix)
+#' organism.
 #' 
 #' @slot seqToGeneGroup An integer vector that references all genes to a 
-#' specific gene group (row in the pangenome matrix)
-#' 
-#' @slot matrix A matrix given gene count with organisms as columns and gene 
-#' groups as rows.
+#' specific gene group.
 #' 
 #' @slot groupInfo A data.frame storing metadata information about gene groups.
 #' 

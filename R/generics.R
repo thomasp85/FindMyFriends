@@ -1020,8 +1020,7 @@ setGeneric('orgStat', def = function(object, ...) {
 #' 
 #' @param object A pgVirtualLoc subclass
 #' 
-#' @param slim Should the returned graph be stripped of all metadata and only
-#' capture gene group connectivity. Defaults to FALSE
+#' @param ... parameters passed on
 #' 
 #' @return An igraph object
 #' 
@@ -1072,10 +1071,10 @@ setGeneric('pcGraph', def = function(object, ...) {
 #' # Too heavy to include
 #' \dontrun{
 #' regions <- variableRegions(testPG)
-#' }
 #' 
 #' # Have a look at the first region
 #' regions[[1]]
+#' }
 #' 
 #' @export
 #' 
@@ -1434,8 +1433,10 @@ setGeneric('mergePangenomes', def = function(pg1, pg2, ...) {
 #' # Get a grouped pangenome
 #' pg <- .loadPgExample(withGroups = TRUE)
 #' 
-#' # Split groups by similarity
+#' \dontrun{
+#' # Split groups by similarity (Too heavy to include)
 #' pg <- kmerSplit(pg, lowerLimit = 0.8)
+#' }
 #' 
 #' @export
 #' 

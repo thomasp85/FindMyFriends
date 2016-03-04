@@ -37,6 +37,9 @@ used for parallelisation.}
 \item{cacheDB}{A \code{\linkS4class{filehash}} object or a path to a 
 directory where cached results should be stored. If omitted caching will not
 be done. Highly recommended for long running instances.}
+
+\item{precluster}{Logical. Should genes be preclustered using CD-Hit. 
+Defaults to TRUE.}
 }
 \value{
 An object of the same class as 'object'.
