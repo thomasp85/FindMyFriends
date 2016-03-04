@@ -1270,7 +1270,7 @@ void WordTable::Clear()
 			ns += ic.count >= 4;
 		}
 	}
-	printf( "%9i %9i %9i %9i\n", n1, n2, n3, ns );
+	//printf( "%9i %9i %9i %9i\n", n1, n2, n3, ns );
 #endif
 	size = 0;
 	frag_count = 0;
@@ -1650,10 +1650,10 @@ void SequenceDB::Read( const char *file, const Options & options )
 			if ( one.size ) { // write previous record
 				one.dat_length = dummy.dat_length = one.size;
 				if( one.identifier == NULL || one.Format() ){
-					printf( "Warning: from file \"%s\",\n", file );
-					printf( "Discarding invalid sequence or sequence without identifier and description!\n\n" );
-					if( one.identifier ) printf( "%s\n", one.identifier );
-					printf( "%s\n", one.data );
+					// printf( "Warning: from file \"%s\",\n", file );
+					// printf( "Discarding invalid sequence or sequence without identifier and description!\n\n" );
+					// if( one.identifier ) printf( "%s\n", one.identifier );
+					// printf( "%s\n", one.data );
 					one.size = 0;
 				}
 				one.index = dummy.index = sequences.size();
@@ -2253,9 +2253,9 @@ void SequenceDB::ClusterOne( Sequence *seq, int id, WordTable & table,
 	}
 	if ( (id+1) % 1000 == 0 ) {
 		int size = rep_seqs.size();
-		printf( "." );
+		// printf( "." );
 		//fflush( stdout );
-		if ( (id+1) % 10000 == 0 ) printf( "\r..........%9i  finished  %9i  clusters\n", id+1, size );
+		// if ( (id+1) % 10000 == 0 ) printf( "\r..........%9i  finished  %9i  clusters\n", id+1, size );
 	}
 }
 #include<assert.h>
@@ -2891,7 +2891,7 @@ void SequenceDB::ComputeDistance( const Options & options )
 		buf.EncodeWords( seq, options.NAA, false );
 		buf.ComputeAAP2( seqi, seq->size );
 		dists[i][i] = 0.0;
-		if((i+1)%1000 ==0) printf( "%9i\n", (i+1) );
+		// if((i+1)%1000 ==0) printf( "%9i\n", (i+1) );
 		for(j=0; j<i; j++){
 			Sequence *rep = sequences[j];
 			char *seqj = rep->data;
@@ -3055,7 +3055,7 @@ void SequenceDB::DoClustering( const Options & options, std::string name, bool s
 #if 0
 	int zeros = 0;
 	for(i=0; i<word_table.indexCounts.size(); i++) zeros += word_table.indexCounts[i].Size() ==0;
-	printf( "%9i  empty entries out of  %9i\n", zeros, word_table.indexCounts.size() );
+	// printf( "%9i  empty entries out of  %9i\n", zeros, word_table.indexCounts.size() );
 #endif
 }
 
@@ -3129,9 +3129,9 @@ void SequenceDB::ClusterTo( SequenceDB & other, const Options & options )
 			seq->cluster_id = ks;
 			seq->state |= IS_REP;
 			if ( (ks+1) % 1000 == 0 ) {
-				printf( "." );
+				// printf( "." );
 				//fflush( stdout );
-				if ( (ks+1) % 10000 == 0 ) printf( "%9i  finished\n", ks+1 );
+				// if ( (ks+1) % 10000 == 0 ) printf( "%9i  finished\n", ks+1 );
 			}  
 		}
 		float p0 = 0;
@@ -3170,7 +3170,7 @@ void SequenceDB::ClusterTo( SequenceDB & other, const Options & options )
 				}
 				float p = (100.0*j)/M;
 				if( p > p0+1E-1 ){ // print only if the percentage changed
-					printf( "\r%4.1f%%", p );
+					// printf( "\r%4.1f%%", p );
 					//fflush( stdout );
 					p0 = p;
 				}
@@ -3205,13 +3205,13 @@ void SequenceDB::ClusterTo( SequenceDB & other, const Options & options )
 				}
 				float p = (100.0*j)/M;
 				if( p > p0+1E-1 ){ // print only if the percentage changed
-					printf( "\r%4.1f%%", p );
+					// printf( "\r%4.1f%%", p );
 					//fflush( stdout );
 					p0 = p;
 				}
 			}
 		}
-		printf( "\r..........%9i  compared  %9i  clusters\n", i, NR2_red_no );
+		// printf( "\r..........%9i  compared  %9i  clusters\n", i, NR2_red_no );
 		word_table.Clear();
 		word_table.size = 0;
 		i = m;
