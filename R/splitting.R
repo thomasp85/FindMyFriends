@@ -393,7 +393,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
         down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
     )
     while (TRUE) {
-        pc <- pcGraph(pangenome, slim = T)
+        pc <- pcGraph(pangenome, slim = TRUE)
         knots <- which(degree(pc) > 2)
         if (length(knots) == 0) break
         knots <- match(V(pc)$name[knots], groupNames(pangenome))
