@@ -13,11 +13,12 @@ private:
     int last;
     time_t lasttime;
     int maxwait;
+    bool show;
     
     void createBar ();
 public:
-    Progress (int e, std::string n);
-    Progress (int e, std::string n, int f);
+    Progress (int e, std::string n, bool s);
+    Progress (int e, std::string n, int f, bool s);
     void increment ();
     void start ();
     void finish ();

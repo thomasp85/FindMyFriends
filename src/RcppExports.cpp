@@ -6,26 +6,28 @@
 using namespace Rcpp;
 
 // cdhitestC
-IntegerVector cdhitestC(List opts, CharacterVector name);
-RcppExport SEXP FindMyFriends_cdhitestC(SEXP optsSEXP, SEXP nameSEXP) {
+IntegerVector cdhitestC(List opts, CharacterVector name, bool showProgress);
+RcppExport SEXP FindMyFriends_cdhitestC(SEXP optsSEXP, SEXP nameSEXP, SEXP showProgressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type opts(optsSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type name(nameSEXP);
-    __result = Rcpp::wrap(cdhitestC(opts, name));
+    Rcpp::traits::input_parameter< bool >::type showProgress(showProgressSEXP);
+    __result = Rcpp::wrap(cdhitestC(opts, name, showProgress));
     return __result;
 END_RCPP
 }
 // cdhitC
-IntegerVector cdhitC(List opts, CharacterVector name);
-RcppExport SEXP FindMyFriends_cdhitC(SEXP optsSEXP, SEXP nameSEXP) {
+IntegerVector cdhitC(List opts, CharacterVector name, bool showProgress);
+RcppExport SEXP FindMyFriends_cdhitC(SEXP optsSEXP, SEXP nameSEXP, SEXP showProgressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type opts(optsSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type name(nameSEXP);
-    __result = Rcpp::wrap(cdhitC(opts, name));
+    Rcpp::traits::input_parameter< bool >::type showProgress(showProgressSEXP);
+    __result = Rcpp::wrap(cdhitC(opts, name, showProgress));
     return __result;
 END_RCPP
 }
@@ -147,8 +149,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // widthSim
-IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName);
-RcppExport SEXP FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP progNameSEXP) {
+IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName, bool showProgress);
+RcppExport SEXP FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP progNameSEXP, SEXP showProgressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -156,7 +158,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type width(widthSEXP);
     Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type progName(progNameSEXP);
-    __result = Rcpp::wrap(widthSim(groups, width, threshold, progName));
+    Rcpp::traits::input_parameter< bool >::type showProgress(showProgressSEXP);
+    __result = Rcpp::wrap(widthSim(groups, width, threshold, progName, showProgress));
     return __result;
 END_RCPP
 }

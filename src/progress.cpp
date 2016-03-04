@@ -13,7 +13,8 @@ int nDigits(int n) {
     return number_of_digits;
 }
 
-Progress::Progress (int e, std::string n) {
+Progress::Progress (int e, std::string n, bool s) {
+    show = s;
     end = e;
     name = n;
     freq = e / 50;
@@ -22,7 +23,8 @@ Progress::Progress (int e, std::string n) {
     time(&lasttime);
     maxwait = 10;
 }
-Progress::Progress (int e, std::string n, int f) {
+Progress::Progress (int e, std::string n, int f, bool s) {
+    show = s;
     end = e;
     name = n;
     if (e/f < 50) {
@@ -36,10 +38,12 @@ Progress::Progress (int e, std::string n, int f) {
     maxwait = 10;
 }
 void Progress::createBar() {
-    int p = 50 * double(prog) / end;
-    if (p > 50) p = 50;
-    int countWhite = nDigits(end) - nDigits(prog);
-    Rcout << "\r" << name << " |" << std::string(p, '=') << std::string(50-p, ' ') << "| " << std::string(countWhite, ' ') << prog << "/" << end << std::flush;
+    if (show) {
+        int p = 50 * double(prog) / end;
+        if (p > 50) p = 50;
+        int countWhite = nDigits(end) - nDigits(prog);
+        Rcout << "\r" << name << " |" << std::string(p, '=') << std::string(50-p, ' ') << "| " << std::string(countWhite, ' ') << prog << "/" << end << std::flush;
+    }
 }
 void Progress::start() {
     createBar();

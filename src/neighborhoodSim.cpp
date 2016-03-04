@@ -218,7 +218,7 @@ DataFrame mergeSims(IntegerVector nI, IntegerVector nP, IntegerVector nX,
 // }
 
 //[[Rcpp::export]]
-IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName) {
+IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName, bool showProgress) {
     IntegerVector res(width.size());
     int i, j, k, nMembers, id1, id2, widthi, widthj;
     int maxgroup = 0;
@@ -230,7 +230,7 @@ IntegerVector widthSim(List groups, IntegerVector width, double threshold, Chara
     std::deque<int> I;
     std::deque<int> X;
     
-    Progress prog(size + 1, as<std::string>(progName), 100);
+    Progress prog(size + 1, as<std::string>(progName), 100, showProgress);
     prog.start();
     
     for (k = 0; k < size; ++k) {

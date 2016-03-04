@@ -2934,7 +2934,7 @@ void SequenceDB::ComputeDistance( const Options & options )
 	}
 	fclose( fout );
 }
-void SequenceDB::DoClustering( const Options & options, std::string name )
+void SequenceDB::DoClustering( const Options & options, std::string name, bool showProgress )
 {
 	int i;
 	int NAA = options.NAA;
@@ -2983,7 +2983,7 @@ void SequenceDB::DoClustering( const Options & options, std::string name )
 	Options opts( options );
 	opts.ComputeTableLimits( min_len, max_len, len_n50, mem_need );
 	
-	Progress prog(N, name, 1000);
+	Progress prog(N, name, 1000, showProgress);
 	prog.start();
 
 	for(i=0; i<N; ){

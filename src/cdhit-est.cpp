@@ -49,7 +49,7 @@ Options options_est;
 SequenceDB seq_db_est;
 
 //[[Rcpp::export]]
-IntegerVector cdhitestC(List opts, CharacterVector name) {
+IntegerVector cdhitestC(List opts, CharacterVector name, bool showProgress) {
     options_est.cluster_thd = 0.95;
     options_est.NAA = 10;
     options_est.NAAN = NAA8;
@@ -73,7 +73,7 @@ IntegerVector cdhitestC(List opts, CharacterVector name) {
     
     seq_db_est.Read(options_est.input.c_str(), options_est);
     seq_db_est.SortDivide(options_est);
-    seq_db_est.DoClustering(options_est, as<std::string>(name));
+    seq_db_est.DoClustering(options_est, as<std::string>(name), showProgress);
     
     //seq_db.WriteClusters(options.input.c_str(), options.input.c_str(), options);
     clusters = seq_db_est.GetClusters(options_est);
