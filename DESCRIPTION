@@ -39,7 +39,9 @@ Imports:
     grid,
     reshape2,
     ggdendro,
-    BiocParallel
+    BiocParallel,
+    utils,
+    stats
 Suggests:
     BiocStyle,
     testthat,
