@@ -1,21 +1,31 @@
 ---
 title: "Creating pangenomes using FindMyFriends"
 author: "Thomas Lin Pedersen"
-date: "June 12th 2015"
-output: 
-    rmarkdown::html_vignette:
-        css: styles.css
+date: "`r doc_date()`"
+package: "`r pkg_ver('FindMyFriends')`"
+abstract: >
+  FindMyFriends is a framework for doing microbial comparative genomics. It 
+  defines a class system for working with pangenome data that allows transparent
+  access to the underlying sequence data, while being able to handle huge
+  collections of genomes. It also defines a set of novel algorithms that makes
+  it possible to create high quality pangenomes at high speed, leveraging 
+  alignment free sequence comparison techniques.
 vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Creating pangenomes using FindMyFriends}
-  %\usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output: 
+  BiocStyle::html_document:
+    toc: FALSE
+    fig_caption: TRUE
 ---
 
 *  *  *
 
+# Introduction
 FindMyFriends is an R package for creating pangenomes of large sets of microbial
 organisms, together with tools to investigate the results. The number of 
-tools to create pangenomes is large and some of the more notable ones are 
+tools to create pangenomes is large and some of the more notable ones are Roary,
 OrthoMCL, PanOCT, inParanoid and Sybil. Within the R framework micropan 
 (available from CRAN) is currently the only other entry, but the scope of 
 FindMyFriends is much broader. 
@@ -32,13 +42,15 @@ of all genes within a set of genomes by annotating pangenome gene groups rather
 than single genes. An example of the latter is to use a pangenome together with 
 phenotypic information to discover new links between genes and phenotypes.
 
-Usually pangenomes are calculated from the result
-of blasting all genes in the organisms under investigation against each other.
-This step is very time-consuming due to the complexity of the BLAST algorithm. 
-FindMyFriends is one of the few tools that take a different approach and instead
-relies on an alignment free methodology. In FindMyFriends gene similarities are
-calculated using kmer feature vectors. A kmer feature vector is a decomposition
-of a sequence into substrings of length k.
+Usually pangenomes are calculated from the result of blasting all genes in the 
+organisms under investigation against each other. This step is very 
+time-consuming due to the complexity of the BLAST algorithm and the need to 
+compare everything with everything (resulting in a quadratic scaling). 
+FindMyFriends generally takes a different approach by ditching BLAST altogether.
+In its absence FindMyFriends uses alignment free sequence comparisons, based on
+decomposition of the sequences into K-mer feature vectors. K-mers are words of
+equal length derived by sliding a window of size K over the sequence and a K-mer
+feature vector is simply the count of each unique word, as seen below
 
 ```
 GATTCGATTAG  ->  ATT: 2
@@ -57,16 +69,23 @@ is effectively the cosine to the angle between the two vectors. If the vector
 space is strictly positive then the value is bound between 0 and 1 with 1 being
 100 % similarity.
 
-How to convert similarity measures into groupings is again a problem with many 
-solutions. FindMyFriends opts for a for a graph theory solution, using the
-infomap community detection algorithm. This is similar in theory to OrthoMCL,
-though the algorithm differs (Infomap vs. Markov Clustering). It should be noted
-that the choice of community detection algorithm is open in FindMyFriends as all
-algorithms implemented within the igraph framework is available - Infomap is
-highly adviced though.
+Apart from the use of K-mers over BLAST, FindMyFriends also advocate a different
+approach to how the grouping is performed. Normally the final (or close to 
+final) grouping is derived directly from the main similarity comparison step. In
+FindMyFriends this is turned around, and the main similarity step is very 
+coarse, resulting in very large gene groups, unsuited as a final result. These
+groups are then investigated in more detail with regards to the sequence 
+similarity, neighborhood similarity and sequence length. This division makes it
+possible to employ a very fast, but not very precise algorithm for the first 
+step, and only use time to investigate gene pairs with a high likelihood of 
+being equal. In the end this approach results in a linear scaling with regards
+to the number of genes, as well as a general speedup, and to my knowledge
+FindMyFriends is currently by far the fastest algorithm for creating pangenomes.
 
-There is a lot more to FindMyFriends than this though - some of it will be 
-discussed in the following.
+FindMyFriends is flexible and there are many ways to go about creating 
+pangenomes - you can even specify them manually making it possible to import
+results from other algorithms into the framework. This vignette will only focus
+on the currently recommended approach.
 
 ## Data to use in this vignette
 This vignette will use a collection of 10 different *Mycoplasma pneumonia* and
@@ -81,6 +100,8 @@ unzip(system.file('extdata', 'Mycoplasma.zip', package='FindMyFriends'),
 genomeFiles <- list.files(location, full.names=TRUE, pattern='*.fasta')
 ```
 
+# Creating a *Mycoplasma* pangenome
+
 ## Creating a Pangenome object from a set of fasta files
 The first step in performing a pangenomic analysis with FindMyFriends is to load
 gene data into a Pangenome object. This is done with the aptly named `pangenome`
@@ -89,24 +110,23 @@ genes are translated and optionally information about the position of each gene
 on the chromosome and a boolean indicating whether to read all sequences into 
 memory. 
 
-```{r, echo=TRUE, eval=TRUE}
+```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
 library(FindMyFriends)
-library(igraph) # some return values are igraph objects
 
 mycoPan <- pangenome(genomeFiles[1:9], 
-                     translated=TRUE, 
-                     geneLocation='prodigal', 
-                     lowMem=FALSE)
+                     translated = TRUE, 
+                     geneLocation = 'prodigal', 
+                     lowMem = FALSE)
 mycoPan
 ```
 
 The last parameters of the function call warrants some more explanation. Some of 
 the algorithms in FindMyFriends uses positional information and this must be
-supplied with the sequenceInfo parameter. This can be done in a number of ways: 
+supplied with the geneLocation parameter. This can be done in a number of ways: 
 As a data.frame with one row per gene, as a function that takes the header info 
 of each gene from the fasta file and returns a data.frame with on row per gene, 
 or as a string identifying the annotator used to find the gene (currently only 
-Prodigal supported). The gene info has the following format (all columns 
+Prodigal is supported). The gene info has the following format (all columns 
 required):
 
 ```{r, echo=TRUE, eval=TRUE}
@@ -167,134 +187,67 @@ defaults(mycoPan)$lowerLimit <- 0.6
 Values supplied as arguments to a method will always override object defaults.
 
 ## Calculating pangenomes
-FindMyFriends provide two approaches to creating the initial pangenome. Both of 
-these are based on comparing normalised kmer counts between sequences, rather
-than doing a blast between all combinations of strains. Because kmer 
-computations are so much faster than blast, this results in an enormous speed 
-increase compared to other current tools.
+Pangenome calculation is generally split into two steps; one focusing on a 
+coarse clustering of genes based on sequence similarity and one focusing on 
+refining this clustering by comparing sequences and chromosomal neighborhood 
+between genes in the clusters. Currently the fastest approach to the first step
+is based on the CD-Hit algorithm (`cdhitGrouping`), but other approaches exists 
+(`gpcGrouping` and `graphGrouping`). There is no advantages to using the slower 
+algorithms, so there use is generally not encouraged. `cdhitGrouping` works by
+repeatedly combining gene groups based on lower and lower similarity threshold. 
+At each step the longest member of each gene group is chosen as a representative
+for the group in the following step. You generally want to set the lowest 
+threshold rather low to ensure that genes belonging to the same group are 
+definitely clustered together.
 
-### All-vs-all kmer comparison
-The first approach is very akin to the idea behind blasting all genes against
-each other. The major difference is that instead of deriving a similarity score
-from blasting two sequences against each other, the cosine similarity for the 
-kmer feature vectors of the two sequences is used.
-
-```{r, echo=TRUE, eval=TRUE}
-mycoSim <- kmerSimilarity(mycoPan, lowerLimit=0.8, rescale=FALSE)
+```{r, echo=TRUE, eval=TRUE, results='hide', message=FALSE}
+mycoPan <- cdhitGrouping(mycoPan, kmerSize = 5, cdhitIter = TRUE, nrep = 3)
 ```
 
-The result of `kmerSimilarity()` will be a similarity matrix which can then be
-used to construct a grouping. FindMyFriends adopts a graph based approach, where
-the similarity matrix is translated to an undirected, weighted graph and 
-community detection is used to split nodes (genes) into groups. The two-pass
-approach makes it possible to intercept the grouping and define your own 
-algorithm though. Furthermore it makes it possible to define a similarity matrix
-based on other computations than kmer cosine similarity (e.g. blast), and still
-use the graph grouping from FindMyFriends.
+Looking at our mycoPan object now reveals some additional information about the
+gene groups:
 
-```{r, eval=TRUE, echo=TRUE}
-mycoPan <- graphGrouping(mycoPan, mycoSim)
+```{r, echo=TRUE, eval=TRUE}
 mycoPan
 ```
 
-FindMyFriends support all community detection algorithms implemented in iGraph,
-but the Infomap algorithm in particular has recieved praise for its performance
-(in areas other than pangenome grouping though). The MCL algorithm is 
-unfortunately not available in iGraph so a direct comparison to OrthoMCL is not
-possible, but a recent article comparing different community detection 
-algorithms indicated better performance using infomap 
-([Aldecoa & Marin, 2013](http://www.nature.com/srep/2013/130717/srep02216/full/srep02216.html)).
+This is not the end of our analysis, as these gene groups needs to be refined.
+The refinement step is done with the `neighborhoodSplit` function (or 
+`kmerSplit` if chromosomal position is unavailable). This function investigates
+each gene group and compares the member genes based on sequence similarity, 
+chromosomal neighborhood similarity, sequence length and genome mebership, and
+uses this information to build up a weighted graph with the member genes as 
+nodes. Edges reflect similarity and are only created if the two genes passes all
+thresholds with regards to the different comparisons. From this graph cliques 
+(complete subgraphs i.e. subgraphs were all nodes are connected to each other)
+are extracted sequentially, starting with the clique containing the highest
+weighted edges. This ensures that all members of the resulting gene groups share
+a similarity with all other members and avoids the inclusion of genes being very
+similar to a few genes but not all. After this main step highly similar gene 
+groups lying in parallel (sharing a gene group either up- or downstream) are 
+merged together to create the final grouping.
 
-### Guided Pairwise Comparison
-While using a kmer based approach instead of blast yields a huge speed 
-improvement, it doesn't solve one of the biggest problems with pangenome 
-calculation, mainly the way it scales. When doing all-vs-all comparisons a 
-doubling in the number of elements will result in 4 times the number of 
-computations. This means that as you continue to add new genomes the 
-computational time will increase at a faster and faster rate. So while time has
-been cut drastically by using kmers instead of blast, there will come a time 
-when the computer will just give up.
+```{r, echo=TRUE, eval=TRUE, results='hide', message=FALSE}
+mycoPan <- neighborhoodSplit(mycoPan, lowerLimit = 0.8)
+```
 
-FindMyFriends does away with this by introducing a new approach called Guided
-Pairwise Comparison (GPC). It works by building a tree of the organisms in the
-set, and recursively combine pangenomes of subtrees into new pangenomes. Each 
-time two pangenomes are combined, representatives for each gene group in the two
-pangenomes are chosen at random and compared to each other using kmer 
-similarity. The resulting grouping is then propagated to genes in the two 
-pangenomes. As the number of comparisons are related to the number of branching 
-points on the tree, and the number of branching point is equal to the number of
-organisms minus one, the algorithm is approximatly linear in scaling. True 
-linearity would only exist in the case where the number of gene groups are 
-constant for all generated pangenomes. As it is expected that the number of gene
-groups increases as more and more distant pangenomes are merged there will be a 
-small deviation from linearity.
+As can be seen this step results in an increase in the number of gene groups:
 
-```{r, eval=TRUE, echo=TRUE}
-mycoPan <- gpcGrouping(mycoPan, lowerLimit=0.5)
+```{r, echo=TRUE, eval=TRUE}
 mycoPan
 ```
 
-It is possible to supply the tree yourself using the `tree` argument, but 
-omitting it will result in the algorithm creating one itself based on kmer count
-of the combined proteins for each organism. As can be seen, due to the nature of
-the algorithm, grouping is done directly instead of the two-pass approach used
-in the standard all-vs-all algorithm.
-
-As the algorithm scales with the number of gene groups it is generally advised
-to keep the grouping very liberal by providing a low lowerLimit (e.g. 0.5, the
-default). This will result in fewer, more heterogenous groups, but this will be
-resolved at a later stage (see Gene group splitting).
-
-### Manual grouping
-It is also possible to define the grouping of genes manually and thus import
-results from other tools to use in the FindMyFriends framework. The supplied 
-information can either be a vector of integers giving the group membership for 
-each gene, or a list of vectors giving the indexes of genes for each group.
-
-```{r, echo=TRUE, eval=TRUE}
-# Compute grouping based on hierarchical clustering - only for illustrative
-# purpose. Not advisable.
-distMat <- as.matrix(1/mycoSim-1)
-distMat[is.infinite(distMat)] <- 1e5
-htree <- hclust(as.dist(distMat), method='ward.D2')
-members <- cutree(htree, k=2000)
-
-# Add membership manually
-mycoPanMan <- manualGrouping(mycoPan, members)
-mycoPanMan
-```
+In general you should expect that the use of FindMyFriends will result in a 
+higher number of gene groups than other algorithms. This is due to its strict
+approach to defining similarity and in general you can expect the final result
+to be of very high quality.
 
 ## Pangenome post-processing
-The initial results of either kmerSimilarity or GPC grouping can be further
-processed in a number of ways. Most notably gene groups can be split based on 
-the similarity of the neighborhood of each gene within the group. This allows
-for splitting of paralogues into separate groups. Apart from that it is possible
-to link paralogue gene groups together, and add new organisms while retaining 
-the gene group information.
-
-### Gene group splitting
-If sequence location information has been provided it is possible to split up 
-the gene groups created above into groups with similar neighborhood. The idea of
-using neighborhood to split paralogues has been pursued by 
-[PanOCT](http://www.ncbi.nlm.nih.gov/pubmed/22904089) too, but in a slightly 
-different way. There the blast hit score is weighted by the similarity of the
-neightborhood and incorporated into the initial grouping, whereas FindMyFriends
-provide it as a separate and optional step. When splitting by neighborhood, 
-FindMyFriends builds up a of all genes within each group based on a range of
-calculations. Genes in the graph are only connected if they are not from the 
-same organism, have a sequence similarity above a certain threshold and a
-neighborhood similarity above a certain threshold. Based on this graph, maximal
-cliques are detected and sorted by the quality of their edges, so that cliques
-with high internal sequence and neighborhood similarity are prefered. Cliques
-are then extracted as new groups until all members of the group has been 
-assigned.
-
-```{r, echo=TRUE, eval=TRUE}
-mycoPan <- neighborhoodSplit(mycoPan, lowerLimit=0.75)
-mycoPan
-```
+Once the pangenome has been calculated it is possible to perform a range of 
+different post-processing steps and analyses on results.
 
 ### Paralogue linking
+FindMyFriend forcefully avoids grouping genes from the same genome together.
 While it is generally a boon to split up paralogue gene groups, as the genes 
 might have different functionality within the cell (and probably be under 
 different regulation), it can be nice to maintain a link between groups with a
@@ -438,15 +391,12 @@ is weighted edges. The graph will generally be very sparse, consisting of long
 strings of gene groups interspersed with regions of higher variability.
 
 ```{r, echo=TRUE, eval=TRUE}
-panchromosome <- pcGraph(mycoPan)
-plot(panchromosome, 
-     layout=layout.drl(panchromosome, options = igraph.drl.coarsen),
-     vertex.shape='none',
-     vertex.label=NA)
+pcGraph(mycoPan)
 ```
 
-This graph structure can be used for other things than random line drawing 
-though. Often local regions of high variability can point to insertion/deletion
+This graph structure can be used for a range of things and actually is the basis
+for the last part of the neighborhood splitting step (merging parallel gene 
+groups). Often local regions of high variability can point to insertion/deletion
 events, frameshifts, problems with the gene grouping (god forbid) or general
 regions of high chromosomal plasticity. These regions can of course be detected
 in FindMyFriends and investigated accordingly.
@@ -457,54 +407,11 @@ localVar[[1]]
 plot(localVar[[1]]$graph)
 ```
 
-## Dealing with huge datasets
-Progress within computational efficiency is often followed by a quest to push
-these new boundaries to the fullest. FindMyFriends have been designed with this
-in mind and tries to cater to this as much as possible. The first option comes
-at the time the pangenome object is created, where it is possible to specify 
-that sequences should not be kept in memory. This lowered footprint comes at the
-expense of slightly longer computational time as the sequence lookup is slower.
-It can become a necessity as the number of organisms increases (to date the full
-amount of sequenced E. coli weighs in just below 7 Gb in translated form). When
-using the lowMem option some calculations are also repeated instead of keeping 
-the result in memory - most notably kmer count during GPC. For the E. coli
-example above the collective kmer count information in sparse format would 
-occupy just below 50 Gb (with a kmer size of 5). Allocating this amount of 
-memory (if possible) would often take longer than repeating a couple of 
-computations. When utilizing parallelization (see below) this becomes even more
-of an issue as the memory footprint should be multiplied be the number of 
-threads used (provided you dont use a cluster but a single multicore computer).
-
-### Parallelization
-At certain computationally heavy steps it is possible to use parallelization 
-based on the BiocParallel package interface. If a subclass of BiocParallelParam 
-is supplied to either `kmerSimilarity`, `gpcGrouping`, `orgTree` or `kmerLink` 
-the computations will be split out according to the supplied parameter. All of
-these are embarrassingly parallel and thus easy to distribute evenly.
-
-### Caching
-When analysing huge number of organisms the computations can easily go on for
-days. In that time a lot of things can go wrong. The computer can crash due to
-prolonged high memory pressure, the power can be accidentally turned off etc. In
-order to avoid having to redo everything from scratch in these instances, 
-FindMyFriends employs a caching mechanism courtesy of the filehash package. At 
-the moment the caching is only implemented for the GPC algorithm as this 
-algorithm will be the natural choice for huge datasets anyway. It works by 
-providing a path to a folder where the cached results can be kept to the cacheDB
-argument in `gpcGrouping()`. It only works if the other parameters are kept 
-across runs!
-
-### Good strategies for long running analyses
-There is a few good strategies to optimise the analysis when analysing huge sets
-of organisms. In no particular order:
-
-* Precalculate the tree when using GPC instead of letting the algorithm do it.
-* Use caching.
-* Use `lowMem=TRUE` when creating the pangenome object.
-* Lower the lowerLimit compared to what you would normally do, and then rely on
-neighborhood splitting to resolve paralogues. This will cut computational time.
-* Use parallelization when available.
-* Be patient.
+## Additional tools
+What is explained above is just a small part of what is possible with 
+FindMyFriends. There are tie-ins with other packages such as 
+`r Biocpkg("PanVizGenerator")`, and support for functional annotation of gene 
+groups, to name a few. Go explore!
 
 ## Session
 ```{r, echo=TRUE, eval=TRUE}

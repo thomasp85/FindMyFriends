@@ -254,7 +254,68 @@ setMethod(
         }
     }
 )
-
+#' @describeIn pgVirtual Create subsets of pangenomes based on index
+#' 
+#' @param i indices specifying genomes, either integer, numeric, character or 
+#' logical, following the normal rules for indexing objects in R
+#' 
+setMethod(
+    '[', c('pgVirtual', 'integer'),
+    function(x, i) {
+        if (anyDuplicated(i)) {
+            warning('ignoring duplicated indices')
+        }
+        if (any(i > nOrganisms(x))) {
+            warning('ignoring indices out of bound')
+        }
+        remove <- seq_along(x) %in% i
+        removeGene(x, organism = i)
+    }
+)
+#' @describeIn pgVirtual Create subsets of pangenomes based on index
+#' 
+setMethod(
+    '[', c('pgVirtual', 'numeric'),
+    function(x, i) {
+        i <- as.integer(i)
+        if (any(is.na(i))) {
+            stop('index not convertible to integer')
+        }
+        x[i]
+    }
+)
+#' @describeIn pgVirtual Create subsets of pangenomes based on organism name
+#' 
+setMethod(
+    '[', c('pgVirtual', 'character'),
+    function(x, i) {
+        i <- match(i, orgNames(x))
+        if (any(is.na(i))) {
+            stop('Organism names not present')
+        }
+        x[i]
+    }
+)
+#' @describeIn pgVirtual Create subsets of pangenomes based on logical vector
+#' 
+setMethod(
+    '[', c('pgVirtual', 'logical'),
+    function(x, i) {
+        i <- rep(i, length.out = nOrganisms(x))
+        x[which(i)]
+    }
+)
+#' @describeIn pgVirtual Extract sequences from a single organism
+#' 
+setMethod(
+    '[[', 'pgVirtual',
+    function(x, i) {
+        if (length(i) != 1) {
+            stop('i must be of length 1')
+        }
+        genes(x, split = 'organism', subset = i)[[1]]
+    }
+)
 #' @describeIn nGenes The number of genes in the pangenome for pgVirtual 
 #' subclasses.
 #' 
@@ -303,21 +364,7 @@ setMethod(
         seqToOrg <- seqToOrg(object)
         groups <- split(seqToOrg, seqToGeneGroup)
         nOrgs <- nOrganisms(object)
-        groupInfoCalc <- do.call(rbind, lapply(groups, function(group, nOrgs) {
-            nOrg <- length(unique(group))
-            data.frame(
-                group = if (nOrg == nOrgs) {
-                    'Core'
-                } else if (nOrg == 1) {
-                    'Singleton'
-                } else {
-                    'Accessory'
-                },
-                nOrg = nOrg,
-                nGenes = length(group),
-                stringsAsFactors = FALSE
-            )
-        }, nOrgs = nOrgs))
+        groupInfoCalc <- calcGroupInfo(groups, nOrgs)
         groupInfo <- data.frame(
             description = NA, 
             group = NA, 
@@ -392,7 +439,7 @@ setAs(
     'pgVirtual', 'ExpressionSet',
     function(from) {
         ExpressionSet(
-            pgMatrix(from),
+            as.matrix(pgMatrix(from)),
             as(orgInfo(from), 'AnnotatedDataFrame'),
             as(groupInfo(from), 'AnnotatedDataFrame')
         )
@@ -407,7 +454,7 @@ setAs(
 setAs(
     'pgVirtual', 'matrix',
     function(from) {
-        pgMatrix(from)
+        as.matrix(pgMatrix(from))
     }
 )
 #' @describeIn getRep Get a representative sequence for each gene group for 
@@ -450,7 +497,7 @@ setMethod(
 #' 
 #' @param color A metadata name to color the organisms by
 #' 
-#' @importFrom ggplot2 ggplot theme_bw scale_y_continuous theme element_text geom_bar aes aes_string scale_fill_brewer element_blank scale_fill_manual coord_polar ggplotGrob
+#' @importFrom ggplot2 ggplot theme_bw scale_y_continuous theme element_text geom_bar aes_string scale_fill_brewer element_blank scale_fill_manual coord_polar ggplotGrob
 #' @importFrom grid grid.newpage grid.draw
 #' 
 setMethod(
@@ -468,7 +515,7 @@ setMethod(
                                                   vjust = 1, 
                                                   hjust = 1))
         if (missing(color)) {
-            p <- p + geom_bar(aes(x = organism, y = nGenes), stat = 'identity', 
+            p <- p + geom_bar(aes_string(x = 'organism', y = 'nGenes'), stat = 'identity', 
                               data = data)
         } else {
             p <- p + geom_bar(aes_string(x = 'organism', y = 'nGenes', 
@@ -493,8 +540,8 @@ setMethod(
                              axis.line = element_blank(),
                              panel.grid = element_blank(),
                              panel.border = element_blank())
-            p1 <- p1 + geom_bar(aes(x = factor(1), 
-                                    fill = group, weight = nGenes), 
+            p1 <- p1 + geom_bar(aes_string(x = factor(1), 
+                                    fill = 'group', weight = 'nGenes'), 
                                 data = groups, width = 1)
             p1 <- p1 + scale_fill_manual('Group', breaks = groupNames, 
                                          values = c('goldenrod', 'forestgreen', 
@@ -520,7 +567,7 @@ setMethod(
 #' 
 #' @param times The number of sampling for ordering='bootstrap'
 #' 
-#' @importFrom ggplot2 ggplot aes theme_bw scale_color_manual scale_y_continuous geom_smooth scale_x_continuous geom_line scale_x_discrete
+#' @importFrom ggplot2 ggplot aes_string theme_bw scale_color_manual scale_y_continuous geom_smooth scale_x_continuous geom_line scale_x_discrete
 #' 
 setMethod(
     'plotEvolution', 'pgVirtual',
@@ -537,10 +584,10 @@ setMethod(
             none = evolMan(object, seq(length(object))),
             evolMan(object, ordering)
         )
-        p <- ggplot(evol, aes(x = org, 
-                              y = size, 
-                              color = group, 
-                              group = group)) + theme_bw()
+        p <- ggplot(evol, aes_string(x = 'org', 
+                              y = 'size', 
+                              color = 'group', 
+                              group = 'group')) + theme_bw()
         p <- p + scale_color_manual('',
                                     values = c(Singleton = 'goldenrod', 
                                                Accessory = 'forestgreen', 
@@ -577,7 +624,8 @@ setMethod(
 #' @param chunkSize Number of organisms to process at a time
 #' 
 #' @importFrom reshape2 melt
-#' @importFrom ggplot2 ggplot aes theme_bw theme element_text geom_raster scale_x_discrete scale_y_discrete coord_fixed scale_fill_distiller
+#' @importFrom ggplot2 ggplot aes_string theme_bw theme element_text geom_raster scale_x_discrete scale_y_discrete coord_fixed scale_fill_distiller
+#' @importFrom stats as.dist hclust
 #' 
 setMethod(
     'plotSimilarity', 'pgVirtual',
@@ -602,7 +650,7 @@ setMethod(
                     value.name = 'Similarity')
         sim$org1 <- factor(sim$org1, levels = orgNames(object)[ordering])
         sim$org2 <- factor(sim$org2, levels = rev(orgNames(object)[ordering]))
-        p <- ggplot(sim, aes(x = org1, y = org2, fill = Similarity)) + 
+        p <- ggplot(sim, aes_string(x = 'org1', y = 'org2', fill = 'Similarity')) + 
             theme_bw()
         p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 1, 
                                                   vjust = 1))
@@ -637,7 +685,7 @@ setMethod(
 #' @param chunkSize Number of organisms to process at a time
 #' 
 #' @importFrom ggdendro dendro_data label
-#' @importFrom ggplot2 ggplot aes theme_bw theme element_blank geom_segment aes_string coord_polar scale_x_continuous scale_y_continuous element_text 
+#' @importFrom ggplot2 ggplot aes_string theme_bw theme element_blank geom_segment coord_polar scale_x_continuous scale_y_continuous element_text 
 #' 
 setMethod(
     'plotTree', 'pgVirtual',
@@ -669,7 +717,7 @@ setMethod(
             data$segments$yend <- -data$segments$yend
         }
         p <- ggplot(data$segments, 
-                    aes(x = x, xend = xend, y = y, yend = yend)) + theme_bw()
+                    aes_string(x = 'x', xend = 'xend', y = 'y', yend = 'yend')) + theme_bw()
         p <- p + theme(axis.title = element_blank(), 
                        axis.text.y = element_blank(), 
                        axis.ticks.y = element_blank(),
@@ -771,10 +819,12 @@ evolMan <- function(pangenome, order) {
 #' @return A data.frame with one row and the columns Singleton, Accessory, Core
 #' and Total.
 #' 
+#' @importFrom Matrix rowSums
+#' 
 #' @noRd
 #' 
 panGroups <- function(mat) {
-    mat[] <- mat != 0
+    mat <- as(mat, 'nsparseMatrix')
     nGenes <- rowSums(mat)
     data.frame(group = c('Singleton', 'Accessory', 'Core', 'Total'),
                size = c(sum(nGenes == 1),
@@ -798,7 +848,8 @@ panGroups <- function(mat) {
 #' 
 pgSim <- function(pangenome) {
     if (!hasGeneGroups(pangenome)) stop('Gene groups must be defined')
-    panSim(pgMatrix(pangenome))
+    mat <- pgMatrix(pangenome)
+    panSim(mat@p, mat@i, colnames(mat))
 }
 #' Calculate pangenome-based organism distance
 #' 
@@ -810,6 +861,8 @@ pgSim <- function(pangenome) {
 #' @param method Passed on to dist()
 #' 
 #' @return A distance matrix
+#' 
+#' @importFrom stats dist
 #' 
 #' @noRd
 #' 

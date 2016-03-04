@@ -15,10 +15,15 @@ NULL
 setMethod(
     'graphGrouping', 'pgVirtual',
     function(object, similarity, algorithm, ...) {
+        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         
         members <- igGroup(similarity, algorithm, ...)
-        groupGenes(object, as.integer(members))
+        object <- groupGenes(object, as.integer(members))
+        time2 <- proc.time()['elapsed']
+        message('Grouping resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time2 - time1), ' elapsed)')
+        object
     }
 )
 
@@ -46,19 +51,34 @@ setMethod(
 #' directory where cached results should be stored. If omitted caching will not
 #' be done. Highly recommended for long running instances.
 #' 
-#' @importFrom kebabs getExRep spectrumKernel
+#' @param precluster Logical. Should genes be preclustered using CD-Hit. 
+#' Defaults to TRUE.
 #' 
+#' @importFrom kebabs getExRep spectrumKernel
+#' @importFrom stats as.dendrogram
 #' @importFrom filehash dbCreate dbInit
 #' 
 setMethod(
     'gpcGrouping', 'pgVirtual',
-    function(object, lowMem, kmerSize, tree, lowerLimit, pParam, cacheDB) {
+    function(object, lowMem, kmerSize, tree, lowerLimit, pParam, cacheDB,
+             precluster = TRUE, ...) {
         .fillDefaults(defaults(object))
-        
         args <- mget(ls())
+        time1 <- proc.time()['elapsed']
+        
+        if (precluster) {
+            clusters <- precluster(object, kmerSize[1], ...)
+            clusters <- rep(seq_along(clusters), lengths(clusters))[order(unlist(clusters))]
+        } else {
+            clusters <- NA
+        }
+        time2 <- proc.time()['elapsed']
+        
         args$lowMem <- NULL
         args$object <- NULL
+        args$precluster <- NULL
         args$pangenome <- object
+        args$clusters <- clusters
         
         if (!missing(cacheDB)) {
             if (!inherits(cacheDB, 'filehash')) {
@@ -81,7 +101,12 @@ setMethod(
             args$er <- getExRep(genes(object), spectrumKernel(kmerSize))
         }
         groups <- do.call(recurseCompare, args)
-        manualGrouping(object, groups)
+        object <- manualGrouping(object, groups)
+        time3 <- proc.time()['elapsed']
+        message('Grouping resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time3 - time2), ' elapsed)')
+        message('Total time elapsed was ', formatSeconds(time3 - time1))
+        object
     }
 )
 
@@ -104,8 +129,141 @@ setMethod(
         manualGrouping(object, members)
     }
 )
-
-
+#' @describeIn cdhitGrouping Grouping using cdhit for all pgVirtual subclasses
+#' 
+#' @param kmerSize The size of the kmer's used for the comparison. If two values
+#' are given the first will be used for the CD-HIT algorithm and the second will
+#' be used for the cosine similarity calculations.
+#' 
+#' @param lowerLimit A numeric giving the lower bounds of similarity below which
+#' it will be set to zero.
+#' 
+#' @param maxLengthDif The maximum deviation in sequence length to allow during
+#' preclustering with CD-HIT. Below 1 it describes a percentage. Above 1 it 
+#' describes a fixed length.
+#' 
+#' @param geneChunkSize The maximum number of genes to pass to the CD-HIT
+#' algorithm. If object contains more genes than this, CD-HIT will be run in 
+#' chunks and combined with a second CD-HIT pass before the final cosine 
+#' similarity grouping.
+#' 
+#' @param cdhitOpts Additional arguments passed on to CD-HIT. It should be a 
+#' named list with names corresponding to the arguments expected in the CD-HIT
+#' algorithm (without the dash). i, n and s/S will be overwritten based on the
+#' other parameters given to this function and all values in cdhitOpts will be
+#' converted to character using as.character
+#' 
+#' @param cdhitIter Logical. Should the preclustered groups be grouped by 
+#' gradually lowering the threshold in CD-Hit or by directly calculating kmer
+#' similarities between all preclusters and group by that. Defaults to TRUE
+#' 
+#' @param nrep If \code{cdhitIter = TRUE}, controls how many iterations should
+#' be performed at each threshold level. Defaults to 1.
+#' 
+#' @importFrom Biostrings order
+#' @importFrom kebabs getExRep spectrumKernel
+#' 
+setMethod(
+    'cdhitGrouping', 'pgVirtual',
+    function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize, 
+             cdhitOpts, cdhitIter = TRUE, nrep = 1) {
+        time1 <- proc.time()['elapsed']
+        .fillDefaults(defaults(object))
+        groups <- precluster(object, kmerSize[1], maxLengthDif, geneChunkSize, 
+                             cdhitOpts)
+        
+        time2 <- proc.time()['elapsed']
+        
+        if (cdhitIter) {
+            cdhitOpts$l <- kmerSize[1]
+            if (maxLengthDif < 1) {
+                cdhitOpts$s <- 1 - maxLengthDif
+            } else {
+                cdhitOpts$S <- maxLengthDif
+            }
+            cdhitOpts <- lapply(cdhitOpts, as.character)
+            opts <- data.frame(lowerLimit = seq(0.9, 0.4, by = -0.05), 
+                               kmerSize = c(5, 5, 5, 5, 5, 4, 4, 3, 3, 2, 2))
+            opts <- opts[opts$lowerLimit > lowerLimit, ]
+            for (i in seq_len(nrow(opts))) {
+                for (j in seq_len(nrep)) {
+                    reps <- sapply(groups, function(x) {
+                        x[sample.int(length(x), size = 1)]
+                    })
+                    seqs <- genes(object, subset = reps)
+                    
+                    cdhitOpts$n <- as.character(opts$kmerSize[i])
+                    cdhitOpts$c <- as.character(opts$lowerLimit[i])
+                    if (!(i == 1 && j == 1)) cat('\n')
+                    groupsGroups <- cdhit(seqs, cdhitOpts, 'Grouping     ')
+                    groups <- lapply(split(groups, groupsGroups), unlist)
+                }
+            }
+        } else {
+            reps <- sapply(groups, function(x) {
+                x[sample.int(length(x), size = 1)]
+            })
+            seqs <- genes(object, subset = reps)
+            
+            groupsGroups <- lkFMF(getExRep(seqs, spectrumKernel(rep(kmerSize, 2)[2])),
+                                  order = order(seqs), lowerLimit = lowerLimit, 
+                                  upperLimit = lowerLimit)
+            groups <- lapply(split(groups, groupsGroups), unlist)
+        }
+        object <- manualGrouping(object, groups)
+        time3 <- proc.time()['elapsed']
+        message('Grouping resulted in ', nGeneGroups(object), ' gene groups (',
+                formatSeconds(time3 - time2), ' elapsed)')
+        message('Total time elapsed was ', formatSeconds(time3 - time1))
+        object
+    }
+)
+setMethod(
+    'precluster', 'pgVirtual',
+    precluster <- function(object, kmerSize, maxLengthDif, geneChunkSize, 
+                           cdhitOpts) {
+        time1 <- proc.time()['elapsed']
+        .fillDefaults(defaults(object))
+        cdhitOpts$n <- kmerSize
+        cdhitOpts$l <- kmerSize
+        if (maxLengthDif < 1) {
+            cdhitOpts$s <- 1 - maxLengthDif
+        } else {
+            cdhitOpts$S <- maxLengthDif
+        }
+        cdhitOpts <- lapply(cdhitOpts, as.character)
+        nChunks <- ceiling(nGenes(object)/geneChunkSize)
+        chunks <- ceiling(nGenes(object)/nChunks) * seq_len(nChunks)
+        chunks[nChunks] <- nGenes(object)
+        chunks <- data.frame(start = c(1, chunks[-nChunks] + 1), end = chunks)
+        
+        groups <- lapply(seq_len(nChunks), function(i) {
+            if (i != 1) cat('\n')
+            cdhit(genes(object, subset = seq.int(chunks$start[i], chunks$end[i])), 
+                  cdhitOpts, 'Preclustering')
+        })
+        if (nChunks > 1) {
+            nClusters <- sapply(groups, max)
+            offset <- c(0, cumsum(nClusters)[-nChunks])
+            groups <- Map(function(group, offset) {
+                group + offset
+            }, group = groups, offset = offset)
+            groups <- split(seq_len(nGenes(object)), unlist(groups))
+            reps <- sapply(groups, function(x) {
+                x[sample.int(length(x), size = 1)]
+            })
+            cat('\n')
+            groupsGroups <- cdhit(genes(object, subset = reps), cdhitOpts, 'Merging      ')
+            groups <- lapply(split(groups, groupsGroups), unlist)
+        } else {
+            groups <- split(seq_len(nGenes(object)), unlist(groups))
+        }
+        time2 <- proc.time()['elapsed']
+        message('Preclustering resulted in ', length(groups), ' gene groups (',
+                formatSeconds(time2 - time1), ' elapsed)')
+        groups
+    }
+)
 ### GROUPING HELPER FUNCTIONS
 
 #' Extract community membership based on similarity matrix
@@ -191,4 +349,18 @@ groupToGraph <- function(pangenome, groups, er, lowerLimit) {
     edges <- do.call(rbind, edges)
     graph_from_data_frame(edges, directed = FALSE, 
                           vertices = data.frame(name = geneNames(pangenome)))
+}
+#' @importFrom Biostrings writeXStringSet
+#' 
+#' @noRd
+#' 
+cdhit <- function(seqs, options, name = 'CD-Hit', showProgress = interactive()) {
+    options$i <- tempfile()
+    writeXStringSet(seqs, options$i)
+    switch(
+        class(seqs),
+        AAStringSet = cdhitC(options, name, showProgress) + 1,
+        DNAStringSet = cdhitestC(options, name, showProgress) + 1,
+        stop('seqs must be either AAStringSet or DNAStringSet')
+    )
 }

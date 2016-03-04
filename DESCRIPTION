@@ -1,8 +1,8 @@
 Package: FindMyFriends
 Type: Package
 Title: Microbial Comparative Genomics in R
-Version: 1.1.6
-Date: 2016-03-03
+Version: 1.1.7
+Date: 2016-03-04
 Author: Thomas Lin Pedersen
 Maintainer: Thomas Lin Pedersen <thomasp85@gmail.com>
 Description: A framework for doing microbial comparative genomics in R.
@@ -39,8 +39,11 @@ Imports:
     grid,
     reshape2,
     ggdendro,
-    BiocParallel
+    BiocParallel,
+    utils,
+    stats
 Suggests:
+    BiocStyle,
     testthat,
     knitr,
     rmarkdown,
@@ -62,8 +65,10 @@ Collate:
     'ggGraph.R'
     'grouping.R'
     'investigating.R'
+    'linearKernel.R'
     'linking.R'
     'modifying.R'
+    'progress.R'
     'similarities.R'
     'splitting.R'
 NeedsCompilation: yes

@@ -17,6 +17,6 @@ test_that("Organism distance works", {
 })
 test_that("Organism similarity works", {
     expect_equal(kmerSim(pg, 3)[2], 0.998454337621818)
-    expect_equal(pgSim(pg)[2], 0.847919655667145)
+    expect_equal(pgSim(pg)[2], 0.849137931034483)
     expect_error(pgSim(pgNoGroup))
 })
