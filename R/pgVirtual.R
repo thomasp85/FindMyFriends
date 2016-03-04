@@ -625,6 +625,7 @@ setMethod(
 #' 
 #' @importFrom reshape2 melt
 #' @importFrom ggplot2 ggplot aes_string theme_bw theme element_text geom_raster scale_x_discrete scale_y_discrete coord_fixed scale_fill_distiller
+#' @importFrom stats as.dist hclust
 #' 
 setMethod(
     'plotSimilarity', 'pgVirtual',
@@ -860,6 +861,8 @@ pgSim <- function(pangenome) {
 #' @param method Passed on to dist()
 #' 
 #' @return A distance matrix
+#' 
+#' @importFrom stats dist
 #' 
 #' @noRd
 #' 

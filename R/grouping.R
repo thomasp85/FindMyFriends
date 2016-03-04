@@ -53,6 +53,7 @@ setMethod(
 #' 
 #' @importFrom kebabs getExRep spectrumKernel
 #' 
+#' @importFrom stats as.dendrogram
 #' @importFrom filehash dbCreate dbInit
 #' 
 setMethod(

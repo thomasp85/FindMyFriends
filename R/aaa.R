@@ -41,6 +41,7 @@ globalVariables(
 #' # Create with paralogue links
 #' .loadPgExample(withGroups=TRUE, withParalogues=TRUE)
 #' 
+#' @importFrom utils unzip
 #' @export
 #' 
 #' @rdname loadPgExample
@@ -274,6 +275,8 @@ lkParallelLM <- function(pangenome, kmerSize, pParam, nSplits, diag = FALSE,
 #' @return A list with two elements: 'combs' contains all combinations of chunks 
 #' and 'chunks' contain the start end end indices of the elements in each chunk.
 #' 
+#' @importFrom utils combn
+#' 
 #' @noRd
 #' 
 getChunks <- function(size, nSplits) {
@@ -374,6 +377,7 @@ weaveChunks <- function(squares, split) {
 #' @importFrom BiocParallel bpworkers
 #' @importFrom igraph components graph_from_adjacency_matrix
 #' @importFrom Biostrings order
+#' @importFrom stats is.leaf runif
 #' 
 #' @noRd
 #' 
@@ -518,6 +522,8 @@ recurseCompPar <- function(pangenome, tree, er, kmerSize, lowerLimit, pParam,
 #' 
 #' @return upper with the leafs filled with lowerRes
 #' 
+#' @importFrom stats is.leaf
+#' 
 #' @noRd
 #' 
 fillTree <- function(upper, lowerRes) {
@@ -554,6 +560,8 @@ fillTree <- function(upper, lowerRes) {
 #' @param pParam A BiocParallelParam subclass
 #' 
 #' @return A dendrogram object
+#' 
+#' @importFrom stats hclust as.dendrogram
 #' 
 #' @noRd
 #' 
@@ -613,6 +621,8 @@ kmerSim <- function(pangenome, kmerSize, chunkSize = 100, pParam) {
 #' a valid value for the method parameter of dist().
 #' 
 #' @return A distance matrix
+#' 
+#' @importFrom stats as.dist dist
 #' 
 #' @noRd
 #' 
@@ -820,6 +830,8 @@ getSeqInfo <- function(format, desc) {
 #' 
 #' @return A dendrogram
 #' 
+#' @importFrom stats is.leaf
+#' 
 #' @noRd
 #' 
 cutK <- function(x, k) {
@@ -998,6 +1010,7 @@ rbind_gtable <- function(x, y, size = "max") {
 #' readAnnot(annot)
 #' 
 #' @importFrom dplyr %>% mutate_ group_by_ summarise_
+#' @importFrom utils read.table
 #' @export
 #' 
 readAnnot <- function(file) {

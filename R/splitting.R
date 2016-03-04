@@ -377,6 +377,7 @@ anyParalogues <- function(pangenome) {
     unlist(dupes) != 0
 }
 #' @importFrom igraph degree 
+#' @importFrom utils combn
 neighborhoodMerge <- function(pangenome, maxLengthDif) {
     cdhitOpts <- list(l = 5, n = 5)
     if (maxLengthDif < 1) {
