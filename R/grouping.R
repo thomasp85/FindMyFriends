@@ -62,8 +62,9 @@ setMethod(
     'gpcGrouping', 'pgVirtual',
     function(object, lowMem, kmerSize, tree, lowerLimit, pParam, cacheDB,
              precluster = TRUE, ...) {
-        time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
+        args <- mget(ls())
+        time1 <- proc.time()['elapsed']
         
         if (precluster) {
             clusters <- precluster(object, kmerSize[1], ...)
@@ -72,7 +73,7 @@ setMethod(
             clusters <- NA
         }
         time2 <- proc.time()['elapsed']
-        args <- mget(ls())
+        
         args$lowMem <- NULL
         args$object <- NULL
         args$precluster <- NULL
