@@ -437,7 +437,7 @@ recurseCompare <- function(pangenome, tree, er, clusters, kmerSize, lowerLimit,
 }
 #' @importFrom igraph make_undirected_graph
 mergeGroups <- function(groups, clusters) {
-    if (is.na(clusters)) {
+    if (is.na(clusters[1])) {
         return(groups)
     }
     inds <- unlist(groups)
