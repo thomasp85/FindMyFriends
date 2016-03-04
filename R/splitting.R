@@ -325,7 +325,7 @@ extractCliques <- function(edges, nNodes) {
 #' located at the beginning or end of a DNA string, -1 will be used to indicate
 #' absence of neighbors in up and down
 #' 
-#' @importFrom dplyr %>% group_by arrange transmute n ungroup arrange
+#' @importFrom dplyr %>% group_by_ arrange_ transmute_ n ungroup
 #' 
 #' @noRd
 #' 
@@ -338,14 +338,14 @@ getNeighbors <- function(pg, zeroInd = TRUE) {
     gLoc$id <- seq_len(nGenes(pg))
     gLoc$org <- seqToOrg(pg)
     
-    gLoc <- gLoc %>% group_by(org, contig) %>% 
-        arrange(start, end) %>% 
-        transmute(id = id, 
-                  down = c(0, id[-n()]), 
-                  up = c(id[-1], 0), 
-                  reverse = strand == -1) %>% 
+    gLoc <- gLoc %>% group_by_(~org, ~contig) %>% 
+        arrange_(~start, ~end) %>% 
+        transmute_(id = ~id, 
+                  down = ~c(0, id[-n()]), 
+                  up = ~c(id[-1], 0), 
+                  reverse = ~strand == -1) %>% 
         ungroup() %>% 
-        arrange(id)
+        arrange_(~id)
     
     gLoc <- as.data.frame(gLoc)[, -(1:2)]
     gLoc$id <- as.integer(gLoc$id)

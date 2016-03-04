@@ -1,34 +1,8 @@
 globalVariables(
     names = c(
-        '.',
-        'annot',
-        'backward',
-        'contig',
-        'desc',
-        'forward',
-        'from',
-        'gene',
-        'geneGroup',
-        'group',
-        'location',
-        'n',
-        'name',
-        'ontology',
-        'org',
-        'org1',
-        'org2',
-        'organism',
-        'reverse',
-        'Similarity',
-        'size',
-        'strand',
-        'to',
-        'up',
-        'x',
-        'xend',
-        'y',
-        'yend')
+        '.'
     )
+)
 .pkg_variables <- new.env()
 #' Load an example pangenome
 #' 
@@ -335,7 +309,7 @@ getChunks <- function(size, nSplits) {
 #' 
 #' @return A sparse matrix with combined results
 #' 
-#' @importFrom dplyr %>% arrange group_by do
+#' @importFrom dplyr %>% arrange_ group_by_ do
 #' @importFrom Matrix Matrix
 #' 
 #' @noRd
@@ -349,9 +323,9 @@ weaveChunks <- function(squares, split) {
         return(squares[[1]])
     }
     res <- split$combs %>%
-        arrange(col) %>%
-        group_by(col) %>%
-        arrange(row) %>%
+        arrange_(~col) %>%
+        group_by_(~col) %>%
+        arrange_(~row) %>%
         do(cols = {
             nCol <- ncol(squares[[.$origInd[1]]])
             missingRows <- split$chunks[.$row[1], 1] - 1
@@ -1023,6 +997,7 @@ rbind_gtable <- function(x, y, size = "max") {
 #' # Parse the file
 #' readAnnot(annot)
 #' 
+#' @importFrom dplyr %>% mutate_ group_by_ summarise_
 #' @export
 #' 
 readAnnot <- function(file) {
@@ -1030,10 +1005,10 @@ readAnnot <- function(file) {
                        stringsAsFactors = FALSE)
     names(data) <- c('name', 'annot', 'desc')
     data <- data %>% 
-        mutate(ontology = grepl('GO:', annot)) %>%
-        group_by(name) %>%
-        summarise(description = desc[1], GO = I(list(annot[ontology])), 
-                  EC = I(list(annot[!ontology])))
+        mutate_(ontology = ~grepl('GO:', annot)) %>%
+        group_by_(~name) %>%
+        summarise_(description = ~desc[1], GO = ~I(list(annot[ontology])), 
+                  EC = ~I(list(annot[!ontology])))
     data <- as.data.frame(data)
     data$GO <- unclass(data$GO)
     data$EC <- unclass(data$EC)

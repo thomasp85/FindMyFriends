@@ -497,7 +497,7 @@ setMethod(
 #' 
 #' @param color A metadata name to color the organisms by
 #' 
-#' @importFrom ggplot2 ggplot theme_bw scale_y_continuous theme element_text geom_bar aes aes_string scale_fill_brewer element_blank scale_fill_manual coord_polar ggplotGrob
+#' @importFrom ggplot2 ggplot theme_bw scale_y_continuous theme element_text geom_bar aes_string scale_fill_brewer element_blank scale_fill_manual coord_polar ggplotGrob
 #' @importFrom grid grid.newpage grid.draw
 #' 
 setMethod(
@@ -515,7 +515,7 @@ setMethod(
                                                   vjust = 1, 
                                                   hjust = 1))
         if (missing(color)) {
-            p <- p + geom_bar(aes(x = organism, y = nGenes), stat = 'identity', 
+            p <- p + geom_bar(aes_string(x = 'organism', y = 'nGenes'), stat = 'identity', 
                               data = data)
         } else {
             p <- p + geom_bar(aes_string(x = 'organism', y = 'nGenes', 
@@ -540,8 +540,8 @@ setMethod(
                              axis.line = element_blank(),
                              panel.grid = element_blank(),
                              panel.border = element_blank())
-            p1 <- p1 + geom_bar(aes(x = factor(1), 
-                                    fill = group, weight = nGenes), 
+            p1 <- p1 + geom_bar(aes_string(x = factor(1), 
+                                    fill = 'group', weight = 'nGenes'), 
                                 data = groups, width = 1)
             p1 <- p1 + scale_fill_manual('Group', breaks = groupNames, 
                                          values = c('goldenrod', 'forestgreen', 
@@ -567,7 +567,7 @@ setMethod(
 #' 
 #' @param times The number of sampling for ordering='bootstrap'
 #' 
-#' @importFrom ggplot2 ggplot aes theme_bw scale_color_manual scale_y_continuous geom_smooth scale_x_continuous geom_line scale_x_discrete
+#' @importFrom ggplot2 ggplot aes_string theme_bw scale_color_manual scale_y_continuous geom_smooth scale_x_continuous geom_line scale_x_discrete
 #' 
 setMethod(
     'plotEvolution', 'pgVirtual',
@@ -584,10 +584,10 @@ setMethod(
             none = evolMan(object, seq(length(object))),
             evolMan(object, ordering)
         )
-        p <- ggplot(evol, aes(x = org, 
-                              y = size, 
-                              color = group, 
-                              group = group)) + theme_bw()
+        p <- ggplot(evol, aes_string(x = 'org', 
+                              y = 'size', 
+                              color = 'group', 
+                              group = 'group')) + theme_bw()
         p <- p + scale_color_manual('',
                                     values = c(Singleton = 'goldenrod', 
                                                Accessory = 'forestgreen', 
@@ -624,7 +624,7 @@ setMethod(
 #' @param chunkSize Number of organisms to process at a time
 #' 
 #' @importFrom reshape2 melt
-#' @importFrom ggplot2 ggplot aes theme_bw theme element_text geom_raster scale_x_discrete scale_y_discrete coord_fixed scale_fill_distiller
+#' @importFrom ggplot2 ggplot aes_string theme_bw theme element_text geom_raster scale_x_discrete scale_y_discrete coord_fixed scale_fill_distiller
 #' 
 setMethod(
     'plotSimilarity', 'pgVirtual',
@@ -649,7 +649,7 @@ setMethod(
                     value.name = 'Similarity')
         sim$org1 <- factor(sim$org1, levels = orgNames(object)[ordering])
         sim$org2 <- factor(sim$org2, levels = rev(orgNames(object)[ordering]))
-        p <- ggplot(sim, aes(x = org1, y = org2, fill = Similarity)) + 
+        p <- ggplot(sim, aes_string(x = 'org1', y = 'org2', fill = 'Similarity')) + 
             theme_bw()
         p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 1, 
                                                   vjust = 1))
@@ -684,7 +684,7 @@ setMethod(
 #' @param chunkSize Number of organisms to process at a time
 #' 
 #' @importFrom ggdendro dendro_data label
-#' @importFrom ggplot2 ggplot aes theme_bw theme element_blank geom_segment aes_string coord_polar scale_x_continuous scale_y_continuous element_text 
+#' @importFrom ggplot2 ggplot aes_string theme_bw theme element_blank geom_segment coord_polar scale_x_continuous scale_y_continuous element_text 
 #' 
 setMethod(
     'plotTree', 'pgVirtual',
@@ -716,7 +716,7 @@ setMethod(
             data$segments$yend <- -data$segments$yend
         }
         p <- ggplot(data$segments, 
-                    aes(x = x, xend = xend, y = y, yend = yend)) + theme_bw()
+                    aes_string(x = 'x', xend = 'xend', y = 'y', yend = 'yend')) + theme_bw()
         p <- p + theme(axis.title = element_blank(), 
                        axis.text.y = element_blank(), 
                        axis.ticks.y = element_blank(),
