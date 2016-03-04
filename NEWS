@@ -1,3 +1,20 @@
+Version 1.1.7
+________________________________________________________________________________
+- Feature: cdhitGrouping creates initial grouping based on cdhit algorithm
+- Feature: neighborhoodSplit now refines the splitting as a final step by 
+merging highly similar groups sharing gene group up- or downstream
+- Feature: gpcGrouping can now precluster using CD-Hit
+- Feature: Key algorithms now reports progress and timing information
+- Feature: Custom linearKernel function that takes an upper similarity threshold
+to speed up comparisons.
+- Feature: Updated vignette, focusing on recommended workflow
+- Improvement: More performant pcGraph, neighborhoodSplit, pgMatrix methods
+- Improvement: pgMatrix now returns a sparseMatrix for lower memory footprint
+- Improvement: pangenome matrix no longer stored in pgInMem
+- Bug fix: Remove zerolength genes upon pangenome creation.
+- Bug fix: Batch accessing fasta files to avoid "too many open connections" 
+error
+
 Version 1.1.6
 ________________________________________________________________________________
 - Skips some long running examples and tests to cut down on check time
