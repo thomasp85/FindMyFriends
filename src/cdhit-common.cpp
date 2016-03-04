@@ -175,7 +175,7 @@ FILE* OpenTempFile( const char *dir = NULL )
 }
 static void CleanUpTempFiles()
 {
-	if( temp_files.files.Size() ) printf( "Clean up temporary files ...\n" );
+	// if( temp_files.files.Size() ) printf( "Clean up temporary files ...\n" );
 	temp_files.Clear();
 }
 
@@ -248,24 +248,24 @@ bool Options::SetOptionCommon( const char *flag, const char *value )
 	else if (strcmp(flag, "-tmp" ) == 0) temp_dir  = value;
 	else if (strcmp(flag, "-bak" ) == 0) backupFile  = intval;
 	else if (strcmp(flag, "-T" ) == 0){
-#ifndef NO_OPENMP
-		int cpu = omp_get_num_procs();
-		threads  = intval;
-		if( threads > cpu ){
-			threads = cpu;
-			printf( "Warning: total number of CPUs in the system is %i\n", cpu );
-		}else if( threads < 0 ){
-			threads += cpu;
-			if( threads < 0 ) threads = 0;
-		}
-		if( threads == 0 ){
-			threads = cpu;
-			printf( "total number of CPUs in the system is %i\n", cpu );
-		}
-		if( threads != intval ) printf( "Actual number of CPUs to be used: %i\n\n", threads );
-#else
-		printf( "Option -T is ignored: multi-threading with OpenMP is NOT enabled!\n" );
-#endif
+// #ifndef NO_OPENMP
+// 		int cpu = omp_get_num_procs();
+// 		threads  = intval;
+// 		if( threads > cpu ){
+// 			threads = cpu;
+// 			printf( "Warning: total number of CPUs in the system is %i\n", cpu );
+// 		}else if( threads < 0 ){
+// 			threads += cpu;
+// 			if( threads < 0 ) threads = 0;
+// 		}
+// 		if( threads == 0 ){
+// 			threads = cpu;
+// 			printf( "total number of CPUs in the system is %i\n", cpu );
+// 		}
+// 		if( threads != intval ) printf( "Actual number of CPUs to be used: %i\n\n", threads );
+// #else
+// 		printf( "Option -T is ignored: multi-threading with OpenMP is NOT enabled!\n" );
+// #endif
 	}else return false;
 	return true;
 }
@@ -300,7 +300,7 @@ bool Options::SetOptionEST( const char *flag, const char *value )
 {
 	NAA_top_limit = 12;
 	if( SetOptionCommon( flag, value ) ) return true;
-	if (strcmp(flag, "-r" ) == 0) option_r  = atoi(value); 
+	if (strcmp(flag, "-r" ) == 0) option_r  = atoi(value);
 	else if (strcmp(flag, "-gap") == 0) mat.gap = MAX_SEQ * atoi(value);
 	else if (strcmp(flag, "-gap-ext") == 0) mat.ext_gap = MAX_SEQ * atoi(value);
 	else if (strcmp(flag, "-match") == 0) mat.set_match( atoi(value) );
@@ -324,25 +324,25 @@ bool Options::SetOptions( int argc, char *argv[], bool twod, bool est )
 	strcpy( date, __DATE__ );
 	n = strlen( date );
 	for(i=1; i<n; i++) if( date[i-1] == ' ' and date[i] == ' ' ) date[i] = '0';
-	printf( "================================================================\n" );
-	printf( "Program: CD-HIT, V" CDHIT_VERSION WITH_OPENMP ", %s, " __TIME__ "\n", date );
-	printf( "Command:" );
+	// printf( "================================================================\n" );
+	// printf( "Program: CD-HIT, V" CDHIT_VERSION WITH_OPENMP ", %s, " __TIME__ "\n", date );
+	// printf( "Command:" );
 	n = 9;
 	for(i=0; i<argc; i++){
 		n += strlen( argv[i] ) + 1;
 		if( n >= 64 ){
-			printf( "\n         %s", argv[i] );
+			// printf( "\n         %s", argv[i] );
 			n = strlen( argv[i] ) + 9;
 		}else{
-			printf( " %s", argv[i] );
+			// printf( " %s", argv[i] );
 		}
 	}
-	printf( "\n\n" );
+	// printf( "\n\n" );
 	time_t tm = time(NULL);
-	printf( "Started: %s", ctime(&tm) );
-	printf( "================================================================\n" );
-	printf( "                            Output                              \n" );
-	printf( "----------------------------------------------------------------\n" );
+	// printf( "Started: %s", ctime(&tm) );
+	// printf( "================================================================\n" );
+	// printf( "                            Output                              \n" );
+	// printf( "----------------------------------------------------------------\n" );
 	has2D = twod;
 	isEST = est;
 	for (i=1; i+1<argc; i+=2) if ( SetOption( argv[i], argv[i+1] ) == 0) return false;
@@ -401,43 +401,43 @@ void Options::Validate()
 					"Increase the threshold or the tolerance, or decrease the word length.");
 		for ( i=5; i>NAA; i--) {
 			if ( naa_stat[tolerance-1][clstr_idx][5-i] > 10 ) {
-				printf( message, NAA, i );
+				// printf( message, NAA, i );
 				break;
 			}
 		}
 	} else if( isEST ) {
-		if      ( cluster_thd > 0.9  && NAA < 8 ) printf( message, NAA, 8 );
-		else if ( cluster_thd > 0.87 && NAA < 5 ) printf( message, NAA, 5 );
-		else if ( cluster_thd > 0.80 && NAA < 4 ) printf( message, NAA, 4 );
-		else if ( cluster_thd > 0.75 && NAA < 3 ) printf( message, NAA, 3 );
+		// if      ( cluster_thd > 0.9  && NAA < 8 ) printf( message, NAA, 8 );
+		// else if ( cluster_thd > 0.87 && NAA < 5 ) printf( message, NAA, 5 );
+		// else if ( cluster_thd > 0.80 && NAA < 4 ) printf( message, NAA, 4 );
+		// else if ( cluster_thd > 0.75 && NAA < 3 ) printf( message, NAA, 3 );
 	} else {
-		if      ( cluster_thd > 0.85 && NAA < 5 ) printf( message, NAA, 5 );
-		else if ( cluster_thd > 0.80 && NAA < 4 ) printf( message, NAA, 4 );
-		else if ( cluster_thd > 0.75 && NAA < 3 ) printf( message, NAA, 3 );
+		// if      ( cluster_thd > 0.85 && NAA < 5 ) printf( message, NAA, 5 );
+		// else if ( cluster_thd > 0.80 && NAA < 4 ) printf( message, NAA, 4 );
+		// else if ( cluster_thd > 0.75 && NAA < 3 ) printf( message, NAA, 3 );
 	}
 
 	if ( (min_length + 1) < NAA ) bomb_error("Too short -l, redefine it");
 }
 void Options::Print()
 {
-	printf( "isEST = %i\n", isEST );
-	printf( "has2D = %i\n", has2D );
-	printf( "NAA = %i\n", NAA );
-	printf( "NAA_top_limit = %i\n", NAA_top_limit );
-	printf( "min_length = %i\n", min_length );
-	printf( "cluster_best = %i\n", cluster_best );
-	printf( "global_identity = %i\n", global_identity );
-	printf( "cluster_thd = %g\n", cluster_thd );
-	printf( "diff_cutoff = %g\n", diff_cutoff );
-	printf( "diff_cutoff_aa = %i\n", diff_cutoff_aa );
-	printf( "tolerance = %i\n", tolerance );
-	printf( "long_coverage = %g\n", long_coverage );
-	printf( "long_control = %i\n", long_control );
-	printf( "short_coverage = %g\n", short_coverage );
-	printf( "short_control = %i\n", short_control );
-	printf( "frag_size = %i\n", frag_size );
-	printf( "option_r = %i\n", option_r );
-	printf( "print = %i\n", print );
+	// printf( "isEST = %i\n", isEST );
+	// printf( "has2D = %i\n", has2D );
+	// printf( "NAA = %i\n", NAA );
+	// printf( "NAA_top_limit = %i\n", NAA_top_limit );
+	// printf( "min_length = %i\n", min_length );
+	// printf( "cluster_best = %i\n", cluster_best );
+	// printf( "global_identity = %i\n", global_identity );
+	// printf( "cluster_thd = %g\n", cluster_thd );
+	// printf( "diff_cutoff = %g\n", diff_cutoff );
+	// printf( "diff_cutoff_aa = %i\n", diff_cutoff_aa );
+	// printf( "tolerance = %i\n", tolerance );
+	// printf( "long_coverage = %g\n", long_coverage );
+	// printf( "long_control = %i\n", long_control );
+	// printf( "short_coverage = %g\n", short_coverage );
+	// printf( "short_control = %i\n", short_control );
+	// printf( "frag_size = %i\n", frag_size );
+	// printf( "option_r = %i\n", option_r );
+	// printf( "print = %i\n", print );
 }
 
 // MOVED TO cdhit-bombs.cpp ____________________________________________________
@@ -637,8 +637,8 @@ int diag_test_aapn_est(int NAA1, char iseq2[], int len1, int len2, WorkingBuffer
 	int mmax = 0;
 	int immax = 0;
 	for(i=0; i<=nall; i++){
-		if( i%len2 ==0 or i == nall ) printf( "\n" );
-		printf( "%3i ", diag_score[i] );
+		// if( i%len2 ==0 or i == nall ) printf( "\n" );
+		// printf( "%3i ", diag_score[i] );
 		if( diag_score[i] > mmax ){
 			mmax = diag_score[i];
 			immax = i;
@@ -696,10 +696,10 @@ int diag_test_aapn_est(int NAA1, char iseq2[], int len1, int len2, WorkingBuffer
 		}
 	}
 #if 0
-	printf( "%i %i\n", required_aa1, from );
-	printf( "max=%3i  imax=%3i; band:  %3i  %3i  %i\n", max_diag, imax_diag, band_b, band_e, band_m );
-	printf( "best: %i\n", best_score );
-	printf( "from: %i, end: %i,  best: %i\n", from, end, best_score );
+	// printf( "%i %i\n", required_aa1, from );
+	// printf( "max=%3i  imax=%3i; band:  %3i  %3i  %i\n", max_diag, imax_diag, band_b, band_e, band_m );
+	// printf( "best: %i\n", best_score );
+	// printf( "from: %i, end: %i,  best: %i\n", from, end, best_score );
 #endif
 	int mlen = imax_diag;
 	if( imax_diag > len1 ) mlen = nall - imax_diag;
@@ -724,8 +724,8 @@ int diag_test_aapn_est(int NAA1, char iseq2[], int len1, int len2, WorkingBuffer
 		if( band_right < 0 ) best_sum = 0;
 	}
 #if 0
-	printf( "%3i:  best: %i,  %i  %i  %i\n", required_aa1, best_score, band_left, band_right, band_width );
-	printf( "max=%3i  imax=%3i; band:  %3i  %3i  %i\n", mmax, immax, band_b, band_e, band_m );
+	// printf( "%3i:  best: %i,  %i  %i  %i\n", required_aa1, best_score, band_left, band_right, band_width );
+	// printf( "max=%3i  imax=%3i; band:  %3i  %3i  %i\n", mmax, immax, band_b, band_e, band_m );
 #endif
 	return OK_FUNC;
 }
@@ -933,9 +933,9 @@ int local_band_align( char iseq1[], char iseq2[], int len1, int len2, ScoreMatri
 
 #ifdef PRINT
 #define PRINT
-	printf( "%i %i\n", best_score, score_mat[i][j1] );
-	printf( "%i %i %i\n", band_left, band_center, band_right );
-	printf( "%i %i %i %i\n", i, j, j1, len2 );
+	// printf( "%i %i\n", best_score, score_mat[i][j1] );
+	// printf( "%i %i %i\n", band_left, band_center, band_right );
+	// printf( "%i %i %i %i\n", i, j, j1, len2 );
 #endif
 #ifdef MAKEALIGN
 #define MAKEALIGN
@@ -959,7 +959,7 @@ int local_band_align( char iseq1[], char iseq2[], int len1, int len2, ScoreMatri
 		switch( back ){
 		case DP_BACK_TOP  :
 #ifdef PRINT
-			printf( "%5i: %c %c %9i\n", pos, letters[ iseq1[i-1] ], '|', score_mat[i][j1] );
+			// printf( "%5i: %c %c %9i\n", pos, letters[ iseq1[i-1] ], '|', score_mat[i][j1] );
 #endif
 #ifdef MAKEALIGN
 			AA[NN] = letters[ iseq1[i-1] ];
@@ -981,7 +981,7 @@ int local_band_align( char iseq1[], char iseq2[], int len1, int len2, ScoreMatri
 			break;
 		case DP_BACK_LEFT :
 #ifdef PRINT
-			printf( "%5i: %c %c %9i\n", pos, '|', letters[ iseq2[j-1] ], score_mat[i][j1] );
+			// printf( "%5i: %c %c %9i\n", pos, '|', letters[ iseq2[j-1] ], score_mat[i][j1] );
 #endif
 #ifdef MAKEALIGN
 			AA[NN] = '-';
@@ -1004,9 +1004,9 @@ int local_band_align( char iseq1[], char iseq2[], int len1, int len2, ScoreMatri
 		case DP_BACK_LEFT_TOP :
 #ifdef PRINT
 			if( iseq1[i-1] == iseq2[j-1] ){
-				printf( "%5i: %c %c %9i\n", pos, letters2[ iseq1[i-1] ], letters2[ iseq2[j-1] ], score_mat[i][j1] );
+				// printf( "%5i: %c %c %9i\n", pos, letters2[ iseq1[i-1] ], letters2[ iseq2[j-1] ], score_mat[i][j1] );
 			}else{
-				printf( "%5i: %c %c %9i\n", pos, letters[ iseq1[i-1] ], letters[ iseq2[j-1] ], score_mat[i][j1] );
+				// printf( "%5i: %c %c %9i\n", pos, letters[ iseq1[i-1] ], letters[ iseq2[j-1] ], score_mat[i][j1] );
 			}
 #endif
 #ifdef MAKEALIGN
@@ -1056,7 +1056,9 @@ int local_band_align( char iseq1[], char iseq2[], int len1, int len2, ScoreMatri
 				begin2 = j + mm;
 			}
 			break;
-		default : printf( "%i\n", back ); break;
+		default : 
+		    // printf( "%i\n", back ); 
+		break;
 		}
 		if( options.is454 ){
 			if( back == DP_BACK_LEFT_TOP ){
@@ -1101,10 +1103,10 @@ int local_band_align( char iseq1[], char iseq2[], int len1, int len2, ScoreMatri
 		}
 	}
 #ifdef PRINT
-	printf( "%6i %6i:  %4i %4i %4i %4i\n", alnln, iden_no, begin1, end1, begin2, end2 );
-	printf( "%6i %6i:  %4i %4i\n", posmin, posmax, posmin - posmax, count - count2 );
-	printf( "smin = %9i, smax = %9i\n", smin, smax );
-	printf( "dlen = %5i, dcount = %5i, dist = %.3f\n", dlen, dcount, dcount/(float)dlen );
+	// printf( "%6i %6i:  %4i %4i %4i %4i\n", alnln, iden_no, begin1, end1, begin2, end2 );
+	// printf( "%6i %6i:  %4i %4i\n", posmin, posmax, posmin - posmax, count - count2 );
+	// printf( "smin = %9i, smax = %9i\n", smin, smax );
+	// printf( "dlen = %5i, dcount = %5i, dist = %.3f\n", dlen, dcount, dcount/(float)dlen );
 #endif
 #ifdef MAKEALIGN
 	float identity = iden_no / (float)( options.global_identity ? (len1 - masked) : alnln);
@@ -1130,7 +1132,7 @@ int local_band_align( char iseq1[], char iseq2[], int len1, int len2, ScoreMatri
 	fcount += 1;
 	FILE *fout = fopen( "alignments.txt", "a" );
 	if( fout == NULL ){
-		if( fcount <= 1 ) printf( "alignment files open failed\n" );
+		// if( fcount <= 1 ) printf( "alignment files open failed\n" );
 		return OK_FUNC;
 	}
 	fprintf( fout, "\n\n######################################################\n" );
@@ -1355,24 +1357,24 @@ int WordTable::AddWordCountsFrag( int aan_no, Vector<int> & word_encodes,
 
 void WordTable::PrintAll()
 {
-	int  i, j, k;
-	int cols = 0;
-	long long total_words = 0;
-	k = 0;
-	for (i=0; i<NAAN; i++) {
-		int size = indexCounts[i].Size();
-		if ( size == 0 ) continue;
-		cols++;
-		cout << k << "\t" << i << "\tsize:" << size << "\t";
-		for (j=0; j<size; j++) {
-			cout << indexCounts[i][j].index << "," << indexCounts[i][j].count << " ";
-			total_words += indexCounts[i][j].count;
-		}
-		cout << endl;
-		k++;
-	}
-
-	cout << "total cols: " << cols << " total words: " << total_words << endl;
+	// int  i, j, k;
+	// int cols = 0;
+	// long long total_words = 0;
+	// k = 0;
+	// for (i=0; i<NAAN; i++) {
+	// 	int size = indexCounts[i].Size();
+	// 	if ( size == 0 ) continue;
+	// 	cols++;
+	// 	cout << k << "\t" << i << "\tsize:" << size << "\t";
+	// 	for (j=0; j<size; j++) {
+	// 		cout << indexCounts[i][j].index << "," << indexCounts[i][j].count << " ";
+	// 		total_words += indexCounts[i][j].count;
+	// 	}
+	// 	cout << endl;
+	// 	k++;
+	// }
+	// 
+	// cout << "total cols: " << cols << " total words: " << total_words << endl;
 }
 
 
@@ -1707,11 +1709,11 @@ void SequenceDB::Read( const char *file, const Options & options )
 		}
 	}
 #if 0
-	int i, n = 0;
-	for(i=0; i<sequences.size(); i++) n += sequences[i].bufsize + 4;
-	cout<<n<<"\t"<<sequences.capacity() * sizeof(Sequence)<<endl;
-	int i;
-	scanf( "%i", & i );
+	// int i, n = 0;
+	// for(i=0; i<sequences.size(); i++) n += sequences[i].bufsize + 4;
+	// cout<<n<<"\t"<<sequences.capacity() * sizeof(Sequence)<<endl;
+	// int i;
+	// scanf( "%i", & i );
 #endif
 	one.identifier = dummy.identifier = NULL;
 	delete[] buffer;
@@ -1920,7 +1922,7 @@ void SequenceDB::WriteExtra1D( const Options & options )
 		fclose( fout );
 	}
 
-	cout << "writing clustering information" << endl;
+	//cout << "writing clustering information" << endl;
 	int M = rep_seqs.size();
 	Vector<Vector<int> > clusters( M );
 	for (i=0; i<N; i++){
@@ -1978,7 +1980,7 @@ void SequenceDB::WriteExtra2D( SequenceDB & other, const Options & options )
 		fclose( fout );
 	}
 
-	cout << "writing clustering information" << endl;
+	//cout << "writing clustering information" << endl;
 	Vector<Vector<int> > clusters( N );
 	for (i=0; i<N2; i++){
 		int id = sequences[i]->cluster_id;
@@ -2252,7 +2254,7 @@ void SequenceDB::ClusterOne( Sequence *seq, int id, WordTable & table,
 	if ( (id+1) % 1000 == 0 ) {
 		int size = rep_seqs.size();
 		printf( "." );
-		fflush( stdout );
+		//fflush( stdout );
 		if ( (id+1) % 10000 == 0 ) printf( "\r..........%9i  finished  %9i  clusters\n", id+1, size );
 	}
 }
@@ -3128,7 +3130,7 @@ void SequenceDB::ClusterTo( SequenceDB & other, const Options & options )
 			seq->state |= IS_REP;
 			if ( (ks+1) % 1000 == 0 ) {
 				printf( "." );
-				fflush( stdout );
+				//fflush( stdout );
 				if ( (ks+1) % 10000 == 0 ) printf( "%9i  finished\n", ks+1 );
 			}  
 		}
@@ -3169,7 +3171,7 @@ void SequenceDB::ClusterTo( SequenceDB & other, const Options & options )
 				float p = (100.0*j)/M;
 				if( p > p0+1E-1 ){ // print only if the percentage changed
 					printf( "\r%4.1f%%", p );
-					fflush( stdout );
+					//fflush( stdout );
 					p0 = p;
 				}
 			}
@@ -3204,7 +3206,7 @@ void SequenceDB::ClusterTo( SequenceDB & other, const Options & options )
 				float p = (100.0*j)/M;
 				if( p > p0+1E-1 ){ // print only if the percentage changed
 					printf( "\r%4.1f%%", p );
-					fflush( stdout );
+					//fflush( stdout );
 					p0 = p;
 				}
 			}
@@ -3230,8 +3232,8 @@ void SequenceDB::ClusterTo( SequenceDB & other, const Options & options )
 		if( not(seq->state & IS_REDUNDANT) ) rep_seqs.Append( i );
 	}
 
-	cout << endl;
-	cout << sequences.size() << " compared\t" << NR2_red_no << " clustered" << endl;
+	//cout << endl;
+	//cout << sequences.size() << " compared\t" << NR2_red_no << " clustered" << endl;
 	temp_files.Clear();
 }
 
