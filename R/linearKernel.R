@@ -37,5 +37,5 @@ lkFMF <- function(x, selx, order, lowerLimit = 0, upperLimit = 1) {
 #' 
 clustersFromAdjMatrix <- function(x) {
     if (x@uplo == 'U') x <- t(x)
-    FindMyFriends:::getClusters(x@i, x@p, x@x)
+    getClusters(x@i, x@p, x@x)
 }
