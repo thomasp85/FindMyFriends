@@ -155,7 +155,7 @@ setMethod(
 setMethod(
     'cdhitGrouping', 'pgVirtual',
     function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize, 
-             cdhitOpts, cdhitIter = FALSE, nrep = 1) {
+             cdhitOpts, cdhitIter = TRUE, nrep = 1) {
         time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         groups <- precluster(object, kmerSize[1], maxLengthDif, geneChunkSize, 
