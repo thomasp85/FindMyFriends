@@ -431,7 +431,6 @@ scaleRange <- function(x, low, high) {
 #' @noRd
 #' 
 locateCycles <- function(graph, maxLength=4) {
-    graph <- graph
     potentialSplits <- V(graph)$name[degree(graph) > 2]
     smallGr <- make_ego_graph(graph, order = maxLength, nodes = potentialSplits)
     cycles <- lapply(seq_along(potentialSplits), function(i) {
