@@ -252,6 +252,7 @@ setMethod(
 #' directions to collect.
 #' 
 #' @importFrom igraph V E V<- E<- plot.igraph
+#' @importFrom grDevices rgb
 #' 
 setMethod(
     'plotNeighborhood', 'pgVirtualLoc',
