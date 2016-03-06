@@ -36,15 +36,15 @@ test_that("neighborSplitting works", {
     newGroups3 <- neighborSplitting(1, pg1, seqToOrg(pg1), neighbors, seqToGeneGroup(pg1), geneWidth(pg1), 0.1, TRUE, 7, 5, 0.75,  rep(1L, nGenes(pg1)))
     expect_is(newGroups1, 'list')
     expect_equal(length(newGroups1), 10)
-    expect_equal(unname(sapply(newGroups1, sum)), c(3803L, 5808L, 5911L, 2492L, 2652L, 2720L, 2796L, 3685L, 3336L, 
-                                            2677L))
+    expect_equal(sort(unname(sapply(newGroups1, sum))), sort(c(3803L, 5808L, 5911L, 2492L, 2652L, 2720L, 2796L, 3685L, 3336L, 
+                                            2677L)))
     expect_is(newGroups2, 'list')
     expect_equal(length(newGroups2), 2)
-    expect_equal(unname(sapply(newGroups2, sum)), c(3803L, 32077L))
+    expect_equal(sort(unname(sapply(newGroups2, sum))), sort(c(3803L, 32077L)))
     expect_is(newGroups3, 'list')
     expect_equal(length(newGroups3), 10)
-    expect_equal(unname(sapply(newGroups3, sum)), c(5808L, 6402L, 2492L, 3803L, 2317L, 2662L, 2748L, 3635L, 3336L, 
-                                            2677L))
+    expect_equal(sort(unname(sapply(newGroups3, sum))), sort(c(5808L, 6402L, 2492L, 3803L, 2317L, 2662L, 2748L, 3635L, 3336L, 
+                                            2677L)))
 })
 
 test_that("Clique extraction works", {
