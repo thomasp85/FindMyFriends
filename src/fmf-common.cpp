@@ -45,7 +45,7 @@ List createPanMatrix(IntegerVector org, IntegerVector group) {
 }
 
 //[[Rcpp::export]]
-DataFrame calcGroupInfo(List groupOrgs, int nOrgs) {
+DataFrame calcGroupInfo(List groupOrgs, int nOrgs, double threshold) {
     IntegerVector geneToOrg, uGeneToOrg;
     CharacterVector group(groupOrgs.size());
     IntegerVector nOrg(groupOrgs.size());
@@ -54,7 +54,7 @@ DataFrame calcGroupInfo(List groupOrgs, int nOrgs) {
     for (int i = 0; i < groupOrgs.size(); ++i) {
         geneToOrg = groupOrgs[i];
         uGeneToOrg = unique(geneToOrg);
-        if (uGeneToOrg.size() == nOrgs) {
+        if (uGeneToOrg.size() / double(nOrgs) >= threshold) {
             group[i] = "Core";
         } else if (uGeneToOrg.size() == 1) {
             group[i] = "Singleton";

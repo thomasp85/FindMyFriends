@@ -68,14 +68,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // calcGroupInfo
-DataFrame calcGroupInfo(List groupOrgs, int nOrgs);
-RcppExport SEXP FindMyFriends_calcGroupInfo(SEXP groupOrgsSEXP, SEXP nOrgsSEXP) {
+DataFrame calcGroupInfo(List groupOrgs, int nOrgs, double threshold);
+RcppExport SEXP FindMyFriends_calcGroupInfo(SEXP groupOrgsSEXP, SEXP nOrgsSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type groupOrgs(groupOrgsSEXP);
     Rcpp::traits::input_parameter< int >::type nOrgs(nOrgsSEXP);
-    __result = Rcpp::wrap(calcGroupInfo(groupOrgs, nOrgs));
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    __result = Rcpp::wrap(calcGroupInfo(groupOrgs, nOrgs, threshold));
     return __result;
 END_RCPP
 }

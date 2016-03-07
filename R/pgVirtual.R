@@ -205,6 +205,12 @@ setMethod(
         value$translated <- translated(object)
         value$nextGroup <- object@.settings$nextGroup
         object@.settings <- value
+        if ('coreThreshold' %in% names(value)) {
+            newGroups <- calcGroupInfo(split(seqToOrg(object), 
+                                             seqToGeneGroup(object)), 
+                                       nOrganisms(object), value$coreThreshold)
+            groupInfo(object)$group <- newGroups$group
+        }
         object
     }
 )
@@ -364,7 +370,7 @@ setMethod(
         seqToOrg <- seqToOrg(object)
         groups <- split(seqToOrg, seqToGeneGroup)
         nOrgs <- nOrganisms(object)
-        groupInfoCalc <- calcGroupInfo(groups, nOrgs)
+        groupInfoCalc <- calcGroupInfo(groups, nOrgs, defaults(object)$coreThreshold)
         groupInfo <- data.frame(
             description = NA, 
             group = NA, 
@@ -775,7 +781,8 @@ evolBoot <- function(pangenome, times=10) {
         res1 <- lapply(seq(times), function(i) {
             ind <- sample(size, size = n, replace = TRUE)
             subMat <- mat[, ind, drop = FALSE]
-            data.frame(panGroups(subMat), stringsAsFactors = FALSE)
+            data.frame(panGroups(subMat, defaults(pangenome)$coreThreshold), 
+                       stringsAsFactors = FALSE)
         })
         data.frame(org = n, do.call(rbind, res1), stringsAsFactors = FALSE)
     })
@@ -801,7 +808,7 @@ evolMan <- function(pangenome, order) {
         ind <- order[1:i]
         subMat <- mat[, ind, drop = FALSE]
         data.frame(org = factor(orgNames(pangenome)[order[i]]), 
-                   panGroups(subMat), 
+                   panGroups(subMat, defaults(pangenome)$coreThreshold), 
                    stringsAsFactors = FALSE)
     })
     res <- do.call(rbind, res)
@@ -823,13 +830,13 @@ evolMan <- function(pangenome, order) {
 #' 
 #' @noRd
 #' 
-panGroups <- function(mat) {
+panGroups <- function(mat, coreThreshold = 1) {
     mat <- as(mat, 'nsparseMatrix')
     nGenes <- rowSums(mat)
     data.frame(group = c('Singleton', 'Accessory', 'Core', 'Total'),
                size = c(sum(nGenes == 1),
-                        sum(nGenes > 1 & nGenes < ncol(mat)),
-                        sum(nGenes == ncol(mat)),
+                        sum(nGenes > 1 & nGenes / ncol(mat) < coreThreshold),
+                        sum(nGenes / ncol(mat) >= coreThreshold),
                         sum(nGenes != 0)),
                stringsAsFactors = FALSE)
 }

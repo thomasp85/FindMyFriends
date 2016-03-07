@@ -21,8 +21,8 @@ createPanMatrix <- function(org, group) {
     .Call('FindMyFriends_createPanMatrix', PACKAGE = 'FindMyFriends', org, group)
 }
 
-calcGroupInfo <- function(groupOrgs, nOrgs) {
-    .Call('FindMyFriends_calcGroupInfo', PACKAGE = 'FindMyFriends', groupOrgs, nOrgs)
+calcGroupInfo <- function(groupOrgs, nOrgs, threshold) {
+    .Call('FindMyFriends_calcGroupInfo', PACKAGE = 'FindMyFriends', groupOrgs, nOrgs, threshold)
 }
 
 lkMatrix <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
