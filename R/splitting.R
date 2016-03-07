@@ -391,21 +391,25 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
     }
     cdhitOpts <- lapply(cdhitOpts, as.character)
     first <- TRUE
-    neighbors <- getNeighbors(pangenome, zeroInd = FALSE)
+    neighbors0 <- getNeighbors(pangenome, zeroInd = TRUE)
     neighbors <- data.frame(
-        up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
-        down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
+        up = ifelse(neighbors0$reverse, neighbors0$down, neighbors0$up) + 1,
+        down = ifelse(neighbors0$reverse, neighbors0$up, neighbors0$down) + 1
     )
+    neighbors$up[neighbors$up == 0] <- NA
+    neighbors$down[neighbors$down == 0] <- NA
     while (TRUE) {
-        pc <- pcGraph(pangenome, slim = TRUE)
-        knots <- which(degree(pc) > 2)
+        gGroups <- seqToGeneGroup(pangenome)
+        neighborGroups <- groupNeighbors(neighbors0$down, neighbors$up, gGroups,
+                                         order(gGroups) - 1)
+        nNeighbors <- table(neighborGroups$group)
+        knots <- as.integer(names(nNeighbors)[nNeighbors > 2])
         if (length(knots) == 0) break
-        knots <- match(V(pc)$name[knots], groupNames(pangenome))
-        geneInd <- which(seqToGeneGroup(pangenome) %in% knots)
+        geneInd <- which(gGroups %in% knots)
         neighborSubset <- neighbors[geneInd, ]
-        neighborSubset$up <- seqToGeneGroup(pangenome)[neighborSubset$up]
-        neighborSubset$down <- seqToGeneGroup(pangenome)[neighborSubset$down]
-        geneIndGroup <- seqToGeneGroup(pangenome)[geneInd]
+        neighborSubset$up <- gGroups[neighborSubset$up]
+        neighborSubset$down <- gGroups[neighborSubset$down]
+        geneIndGroup <- gGroups[geneInd]
         downs <- lapply(split(neighborSubset$down, geneIndGroup), function(i) {
             sort(unique(na.omit(i)))
         })
