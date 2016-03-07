@@ -9,7 +9,8 @@
 neighborhoodSplit(object, ...)
 
 \S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize, forceParalogues,
-  kmerSize, lowerLimit, maxLengthDif, guideGroups = NULL)
+  kmerSize, lowerLimit, maxLengthDif, guideGroups = NULL,
+  cdhitOpts = list())
 }
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
@@ -32,6 +33,9 @@ length}
 
 \item{guideGroups}{An integer vector with prior grouping that, all else being
 equal, should be prioritized. Used internally.}
+
+\item{cdhitOpts}{A list of options to pass on to CD-Hit during the merging
+step. "l", "n" and "s"/"S" will be overridden.}
 }
 \value{
 An object with the same class as object containing the new grouping.
