@@ -61,6 +61,10 @@ groupNeighbors <- function(down, up, groups, order) {
     .Call('FindMyFriends_groupNeighbors', PACKAGE = 'FindMyFriends', down, up, groups, order)
 }
 
+mergeGroupsByNeighbors <- function(GOI, lookup) {
+    .Call('FindMyFriends_mergeGroupsByNeighbors', PACKAGE = 'FindMyFriends', GOI, lookup)
+}
+
 panSim <- function(P, I, names) {
     .Call('FindMyFriends_panSim', PACKAGE = 'FindMyFriends', P, I, names)
 }

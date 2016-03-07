@@ -491,3 +491,49 @@ DataFrame groupNeighbors(IntegerVector down, IntegerVector up, IntegerVector gro
         Named("neighbor") = wrap(neighborOut)
     );
 }
+
+//[[Rcpp::export]]
+DataFrame mergeGroupsByNeighbors(List GOI, DataFrame lookup) {
+    int i, j, k, l;
+    IntegerVector group;
+    std::set<int> OGset;
+    std::deque<int> pair1, pair2;
+    bool pairFound;
+    std::map< int, std::vector<int> > lookupMap;
+    
+    IntegerVector OG = lookup["OG"];
+    IntegerVector NG = lookup["NG"];
+    
+    for (i = 0; i < OG.size(); ++i) {
+        lookupMap[OG[i]].push_back(NG[i]);
+    }
+    
+    // Start of horrible nesting - sorry
+    for (i = 0; i < GOI.size(); ++i) {
+        group = GOI[i];
+        
+        for (j = 0; j < group.size() - 1; ++j) {
+            OGset = std::set<int>(lookupMap[group[j]].begin(), lookupMap[group[j]].end());
+            pairFound = false;
+            
+            for (k = j + 1; k < group.size(); ++k) {
+                if (pairFound) break;
+                
+                for (l = 0; l < lookupMap[group[k]].size(); ++l) {
+                    if (OGset.find(lookupMap[group[k]][l]) != OGset.end()) {
+                        pair1.push_back(group[j]);
+                        pair2.push_back(group[k]);
+                        pairFound = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    // end of horrible nesting...
+    
+    return DataFrame::create(
+        Named("V1") = wrap(pair1),
+        Named("V2") = wrap(pair2)
+    );
+}

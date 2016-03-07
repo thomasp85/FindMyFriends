@@ -216,6 +216,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// mergeGroupsByNeighbors
+DataFrame mergeGroupsByNeighbors(List GOI, DataFrame lookup);
+RcppExport SEXP FindMyFriends_mergeGroupsByNeighbors(SEXP GOISEXP, SEXP lookupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type GOI(GOISEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type lookup(lookupSEXP);
+    __result = Rcpp::wrap(mergeGroupsByNeighbors(GOI, lookup));
+    return __result;
+END_RCPP
+}
 // panSim
 NumericMatrix panSim(IntegerVector P, IntegerVector I, CharacterVector names);
 RcppExport SEXP FindMyFriends_panSim(SEXP PSEXP, SEXP ISEXP, SEXP namesSEXP) {
