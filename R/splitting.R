@@ -23,13 +23,16 @@ NULL
 #' @param guideGroups An integer vector with prior grouping that, all else being
 #' equal, should be prioritized. Used internally.
 #' 
+#' @param cdhitOpts A list of options to pass on to CD-Hit during the merging
+#' step. "l", "n" and "s"/"S" will be overridden.
+#' 
 #' @importFrom Matrix sparseMatrix
 #' @importFrom igraph graph_from_adjacency_matrix components
 #' 
 setMethod(
     'neighborhoodSplit', 'pgVirtualLoc',
     function(object, flankSize, forceParalogues, kmerSize, lowerLimit, 
-             maxLengthDif, guideGroups = NULL) {
+             maxLengthDif, guideGroups = NULL, cdhitOpts = list()) {
         time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         
@@ -106,7 +109,7 @@ setMethod(
         time3 <- proc.time()['elapsed']
         message('Splitting resulted in ', nGeneGroups(object), ' gene groups (',
                 formatSeconds(time3 - time2), ' elapsed)')
-        object <- neighborhoodMerge(object, maxLengthDif)
+        object <- neighborhoodMerge(object, maxLengthDif, cdhitOpts)
         time4 <- proc.time()['elapsed']
         message('Merging resulted in ', nGeneGroups(object), ' gene groups (',
                 formatSeconds(time4 - time3), ' elapsed)')
@@ -378,8 +381,9 @@ anyParalogues <- function(pangenome) {
 }
 #' @importFrom igraph degree 
 #' @importFrom utils combn
-neighborhoodMerge <- function(pangenome, maxLengthDif) {
-    cdhitOpts <- list(l = 5, n = 5)
+neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
+    cdhitOpts$l <- 5
+    cdhitOpts$n = 5
     if (maxLengthDif < 1) {
         cdhitOpts$s <- 1 - maxLengthDif
     } else {
