@@ -398,11 +398,16 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
     )
     neighbors$up[neighbors$up == 0] <- NA
     neighbors$down[neighbors$down == 0] <- NA
+    
+    considerNeighborsTo <- seq_len(nGenes(pangenome))
+    
     while (TRUE) {
         pc <- pcGraph(pangenome, slim = TRUE)
         knots <- which(degree(pc) > 2)
         if (length(knots) == 0) break
         knots <- match(V(pc)$name[knots], groupNames(pangenome))
+        knots <- knots[knots %in% considerNeighborsTo]
+        if (length(knots) == 0) break
         geneInd <- which(seqToGeneGroup(pangenome) %in% knots)
         neighborSubset <- neighbors[geneInd, ]
         neighborSubset$up <- seqToGeneGroup(pangenome)[neighborSubset$up]
@@ -445,6 +450,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
                                                        length.out = length(toChange)),
                                                lengths(toChange))
         pangenome <- manualGrouping(pangenome, split(seq_len(nGenes(pangenome)), currentGroups))
+        considerNeighborsTo <- unique(seqToGeneGroup(pangenome)[unlist(toChange)])
     }
     
     pangenome
