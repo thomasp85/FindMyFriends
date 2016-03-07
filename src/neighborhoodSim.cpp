@@ -510,6 +510,8 @@ DataFrame mergeGroupsByNeighbors(List GOI, DataFrame lookup) {
     
     // Start of horrible nesting - sorry
     for (i = 0; i < GOI.size(); ++i) {
+        R_CheckUserInterrupt();
+        
         group = GOI[i];
         
         for (j = 0; j < group.size() - 1; ++j) {
