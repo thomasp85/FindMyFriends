@@ -57,6 +57,10 @@ groupHasParalogues <- function(groupMembers, org) {
     .Call('FindMyFriends_groupHasParalogues', PACKAGE = 'FindMyFriends', groupMembers, org)
 }
 
+groupNeighbors <- function(down, up, groups, order) {
+    .Call('FindMyFriends_groupNeighbors', PACKAGE = 'FindMyFriends', down, up, groups, order)
+}
+
 panSim <- function(P, I, names) {
     .Call('FindMyFriends_panSim', PACKAGE = 'FindMyFriends', P, I, names)
 }

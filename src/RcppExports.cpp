@@ -202,6 +202,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// groupNeighbors
+DataFrame groupNeighbors(IntegerVector down, IntegerVector up, IntegerVector groups, IntegerVector order);
+RcppExport SEXP FindMyFriends_groupNeighbors(SEXP downSEXP, SEXP upSEXP, SEXP groupsSEXP, SEXP orderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type down(downSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type up(upSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type order(orderSEXP);
+    __result = Rcpp::wrap(groupNeighbors(down, up, groups, order));
+    return __result;
+END_RCPP
+}
 // panSim
 NumericMatrix panSim(IntegerVector P, IntegerVector I, CharacterVector names);
 RcppExport SEXP FindMyFriends_panSim(SEXP PSEXP, SEXP ISEXP, SEXP namesSEXP) {

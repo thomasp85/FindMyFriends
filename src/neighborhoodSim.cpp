@@ -459,3 +459,35 @@ LogicalVector groupHasParalogues(List groupMembers, IntegerVector org) {
     
     return hasParalogues;
 }
+
+//[[Rcpp::export]]
+DataFrame groupNeighbors(IntegerVector down, IntegerVector up, IntegerVector groups, IntegerVector order) {
+    std::deque<int> groupOut, neighborOut;
+    int currentGroup = groups[order[0]];
+    int i, groupInd;
+    std::set<int> neighborSet;
+    
+    for (i = 0; i < order.size(); ++i) {
+        if (currentGroup != groups[order[i]]) {
+            groupOut.insert(groupOut.end(), neighborSet.size(), currentGroup);
+            neighborOut.insert(neighborOut.end(), neighborSet.begin(), neighborSet.end());
+            neighborSet.clear();
+            currentGroup = groups[order[i]];
+        }
+        groupInd = down[order[i]];
+        if (groupInd != -1) {
+            neighborSet.insert(groups[groupInd]);
+        }
+        groupInd = up[order[i]];
+        if (groupInd != -1) {
+            neighborSet.insert(groups[groupInd]);
+        }
+    }
+    groupOut.insert(groupOut.end(), neighborSet.size(), currentGroup);
+    neighborOut.insert(neighborOut.end(), neighborSet.begin(), neighborSet.end());
+    
+    return DataFrame::create(
+        Named("group") = wrap(groupOut),
+        Named("neighbor") = wrap(neighborOut)
+    );
+}
