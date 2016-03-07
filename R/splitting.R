@@ -424,7 +424,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         repGOI <- getRep(pangenome, 'longest')[GOI]
         if (first) {
             first <- FALSE
-        } else {
+        } else if (interactive()) {
             cat('\n')
         }
         equals <- cdhit(repGOI, cdhitOpts, 'Merging     ')
