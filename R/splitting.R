@@ -23,13 +23,16 @@ NULL
 #' @param guideGroups An integer vector with prior grouping that, all else being
 #' equal, should be prioritized. Used internally.
 #' 
+#' @param cdhitOpts A list of options to pass on to CD-Hit during the merging
+#' step. "l", "n" and "s"/"S" will be overridden.
+#' 
 #' @importFrom Matrix sparseMatrix
 #' @importFrom igraph graph_from_adjacency_matrix components
 #' 
 setMethod(
     'neighborhoodSplit', 'pgVirtualLoc',
     function(object, flankSize, forceParalogues, kmerSize, lowerLimit, 
-             maxLengthDif, guideGroups = NULL) {
+             maxLengthDif, guideGroups = NULL, cdhitOpts = list()) {
         time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         
@@ -106,7 +109,7 @@ setMethod(
         time3 <- proc.time()['elapsed']
         message('Splitting resulted in ', nGeneGroups(object), ' gene groups (',
                 formatSeconds(time3 - time2), ' elapsed)')
-        object <- neighborhoodMerge(object, maxLengthDif)
+        object <- neighborhoodMerge(object, maxLengthDif, cdhitOpts)
         time4 <- proc.time()['elapsed']
         message('Merging resulted in ', nGeneGroups(object), ' gene groups (',
                 formatSeconds(time4 - time3), ' elapsed)')
@@ -378,8 +381,10 @@ anyParalogues <- function(pangenome) {
 }
 #' @importFrom igraph degree 
 #' @importFrom utils combn
-neighborhoodMerge <- function(pangenome, maxLengthDif) {
-    cdhitOpts <- list(l = 5, n = 5)
+neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
+    cdhitOpts$l <- 5
+    cdhitOpts$n = 5
+    cdhitOpts$c <- 0.9
     if (maxLengthDif < 1) {
         cdhitOpts$s <- 1 - maxLengthDif
     } else {
@@ -392,11 +397,18 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
         up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
         down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
     )
+    neighbors$up[neighbors$up == 0] <- NA
+    neighbors$down[neighbors$down == 0] <- NA
+    
+    considerNeighborsTo <- seq_len(nGenes(pangenome))
+    
     while (TRUE) {
         pc <- pcGraph(pangenome, slim = TRUE)
         knots <- which(degree(pc) > 2)
         if (length(knots) == 0) break
         knots <- match(V(pc)$name[knots], groupNames(pangenome))
+        knots <- knots[knots %in% considerNeighborsTo]
+        if (length(knots) == 0) break
         geneInd <- which(seqToGeneGroup(pangenome) %in% knots)
         neighborSubset <- neighbors[geneInd, ]
         neighborSubset$up <- seqToGeneGroup(pangenome)[neighborSubset$up]
@@ -409,7 +421,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
             sort(unique(na.omit(i)))
         })
         neighborGroups <- c(downs, ups)
-        neighborGroups <- unique(neighborGroups[lengths(neighborGroups) > 1])
+        neighborGroups <- unique(neighborGroups[lengths(neighborGroups) > 1L])
         neighborlookup <- data.frame(
             OG = unlist(neighborGroups),
             NG = rep(seq_along(neighborGroups), lengths(neighborGroups))
@@ -418,21 +430,14 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
         repGOI <- getRep(pangenome, 'longest')[GOI]
         if (first) {
             first <- FALSE
-        } else {
+        } else if (interactive()) {
             cat('\n')
         }
         equals <- cdhit(repGOI, cdhitOpts, 'Merging     ')
         GOI <- split(GOI, equals)
-        GOI <- GOI[lengths(GOI) > 1]
-        pairs <- lapply(GOI, function(groups) {
-            pairs <- combn(groups, 2)
-            matched <- sapply(seq_len(ncol(pairs)), function(i) {
-                any(neighborlookup$NG[neighborlookup$OG == pairs[1, i]] %in%
-                        neighborlookup$NG[neighborlookup$OG == pairs[2, i]])
-            })
-            pairs[, matched]
-        })
-        pairs <- do.call(cbind, pairs)
+        GOI <- GOI[lengths(GOI) > 1L]
+        pairs <- mergeGroupsByNeighbors(GOI, neighborlookup)
+        pairs <- t(as.matrix(pairs))
         
         if (ncol(pairs) == 0) break
         
@@ -446,6 +451,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif) {
                                                        length.out = length(toChange)),
                                                lengths(toChange))
         pangenome <- manualGrouping(pangenome, split(seq_len(nGenes(pangenome)), currentGroups))
+        considerNeighborsTo <- unique(seqToGeneGroup(pangenome)[unlist(toChange)])
     }
     
     pangenome

@@ -144,6 +144,7 @@ pangenome <- function(paths, translated, geneLocation = NULL, lowMem = FALSE,
 .pkg_variables$defaults <- list(
     groupPrefix = 'OG',
     nextGroup = 1,
+    coreThreshold = 1,
     kmerSize = 5,
     lowerLimit = 0.5,
     algorithm = 'infomap',
