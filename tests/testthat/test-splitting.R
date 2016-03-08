@@ -8,8 +8,8 @@ test_that("neighborhoodSplit works", {
     skip_on_os('win')
     set.seed(1)
     pg2 <- neighborhoodSplit(pg1, lowerLimit=0.8)
-    expect_equal(nGeneGroups(pg2), 3136)
-    expect_equal(sum(seqToGeneGroup(pg2)), 8794625)
+    expect_equal(nGeneGroups(pg2), 3140)
+    expect_equal(sum(seqToGeneGroup(pg2)), 8805063)
 })
 
 test_that("collectNeighbors works", {
