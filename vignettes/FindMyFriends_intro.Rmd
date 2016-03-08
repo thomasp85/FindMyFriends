@@ -149,10 +149,11 @@ method. For instance we might add some taxonomy data.
 ```{r, echo=TRUE, eval=TRUE}
 library(reutils)
 orgMeta <- lapply(orgNames(mycoPan), function(name) {
-    uid <- esearch(name)
+    uid <- esearch(name, 'assembly')
     taxuid <- elink(uid, dbTo = 'taxonomy')
-    reutils::content(esummary(taxuid), as='parsed')
+    reutils::content(esummary(taxuid), as = 'parsed')
 })
+orgMeta <- lapply(lapply(orgMeta, lapply, unlist), as.data.frame)
 orgMeta <- do.call(rbind, orgMeta)
 
 mycoPan <- addOrgInfo(mycoPan, orgMeta)

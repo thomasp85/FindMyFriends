@@ -68,14 +68,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // calcGroupInfo
-DataFrame calcGroupInfo(List groupOrgs, int nOrgs);
-RcppExport SEXP FindMyFriends_calcGroupInfo(SEXP groupOrgsSEXP, SEXP nOrgsSEXP) {
+DataFrame calcGroupInfo(List groupOrgs, int nOrgs, double threshold);
+RcppExport SEXP FindMyFriends_calcGroupInfo(SEXP groupOrgsSEXP, SEXP nOrgsSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type groupOrgs(groupOrgsSEXP);
     Rcpp::traits::input_parameter< int >::type nOrgs(nOrgsSEXP);
-    __result = Rcpp::wrap(calcGroupInfo(groupOrgs, nOrgs));
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    __result = Rcpp::wrap(calcGroupInfo(groupOrgs, nOrgs, threshold));
     return __result;
 END_RCPP
 }
@@ -199,6 +200,32 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type groupMembers(groupMembersSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type org(orgSEXP);
     __result = Rcpp::wrap(groupHasParalogues(groupMembers, org));
+    return __result;
+END_RCPP
+}
+// groupNeighbors
+DataFrame groupNeighbors(IntegerVector down, IntegerVector up, IntegerVector groups, IntegerVector order);
+RcppExport SEXP FindMyFriends_groupNeighbors(SEXP downSEXP, SEXP upSEXP, SEXP groupsSEXP, SEXP orderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type down(downSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type up(upSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type order(orderSEXP);
+    __result = Rcpp::wrap(groupNeighbors(down, up, groups, order));
+    return __result;
+END_RCPP
+}
+// mergeGroupsByNeighbors
+DataFrame mergeGroupsByNeighbors(List GOI, DataFrame lookup);
+RcppExport SEXP FindMyFriends_mergeGroupsByNeighbors(SEXP GOISEXP, SEXP lookupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type GOI(GOISEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type lookup(lookupSEXP);
+    __result = Rcpp::wrap(mergeGroupsByNeighbors(GOI, lookup));
     return __result;
 END_RCPP
 }

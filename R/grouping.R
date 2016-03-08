@@ -194,7 +194,7 @@ setMethod(
                     
                     cdhitOpts$n <- as.character(opts$kmerSize[i])
                     cdhitOpts$c <- as.character(opts$lowerLimit[i])
-                    if (!(i == 1 && j == 1)) cat('\n')
+                    if (!(i == 1 && j == 1) && interactive()) cat('\n')
                     groupsGroups <- cdhit(seqs, cdhitOpts, 'Grouping     ')
                     groups <- lapply(split(groups, groupsGroups), unlist)
                 }
@@ -238,7 +238,7 @@ setMethod(
         chunks <- data.frame(start = c(1, chunks[-nChunks] + 1), end = chunks)
         
         groups <- lapply(seq_len(nChunks), function(i) {
-            if (i != 1) cat('\n')
+            if (i != 1 && interactive()) cat('\n')
             cdhit(genes(object, subset = seq.int(chunks$start[i], chunks$end[i])), 
                   cdhitOpts, 'Preclustering')
         })

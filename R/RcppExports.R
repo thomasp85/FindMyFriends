@@ -21,8 +21,8 @@ createPanMatrix <- function(org, group) {
     .Call('FindMyFriends_createPanMatrix', PACKAGE = 'FindMyFriends', org, group)
 }
 
-calcGroupInfo <- function(groupOrgs, nOrgs) {
-    .Call('FindMyFriends_calcGroupInfo', PACKAGE = 'FindMyFriends', groupOrgs, nOrgs)
+calcGroupInfo <- function(groupOrgs, nOrgs, threshold) {
+    .Call('FindMyFriends_calcGroupInfo', PACKAGE = 'FindMyFriends', groupOrgs, nOrgs, threshold)
 }
 
 lkMatrix <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
@@ -55,6 +55,14 @@ getPotentials <- function(down, up, pending, reverse, groupSplit, groups) {
 
 groupHasParalogues <- function(groupMembers, org) {
     .Call('FindMyFriends_groupHasParalogues', PACKAGE = 'FindMyFriends', groupMembers, org)
+}
+
+groupNeighbors <- function(down, up, groups, order) {
+    .Call('FindMyFriends_groupNeighbors', PACKAGE = 'FindMyFriends', down, up, groups, order)
+}
+
+mergeGroupsByNeighbors <- function(GOI, lookup) {
+    .Call('FindMyFriends_mergeGroupsByNeighbors', PACKAGE = 'FindMyFriends', GOI, lookup)
 }
 
 panSim <- function(P, I, names) {

@@ -1,3 +1,13 @@
+Version 1.1.9
+________________________________________________________________________________
+- Feature: Threshold for core group classificaton can now be set (defaults to 1)
+- Improvement: Only investigate the neighbors to groups that have changed during
+iteration in neighborhoodMerge.
+
+Version 1.1.8
+________________________________________________________________________________
+- Bug fix: Vignette error due to problems with reutils
+
 Version 1.1.7
 ________________________________________________________________________________
 - Feature: cdhitGrouping creates initial grouping based on cdhit algorithm
