@@ -384,6 +384,7 @@ anyParalogues <- function(pangenome) {
 neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
     cdhitOpts$l <- 5
     cdhitOpts$n = 5
+    cdhitOpts$c <- 0.9
     if (maxLengthDif < 1) {
         cdhitOpts$s <- 1 - maxLengthDif
     } else {
