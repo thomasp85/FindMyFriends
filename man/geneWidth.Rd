@@ -5,6 +5,7 @@
 \alias{geneWidth}
 \alias{geneWidth,pgFull-method}
 \alias{geneWidth,pgLM-method}
+\alias{geneWidth,pgSlim-method}
 \title{Get the sequence length of each gene}
 \usage{
 geneWidth(object)
@@ -13,7 +14,7 @@ geneWidth(object)
 
 \S4method{geneWidth}{pgFull}(object)
 
-\S4method{geneWidth}{pgLM}(object)
+\S4method{geneWidth}{pgSlim}(object)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -31,7 +32,7 @@ the pangenome.
 
 \item \code{pgFull}: Get gene widths for pgFull and subclasses
 
-\item \code{pgLM}: Throws error for pgSlim
+\item \code{pgSlim}: Throws error for pgSlim
 }}
 \note{
 Required for subclasses of pgVirtual in order to extend the class

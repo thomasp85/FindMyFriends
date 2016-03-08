@@ -5,9 +5,11 @@
 \alias{geneNames}
 \alias{geneNames,pgFull-method}
 \alias{geneNames,pgLM-method}
+\alias{geneNames,pgSlim-method}
 \alias{geneNames<-}
 \alias{geneNames<-,pgFull-method}
 \alias{geneNames<-,pgLM-method}
+\alias{geneNames<-,pgSlim-method}
 \title{Get and set the names of the genes in the pangenome}
 \usage{
 geneNames(object)
@@ -22,9 +24,9 @@ geneNames(object) <- value
 
 \S4method{geneNames}{pgFull}(object) <- value
 
-\S4method{geneNames}{pgLM}(object)
+\S4method{geneNames}{pgSlim}(object)
 
-\S4method{geneNames}{pgLM}(object) <- value
+\S4method{geneNames}{pgSlim}(object) <- value
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -51,9 +53,9 @@ the underlying fasta files have no effect on the naming in your pangenome
 
 \item \code{pgFull}: Set genenames for pgFull and subclasses
 
-\item \code{pgLM}: Throws error for pgSlim
+\item \code{pgSlim}: Throws error for pgSlim
 
-\item \code{pgLM}: Throws error for pgSlim
+\item \code{pgSlim}: Throws error for pgSlim
 }}
 \note{
 Required for subclasses of pgVirtual in order to extend the class

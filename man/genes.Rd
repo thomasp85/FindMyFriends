@@ -7,6 +7,7 @@
 \alias{genes,pgFull,missing-method}
 \alias{genes,pgLM,character-method}
 \alias{genes,pgLM,missing-method}
+\alias{genes,pgSlim,character-method}
 \alias{genes,pgSlim,missing-method}
 \title{Extract gene sequences from a pangenome}
 \usage{
@@ -22,7 +23,7 @@ genes(object, split, subset)
 
 \S4method{genes}{pgSlim,missing}(object, split, subset)
 
-\S4method{genes}{pgLM,character}(object, split, subset)
+\S4method{genes}{pgSlim,character}(object, split, subset)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -57,7 +58,7 @@ reading all genes into memory at once.
 
 \item \code{object = pgSlim,split = missing}: Throws error for pgSlim
 
-\item \code{object = pgLM,split = character}: Throws error for pgSlim
+\item \code{object = pgSlim,split = character}: Throws error for pgSlim
 }}
 \note{
 Required for subclasses of pgVirtual in order to extend the class
