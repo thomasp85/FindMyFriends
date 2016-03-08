@@ -153,6 +153,7 @@ orgMeta <- lapply(orgNames(mycoPan), function(name) {
     taxuid <- elink(uid, dbTo = 'taxonomy')
     reutils::content(esummary(taxuid), as = 'parsed')
 })
+orgMeta <- lapply(lapply(orgMeta, lapply, unlist), as.data.frame)
 orgMeta <- do.call(rbind, orgMeta)
 
 mycoPan <- addOrgInfo(mycoPan, orgMeta)
