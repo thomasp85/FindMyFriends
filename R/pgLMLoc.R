@@ -7,7 +7,7 @@ NULL
 #' Class for reference based pangenome data with location information
 #' 
 #' This class extends \code{\linkS4class{pgLM}} by subclassing 
-#' \code{\linkS4class{pgVirtualLoc}} and thus adding gene location information
+#' \code{\linkS4class{pgInMemLoc}} and thus adding gene location information
 #' to each gene. See the respective superclasses for more information.
 #' 
 #' @family Pangenome_classes
