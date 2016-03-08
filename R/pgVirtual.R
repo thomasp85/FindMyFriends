@@ -204,8 +204,9 @@ setMethod(
         }
         value$translated <- translated(object)
         value$nextGroup <- object@.settings$nextGroup
+        oldThreshold <- defaults(object)$coreThreshold
         object@.settings <- value
-        if ('coreThreshold' %in% names(value)) {
+        if (value$coreThreshold != oldThreshold && nGeneGroups(object) != 0) {
             newGroups <- calcGroupInfo(split(seqToOrg(object), 
                                              seqToGeneGroup(object)), 
                                        nOrganisms(object), value$coreThreshold)
