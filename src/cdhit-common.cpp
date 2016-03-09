@@ -2290,7 +2290,7 @@ size_t SequenceDB::MinimalMemory( int frag_no, int bsize, int T, const Options &
 
 	if(options.max_memory and options.max_memory < mem_need + 50*table ){
 		char msg[200];
-		sprintf( msg, "not enough memory, please set -M option greater than %zu\n", (50*table + mem_need/mega) );
+		sprintf( msg, "not enough memory, please set -M option greater than %lu\n", (unsigned long)(50*table + mem_need/mega) );
 		bomb_error(msg);
 	}
 	return mem_need;

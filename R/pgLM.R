@@ -76,7 +76,7 @@ setMethod(
         }
     }
 )
-#' @describeIn genes Gene access for pgFull and subclasses with group splitting
+#' @describeIn genes Gene access for pgLM and subclasses with group splitting
 #' 
 setMethod(
     'genes', c('pgLM', 'character'),
@@ -160,31 +160,37 @@ setMethod(
 
 ## HELPERS
 
+#' @importFrom Biostrings readAAStringSet
+#' 
 safeAAread <- function(index) {
     if (length(unique(index$fileno)) > 2000) {
         nIndex <- index[order(index$fileno), ]
-        splits <- rep(seq_len(ceiling(length(unique(index$fileno)) / 2000)), 
-                      each = 2000, length.out = nrow(nIndex))
-        seqs <- lapply(split(seq_len(nrow(nIndex)), splits), function(i) {
-            readAAStringSet(nIndex[i,])
+        files <- unique(nIndex$fileno)
+        splits <- rep(seq_len(ceiling(length(files)/2000)), 
+                      each = 2000, length.out = length(files))
+        seqs <- lapply(split(files, splits), function(f) {
+            readAAStringSet(nIndex[nIndex$fileno %in% f, ])
         })
         seqs <- Reduce(c, seqs)
-        seqs[match(nIndex$recno, index$recno)]
+        seqs[match(index$recno, nIndex$recno)]
     } else {
         readAAStringSet(index)
     }
 }
 
+#' @importFrom Biostrings readDNAStringSet
+#' 
 safeDNAread <- function(index) {
     if (length(unique(index$fileno)) > 2000) {
         nIndex <- index[order(index$fileno), ]
-        splits <- rep(seq_len(ceiling(length(unique(index$fileno)) / 2000)), 
-                      each = 2000, length.out = nrow(nIndex))
-        seqs <- lapply(split(seq_len(nrow(nIndex)), splits), function(i) {
-            readDNAStringSet(nIndex[i,])
+        files <- unique(nIndex$fileno)
+        splits <- rep(seq_len(ceiling(length(files)/2000)), 
+                      each = 2000, length.out = length(files))
+        seqs <- lapply(split(files, splits), function(f) {
+            readDNAStringSet(nIndex[nIndex$fileno %in% f, ])
         })
         seqs <- Reduce(c, seqs)
-        seqs[match(nIndex$recno, index$recno)]
+        seqs[match(index$recno, nIndex$recno)]
     } else {
         readDNAStringSet(index)
     }
