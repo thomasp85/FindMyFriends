@@ -68,6 +68,8 @@ Collate:
     'linearKernel.R'
     'linking.R'
     'modifying.R'
+    'pgSlim.R'
+    'pgSlimLoc.R'
     'progress.R'
     'similarities.R'
     'splitting.R'

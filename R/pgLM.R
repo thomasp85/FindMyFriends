@@ -76,7 +76,7 @@ setMethod(
         }
     }
 )
-#' @describeIn genes Gene access for pgFull and subclasses with group splitting
+#' @describeIn genes Gene access for pgLM and subclasses with group splitting
 #' 
 setMethod(
     'genes', c('pgLM', 'character'),

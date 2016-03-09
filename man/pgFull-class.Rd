@@ -20,7 +20,8 @@ sequences in the pangenome.}
 Other Pangenome_classes: \code{\link{pgFullLoc-class}},
   \code{\link{pgInMem-class}},
   \code{\link{pgInMemLoc-class}}, \code{\link{pgLM-class}},
-  \code{\link{pgLMLoc-class}},
+  \code{\link{pgLMLoc-class}}, \code{\link{pgSlim-class}},
+  \code{\link{pgSlimLoc-class}},
   \code{\link{pgVirtual-class}},
   \code{\link{pgVirtualLoc-class}}
 }
