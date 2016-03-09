@@ -195,7 +195,7 @@ setMethod(
         }
         if (inherits(object, 'pgFull')) {
             object@sequences <- object@sequences[-ind]
-        } else {
+        } else if (inherits(object, 'pgLM')) {
             object@seqIndex <- object@seqIndex[-ind, , drop = FALSE]
         }
         orgInfo(object)$nGenes <- 0

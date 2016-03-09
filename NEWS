@@ -1,3 +1,9 @@
+Version 1.1.10
+________________________________________________________________________________
+- Feature: Nex class pgSlim for handling pangenomes with no ref to sequence data
+- Bug fix: safeAAread/safeDNAread would return wrong sequences when number of 
+fasta files exceeded 2000
+
 Version 1.1.9
 ________________________________________________________________________________
 - Feature: Threshold for core group classificaton can now be set (defaults to 1)
