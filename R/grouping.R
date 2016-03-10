@@ -357,6 +357,7 @@ groupToGraph <- function(pangenome, groups, er, lowerLimit) {
 cdhit <- function(seqs, options, name = 'CD-Hit', showProgress = interactive()) {
     options$i <- tempfile()
     writeXStringSet(seqs, options$i)
+    on.exit(unlink(options$i))
     switch(
         class(seqs),
         AAStringSet = cdhitC(options, name, showProgress) + 1,
