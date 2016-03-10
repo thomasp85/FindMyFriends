@@ -352,6 +352,24 @@ getNeighbors <- function(pg, zeroInd = TRUE) {
     }
     gLoc
 }
+neighborEdgeList <- function(pg, directed = FALSE) {
+    neighbors <- getNeighbors(pg, FALSE)
+    gg <- seqToGeneGroup(pg)
+    neighbors <- neighbors[
+        up != 0
+    ][
+        ,
+        c('down', 'up', 'reverse') := .(gg[id], gg[up], NULL)
+    ]
+    if (!directed) {
+        neighbors[
+            down > up,
+            c('down', 'up') := .(up, down)
+        ]
+    }
+    names(neighbors) <- c('id', 'from', 'to')
+    neighbors[]
+}
 #' Determine which gene groups contains paralogues
 #' 
 #' This function simply investigates whether or not each group contain multiple 
