@@ -120,6 +120,7 @@ setMethod(
 #' capture gene group connectivity. Defaults to FALSE
 #' 
 #' @importFrom igraph graph_from_data_frame
+#' @importFrom data.table data.table
 #' 
 setMethod(
     'pcGraph', 'pgVirtualLoc',
@@ -127,57 +128,68 @@ setMethod(
         neighbors <- getNeighbors(object, zeroInd = FALSE)
         geneGroups <- seqToGeneGroup(object)
         gGroupNames <- groupNames(object)
-        edges <- data.frame(
-            from = neighbors$id,
-            to = neighbors$up
-        )
-        edges <- edges[edges$to != 0,]
-        edges$from <- geneGroups[edges$from]
-        edges$to <- geneGroups[edges$to]
-        sortGroups <- edges$from < edges$to
-        edges$edge.id <- paste(
-            ifelse(sortGroups, edges$from, edges$to),
-            ifelse(sortGroups, edges$to, edges$from),
-            sep = ';'
-        )
+        
+        neighbors[
+            ,
+            c('from', 'to') := .(id, up)
+        ][
+            to == 0,
+            to := NA_integer_
+        ][
+            ,
+            c('from', 'to') := .(geneGroups[from], geneGroups[to])
+        ]
+        
+        edges <- neighbors[
+            !is.na(to), 
+            .(from, to, id)
+        ]
+        edges[
+            from > to,
+            c('from', 'to') := .(to, from)
+        ][
+            ,
+            c('from', 'to') := .(gGroupNames[from], gGroupNames[to])
+        ]
         if (slim) {
-            edges <- edges[!duplicated(edges$edge.id), c('from', 'to')]
-            edges$from <- gGroupNames[edges$from]
-            edges$to <- gGroupNames[edges$to]
-            
-            return(graph_from_data_frame(edges, FALSE))
+            return(graph_from_data_frame(unique(edges[, .(from, to)]), FALSE))
         }
+        edges <- edges[
+            ,
+            'organisms' := seqToOrg(object)[id]
+        ][
+            ,
+            .(weight = .N, organisms = list(unique(organisms))),
+            by = .(from, to)
+        ]
         
-        counts <- table(edges$edge.id)
-        orgs <- lapply(split(seqToOrg(object)[edges$from], edges$edge.id), unique)
-        edges <- edges[match(names(counts), edges$edge.id), c('from', 'to')]
-        edges$weight <- as.integer(counts)
-        edges$organisms <- split(orgNames(object)[unlist(orgs)], 
-                                 rep(seq_along(orgs), lengths(orgs)))
-        edges$from <- gGroupNames[edges$from]
-        edges$to <- gGroupNames[edges$to]
-        
-        upAndDown <- data.frame(
-            id = neighbors$id,
-            up = ifelse(neighbors$reverse, neighbors$down, neighbors$up),
-            down = ifelse(neighbors$reverse, neighbors$up, neighbors$down)
-        )
-        upAndDown$up[upAndDown$up == 0] <- NA
-        upAndDown$down[upAndDown$down == 0] <- NA
-        upAndDown$up <- gGroupNames[geneGroups[upAndDown$up]]
-        upAndDown$down <- gGroupNames[geneGroups[upAndDown$down]]
-        groups <- gGroupNames[geneGroups[upAndDown$id]]
-        orgs <- orgNames(object)[seqToOrg(object)[upAndDown$id]]
-        orgs <- split(orgs, groups)
-        
-        vertices <- cbind(
-            data.frame(name = groupNames(object), stringsAsFactors = FALSE), 
+        neighbors <- neighbors[
+            which(reverse),
+            c('down', 'up') := .(up, down)
+        ][
+            down == 0,
+            'down' := NA_integer_
+        ][
+            up == 0,
+            'up' := NA_integer_
+        ][
+            ,
+            .(down = gGroupNames[geneGroups[down]],
+              up = gGroupNames[geneGroups[up]],
+              name = gGroupNames[geneGroups[id]],
+              organisms = orgNames(object)[seqToOrg(object)[id]])
+        ][
+            ,
+            .(organisms = list(organisms),
+              upstream = list(up), 
+              downstream = list(down)),
+            by = name
+        ]
+        vertices <- data.table(
+            name = groupNames(object), 
             groupInfo(object)
         )
-        upAndDownOrder <- match(names(orgs), vertices$name)
-        vertices$organisms[upAndDownOrder] <- orgs
-        vertices$upstream[upAndDownOrder] <- split(upAndDown$up, groups)
-        vertices$downstream[upAndDownOrder] <- split(upAndDown$down, groups)
+        vertices <- neighbors[vertices, on = 'name']
         
         graph_from_data_frame(edges, FALSE, vertices)
     }
