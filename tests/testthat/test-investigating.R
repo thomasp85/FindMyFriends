@@ -33,8 +33,10 @@ test_that("Panchromosome works", {
     expect_is(pc, 'igraph')
     expect_equal(igraph::gorder(pc), nGeneGroups(pg))
     expect_equal(igraph::gsize(pc), 3529)
-    expect_named(igraph::vertex_attr(pc), c("name", "description", "group", "paralogue", "GO", "EC", "nOrg", 
-                                            "nGenes", "organisms", "upstream", "downstream"))
+    expect_named(igraph::vertex_attr(pc), c('name', 'organisms', 'upstream', 
+                                            'downstream', 'description', 
+                                            'group', 'paralogue', 'GO', 'EC', 
+                                            'nOrg', 'nGenes'))
     expect_named(igraph::edge_attr(pc), c('weight', 'organisms'))
 })
 
