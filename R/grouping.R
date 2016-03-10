@@ -160,13 +160,20 @@ setMethod(
 #' @param nrep If \code{cdhitIter = TRUE}, controls how many iterations should
 #' be performed at each threshold level. Defaults to 1.
 #' 
+#' @param from The start similarity threshold to use for the iterative CD-Hit
+#' grouping. Together with by and nrep it defines the number of times and levels
+#' CD-Hit is run. Defaults to 0.9
+#' 
+#' @param by The step size to use for the iterative CD-Hit grouping. Defaults to
+#' 0.05
+#' 
 #' @importFrom Biostrings order
 #' @importFrom kebabs getExRep spectrumKernel
 #' 
 setMethod(
     'cdhitGrouping', 'pgVirtual',
     function(object, kmerSize, lowerLimit, maxLengthDif, geneChunkSize, 
-             cdhitOpts, cdhitIter = TRUE, nrep = 1) {
+             cdhitOpts, cdhitIter = TRUE, nrep = 1, from = 0.9, by = 0.05) {
         time1 <- proc.time()['elapsed']
         .fillDefaults(defaults(object))
         groups <- precluster(object, kmerSize[1], maxLengthDif, geneChunkSize, 
@@ -182,9 +189,13 @@ setMethod(
                 cdhitOpts$S <- maxLengthDif
             }
             cdhitOpts <- lapply(cdhitOpts, as.character)
-            opts <- data.frame(lowerLimit = seq(0.9, 0.4, by = -0.05), 
-                               kmerSize = c(5, 5, 5, 5, 5, 4, 4, 3, 3, 2, 2))
-            opts <- opts[opts$lowerLimit > lowerLimit, ]
+            opts <- data.frame(lowerLimit = seq(from, lowerLimit, by = -by), 
+                               kmerSize = 5)
+            opts$kmerSize[opts$lowerLimit < 0.7] <- 4
+            opts$kmerSize[opts$lowerLimit < 0.6] <- 3
+            opts$kmerSize[opts$lowerLimit < 0.5] <- 2
+            opts <- opts[opts$lowerLimit < 1, ]
+            
             for (i in seq_len(nrow(opts))) {
                 for (j in seq_len(nrep)) {
                     reps <- sapply(groups, function(x) {
