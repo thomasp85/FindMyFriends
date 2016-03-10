@@ -352,6 +352,9 @@ getNeighbors <- function(pg, zeroInd = TRUE) {
     }
     gLoc[]
 }
+globalVariables(
+    c('start', 'end', 'id', 'strand', 'org', 'contig', 'dowm', 'up', 'reverse')
+)
 neighborEdgeList <- function(pg, directed = FALSE) {
     neighbors <- getNeighbors(pg, FALSE)
     gg <- seqToGeneGroup(pg)
@@ -370,6 +373,9 @@ neighborEdgeList <- function(pg, directed = FALSE) {
     names(neighbors) <- c('id', 'from', 'to')
     neighbors[]
 }
+globalVariables(
+    c('up', 'id', 'down')
+)
 #' Determine which gene groups contains paralogues
 #' 
 #' This function simply investigates whether or not each group contain multiple 
@@ -476,6 +482,9 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
     
     pangenome
 }
+globalVariables(
+    c('up', 'down', 'indGroup')
+)
 #' igraph functions to access through Rcpp
 #' 
 #' This list allows one to access igraph functions without putting igraph in 

@@ -194,6 +194,9 @@ setMethod(
         graph_from_data_frame(edges, FALSE, vertices)
     }
 )
+globalVariables(
+    c('id', 'up', 'to', 'from', '.N', 'organisms', 'reverse', 'name')
+)
 #' @describeIn variableRegions Variable region detection for all pgVirtualLoc
 #' subclasses
 #' 
