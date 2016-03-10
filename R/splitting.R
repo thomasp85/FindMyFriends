@@ -328,36 +328,27 @@ extractCliques <- function(edges, nNodes) {
 #' located at the beginning or end of a DNA string, -1 will be used to indicate
 #' absence of neighbors in up and down
 #' 
-#' @importFrom dplyr %>% group_by_ arrange_ transmute_ n ungroup
+#' @importFrom data.table data.table
 #' 
 #' @noRd
 #' 
 getNeighbors <- function(pg, zeroInd = TRUE) {
-    oldOptions <- options(dplyr.show_progress = FALSE)
-    on.exit({
-        options(oldOptions)
-    })
-    gLoc <- geneLocation(pg)
-    gLoc$id <- seq_len(nGenes(pg))
-    gLoc$org <- seqToOrg(pg)
+    gLoc <- data.table(geneLocation(pg))
+    gLoc[
+        , 
+        c('id', 'org') := .(seq_len(nGenes(pg)), seqToOrg(pg))
+    ][
+        order(start, end), 
+        c('down', 'up', 'reverse') := .(c(0L, id[-.N]), c(id[-1], 0L), strand == -1), 
+        by = .(org, contig)
+    ]
+    gLoc <- gLoc[, c(id, down, up, reverse)]
     
-    gLoc <- gLoc %>% group_by_(~org, ~contig) %>% 
-        arrange_(~start, ~end) %>% 
-        transmute_(id = ~id, 
-                  down = ~c(0, id[-n()]), 
-                  up = ~c(id[-1], 0), 
-                  reverse = ~strand == -1) %>% 
-        ungroup() %>% 
-        arrange_(~id)
-    
-    gLoc <- as.data.frame(gLoc)[, -(1:2)]
-    gLoc$id <- as.integer(gLoc$id)
-    gLoc$down <- as.integer(gLoc$down)
-    gLoc$up <- as.integer(gLoc$up)
     if (zeroInd) {
-        gLoc$id <- gLoc$id - 1L
-        gLoc$down <- gLoc$down - 1L
-        gLoc$up <- gLoc$up - 1L
+        gLoc[
+            ,
+            c('id', 'down', 'up') := .(id-1L, down-1L, up-1L)
+        ]
     }
     gLoc
 }
