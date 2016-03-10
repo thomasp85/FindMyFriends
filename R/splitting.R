@@ -328,12 +328,12 @@ extractCliques <- function(edges, nNodes) {
 #' located at the beginning or end of a DNA string, -1 will be used to indicate
 #' absence of neighbors in up and down
 #' 
-#' @importFrom data.table data.table
+#' @importFrom data.table as.data.table
 #' 
 #' @noRd
 #' 
 getNeighbors <- function(pg, zeroInd = TRUE) {
-    gLoc <- data.table(geneLocation(pg))
+    gLoc <- as.data.table(geneLocation(pg))
     gLoc[
         , 
         c('id', 'org') := .(seq_len(nGenes(pg)), seqToOrg(pg))
@@ -342,7 +342,7 @@ getNeighbors <- function(pg, zeroInd = TRUE) {
         c('down', 'up', 'reverse') := .(c(0L, id[-.N]), c(id[-1], 0L), strand == -1), 
         by = .(org, contig)
     ]
-    gLoc <- gLoc[, c(id, down, up, reverse)]
+    gLoc <- gLoc[, .(id, down, up, reverse)]
     
     if (zeroInd) {
         gLoc[
@@ -350,7 +350,7 @@ getNeighbors <- function(pg, zeroInd = TRUE) {
             c('id', 'down', 'up') := .(id-1L, down-1L, up-1L)
         ]
     }
-    gLoc
+    gLoc[]
 }
 neighborEdgeList <- function(pg, directed = FALSE) {
     neighbors <- getNeighbors(pg, FALSE)
