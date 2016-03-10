@@ -41,7 +41,8 @@ Imports:
     ggdendro,
     BiocParallel,
     utils,
-    stats
+    stats,
+    data.table
 Suggests:
     BiocStyle,
     testthat,
