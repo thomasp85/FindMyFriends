@@ -80,6 +80,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// findIn
+IntegerVector findIn(IntegerVector keys, IntegerVector lookup);
+RcppExport SEXP FindMyFriends_findIn(SEXP keysSEXP, SEXP lookupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type keys(keysSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type lookup(lookupSEXP);
+    __result = Rcpp::wrap(findIn(keys, lookup));
+    return __result;
+END_RCPP
+}
 // lkMatrix
 List lkMatrix(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
 RcppExport SEXP FindMyFriends_lkMatrix(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
