@@ -74,8 +74,8 @@ setMethod(
         } else if (inherits(subset, 'character')) {
             subset <- match(subset, orgNames(object))
         }
-        orgs <- split(which(seqToOrg(object) %in% subset), 
-                      seqToOrg(object)[seqToOrg(object) %in% subset])
+        orgInd <- findIn(as.integer(subset), seqToOrg(object))
+        orgs <- split(orgInd, seqToOrg(object)[orgInd])
         info <- lapply(orgs, function(org) {
             stat <- data.frame(
                 nGenes = length(org),
@@ -231,7 +231,7 @@ setMethod(
                 stop('Bad group name')
             }
         }
-        groupGenes <- which(seqToGeneGroup(object) == group)
+        groupGenes <- findIn(as.integer(group), seqToGeneGroup(object))
         neighborhoods <- trailGroups(groupGenes, pg = object, 
                                      vicinity = vicinity)
         neighborhoods <- lapply(neighborhoods, 

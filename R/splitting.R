@@ -69,7 +69,7 @@ setMethod(
             grouping = finalGrouping, widths = widths, 
             maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
             flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
-            guide = guideGroups,
+            guideGroups = guideGroups,
             prog = prog
         )
         easySplits <- unlist(easySplits, recursive = FALSE)
@@ -98,7 +98,7 @@ setMethod(
                 grouping = finalGrouping, widths = widths, 
                 maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
                 flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
-                guide = guideGroups,
+                guideGroups = guideGroups,
                 prog = prog
             )
             splits <- unlist(splits, recursive = FALSE)
@@ -255,7 +255,7 @@ kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
 neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping, 
                               widths, maxLengthDif, forceParalogues, flankSize, 
                               kmerSize, lowerLimit, guideGroups, prog) {
-    members <- which(grouping == group)
+    members <- findIn(as.integer(group), as.integer(grouping))
     if (length(members) == 1) {
         if (!missing(prog)) {
             progress(prog)
@@ -409,7 +409,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         knots <- match(V(pc)$name[knots], groupNames(pangenome))
         knots <- knots[knots %in% considerNeighborsTo]
         if (length(knots) == 0) break
-        geneInd <- which(seqToGeneGroup(pangenome) %in% knots)
+        geneInd <- findIn(as.integer(knots), seqToGeneGroup(pangenome))
         neighborSubset <- neighbors[geneInd, ]
         neighborSubset$up <- seqToGeneGroup(pangenome)[neighborSubset$up]
         neighborSubset$down <- seqToGeneGroup(pangenome)[neighborSubset$down]
@@ -445,7 +445,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         pairs <- pairs[, !dupPairs, drop = FALSE]
         currentGroups <- seqToGeneGroup(pangenome)
         toChange <- lapply(seq_len(ncol(pairs)), function(i) {
-            which(currentGroups %in% pairs[,i])
+            findIn(as.integer(pairs[,i]), as.integer(currentGroups))
         })
         currentGroups[unlist(toChange)] <- rep(seq.int(max(currentGroups) + 1, 
                                                        length.out = length(toChange)),
