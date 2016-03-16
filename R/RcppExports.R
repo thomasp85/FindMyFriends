@@ -49,8 +49,8 @@ widthSim <- function(groups, width, threshold, progName, showProgress) {
     .Call('FindMyFriends_widthSim', PACKAGE = 'FindMyFriends', groups, width, threshold, progName, showProgress)
 }
 
-getCliques <- function(graph) {
-    .Call('FindMyFriends_getCliques', PACKAGE = 'FindMyFriends', graph)
+getCliques <- function(edges, nNodes) {
+    .Call('FindMyFriends_getCliques', PACKAGE = 'FindMyFriends', edges, nNodes)
 }
 
 getPotentials <- function(down, up, pending, reverse, groupSplit, groups) {

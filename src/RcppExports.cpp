@@ -177,13 +177,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // getCliques
-IntegerVector getCliques(RObject graph);
-RcppExport SEXP FindMyFriends_getCliques(SEXP graphSEXP) {
+IntegerVector getCliques(DataFrame edges, int nNodes);
+RcppExport SEXP FindMyFriends_getCliques(SEXP edgesSEXP, SEXP nNodesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< RObject >::type graph(graphSEXP);
-    __result = Rcpp::wrap(getCliques(graph));
+    Rcpp::traits::input_parameter< DataFrame >::type edges(edgesSEXP);
+    Rcpp::traits::input_parameter< int >::type nNodes(nNodesSEXP);
+    __result = Rcpp::wrap(getCliques(edges, nNodes));
     return __result;
 END_RCPP
 }
