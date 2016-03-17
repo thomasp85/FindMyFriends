@@ -421,7 +421,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         'down' := NA_integer_
     ]
     
-    considerNeighborsTo <- seq_len(nGenes(pangenome))
+    considerNeighborsTo <- seq_len(nGeneGroups(pangenome))
     
     while (TRUE) {
         edges <- neighborEdgeList(pangenome)
@@ -433,7 +433,9 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         degrees <- table(c(edges$from, edges$to))
         knots <- as.integer(names(degrees)[degrees > 2])
         if (length(knots) == 0) break
-        knots <- knots[knots %in% considerNeighborsTo]
+        if (length(considerNeighborsTo) != nGeneGroups(pangenome)) {
+            knots <- knots[findIn(considerNeighborsTo, knots)]
+        }
         if (length(knots) == 0) break
         geneInd <- findIn(as.integer(knots), seqToGeneGroup(pangenome))
         neighborSubset <- neighbors[geneInd, ]
