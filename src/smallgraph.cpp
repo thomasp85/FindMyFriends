@@ -60,13 +60,36 @@ void Graph::deleteNodes(std::vector<int> ids) {
     }
 }
 
+void Graph::deleteEdges(std::vector<int> ids) {
+    std::pair<int, int> edge;
+    std::map< int, std::vector<int> >::iterator itmap;
+    for (int i = 0; i < ids.size(); ++i) {
+        edge = getEdge(ids[i]);
+        valid_edge[i] = false;
+        --edgecount;
+        itmap = node_map.find(edge.first);
+        itmap->second.erase(std::remove(itmap->second.begin(), itmap->second.end(), edge.second), itmap->second.end());
+        itmap = node_map.find(edge.second);
+        itmap->second.erase(std::remove(itmap->second.begin(), itmap->second.end(), edge.first), itmap->second.end());
+    }
+}
+
 std::vector<int> Graph::neighbors(int id) {
     std::map<int, std::vector<int> >::iterator itmap;
     itmap = node_map.find(id);
     if (itmap == node_map.end()) {
-        stop("id not member of graph");
+        stop("Node not member of graph");
     }
     return itmap->second;
+}
+
+int Graph::degree(int id) {
+    std::map< int, std::vector<int> >::iterator itmap;
+    itmap = node_map.find(id);
+    if (itmap == node_map.end()) {
+        stop("Node not member of graph");
+    }
+    return itmap->second.size();
 }
 
 std::pair<int, int> Graph::firstEdge() {
@@ -138,8 +161,37 @@ std::vector<int> Graph::nodeIds() {
     return ids;
 }
 
+std::vector<int> Graph::incidentEdges(int id) {
+    std::vector<int> edges;
+    for (int i = next_possible_edge; i < valid_edge.size(); ++i) {
+        if (valid_edge[i]) {
+            if (from[i] == id) {
+                edges.push_back(i);
+            } else if (to[i] == id) {
+                edges.push_back(i);
+            }
+        }
+    }
+    return edges;
+}
+
 int Graph::nEdges() {
     return edgecount;
+}
+
+std::vector<int> Graph::edgeIds() {
+    std::vector<int> edges;
+    for (int i = next_possible_edge; i < valid_edge.size(); ++i) {
+        if (valid_edge[i]) edges.push_back(i);
+    }
+    return edges;
+}
+
+std::pair<int, int> Graph::getEdge(int id) {
+    if (id >= valid_edge.size() || !valid_edge[id]) {
+        stop("Edge not member of graph");
+    }
+    return std::pair<int, int>(from[id], to[id]);
 }
 
 void Graph::show() {
@@ -159,4 +211,22 @@ void Graph::show() {
         }
         Rcout << std::endl;
     }
+}
+
+// //[[Rcpp::export]]
+void test(DataFrame edges, int nNodes) {
+    Graph gr(nNodes, edges);
+    gr.show();
+    
+    std::vector<int> edgeids;
+    edgeids.push_back(1);
+    edgeids.push_back(4);
+    gr.deleteEdges(edgeids);
+    gr.show();
+    
+    std::vector<int> nodeids;
+    nodeids.push_back(1);
+    nodeids.push_back(4);
+    gr.deleteNodes(nodeids);
+    gr.show();
 }

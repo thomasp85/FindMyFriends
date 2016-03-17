@@ -22,13 +22,18 @@ class Graph{
 public:
     Graph(int nNodes, DataFrame& edges);
     void deleteNodes(std::vector<int> ids);
+    void deleteEdges(std::vector<int> ids);
     std::vector<int> neighbors(int id);
+    int degree(int id);
     std::pair<int, int> firstEdge();
     std::vector< std::pair<int, int> > completeTriangle(std::pair<int, int> edge);
     bool isComplete();
     int nNodes();
     std::vector<int> nodeIds();
+    std::vector<int> incidentEdges(int id);
     int nEdges();
+    std::vector<int> edgeIds();
+    std::pair<int, int> getEdge(int id);
     
     void show();
 private:
