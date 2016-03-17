@@ -85,11 +85,11 @@ setMethod(
             stop('Can only split by organism, gene group or paralogue link')
         }
         if (split == 'organism') {
-            if (missing(subset)) subset <- 1:nOrganisms(object)
+            if (missing(subset)) subset <- seq_len(nOrganisms(object))
             if (inherits(subset, 'character')) {
                 subset <- match(subset, orgNames(object))
             }
-            seqSubset <- which(object@seqToOrg %in% subset)
+            seqSubset <- findIn(as.integer(subset), object@seqToOrg)
             ans <- genes(object, subset=seqSubset)
             ans <- splitStringSet(ans, object@seqToOrg[seqSubset])
             names(ans) <- orgNames(object)[as.integer(names(ans))]
@@ -97,11 +97,11 @@ setMethod(
             if (!hasGeneGroups(object)) {
                 stop('No gene groups created')
             }
-            if (missing(subset)) subset <- 1:nGeneGroups(object)
+            if (missing(subset)) subset <- seq_len(nGeneGroups(object))
             if (inherits(subset, 'character')) {
                 subset <- match(subset, groupNames(object))
             }
-            seqSubset <- which(object@seqToGeneGroup %in% subset)
+            seqSubset <- findIn(as.integer(subset), object@seqToGeneGroup)
             ans <- genes(object, subset=seqSubset)
             ans <- splitStringSet(ans, object@seqToGeneGroup[seqSubset])
             names(ans) <- groupNames(object)[as.integer(names(ans))]
@@ -111,8 +111,8 @@ setMethod(
             }
             seqToPar <- paralogueInd(object@seqToGeneGroup, 
                                      groupInfo(object)$paralogue)
-            if (missing(subset)) subset <- 1:max(seqToPar)
-            seqSubset <- which(seqToPar %in% subset)
+            if (missing(subset)) subset <- seq_len(max(seqToPar))
+            seqSubset <- findIn(as.integer(subset), as.integer(seqToPar))
             ans <- genes(object, subset=seqSubset)
             ans <- splitStringSet(ans, seqToPar[seqSubset])
             names(ans) <- seq_along(ans)

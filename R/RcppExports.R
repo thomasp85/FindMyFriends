@@ -25,6 +25,10 @@ calcGroupInfo <- function(groupOrgs, nOrgs, threshold) {
     .Call('FindMyFriends_calcGroupInfo', PACKAGE = 'FindMyFriends', groupOrgs, nOrgs, threshold)
 }
 
+findIn <- function(keys, lookup) {
+    .Call('FindMyFriends_findIn', PACKAGE = 'FindMyFriends', keys, lookup)
+}
+
 lkMatrix <- function(pX, jX, xX, selX, lowerLimit, upperLimit) {
     .Call('FindMyFriends_lkMatrix', PACKAGE = 'FindMyFriends', pX, jX, xX, selX, lowerLimit, upperLimit)
 }

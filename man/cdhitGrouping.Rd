@@ -9,7 +9,8 @@
 cdhitGrouping(object, ...)
 
 \S4method{cdhitGrouping}{pgVirtual}(object, kmerSize, lowerLimit, maxLengthDif,
-  geneChunkSize, cdhitOpts, cdhitIter = TRUE, nrep = 1)
+  geneChunkSize, cdhitOpts, cdhitIter = TRUE, nrep = 1, from = 0.9,
+  by = 0.05)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -44,6 +45,13 @@ similarities between all preclusters and group by that. Defaults to TRUE}
 
 \item{nrep}{If \code{cdhitIter = TRUE}, controls how many iterations should
 be performed at each threshold level. Defaults to 1.}
+
+\item{from}{The start similarity threshold to use for the iterative CD-Hit
+grouping. Together with by and nrep it defines the number of times and levels
+CD-Hit is run. Defaults to 0.9}
+
+\item{by}{The step size to use for the iterative CD-Hit grouping. Defaults to
+0.05}
 }
 \value{
 An object of the same class as 'object'.

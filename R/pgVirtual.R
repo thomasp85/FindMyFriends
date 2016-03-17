@@ -348,7 +348,7 @@ setMethod(
 setMethod(
     'nGeneGroups', 'pgVirtual',
     function(object) {
-        length(unique(seqToGeneGroup(object)))
+        nrow(groupInfo(object))
     }
 )
 
