@@ -60,11 +60,12 @@ setMethod(
         finalGrouping <- startGrouping
         org <- seqToOrg(object)
         containsParalogues <- groupHasParalogues(startGroupingSplit, org)
+        isSingleton <- groupInfo(object)$nGenes == 1
         
-        prog <- makeProgress(length(startGroupingSplit), 'Splitting   ', 
+        prog <- makeProgress(sum(!isSingleton), 'Splitting   ', 
                              if (length(startGroupingSplit) > 1e5) 1000 else 100, 12)
         easySplits <- lapply(
-            which(!containsParalogues), 
+            which(!containsParalogues & !isSingleton), 
             neighborSplitting,
             object = object, seqToOrg = org, neighbors = gLoc, 
             grouping = finalGrouping, widths = widths, 
@@ -76,7 +77,7 @@ setMethod(
         easySplits <- unlist(easySplits, recursive = FALSE)
         finalGrouping[unlist(easySplits)] <- rep(seq_along(easySplits) + max(finalGrouping), lengths(easySplits))
         
-        pending <- containsParalogues
+        pending <- containsParalogues & !isSingleton
         lastCall = 0
         while (any(pending)) {
             if (lastCall < 5) {
