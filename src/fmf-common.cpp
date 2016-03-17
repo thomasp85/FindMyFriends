@@ -76,15 +76,12 @@ DataFrame calcGroupInfo(List groupOrgs, int nOrgs, double threshold) {
 //[[Rcpp::export]]
 IntegerVector findIn(IntegerVector keys, IntegerVector lookup) {
     std::deque<int> res;
-    int i, j;
+    int i;
     int nl = lookup.size();
-    int nk = keys.size();
+    std::sort(keys.begin(), keys.end());
     for (i = 0; i < nl; ++i) {
-        for (j = 0; j < nk; ++j) {
-            if (lookup[i] == keys[j]) {
-                res.push_back(i+1);
-                break;
-            }
+        if (std::binary_search(keys.begin(), keys.end(), lookup[i])) {
+            res.push_back(i+1);
         }
     }
     return wrap(res);
