@@ -424,14 +424,10 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
     considerNeighborsTo <- seq_len(nGeneGroups(pangenome))
     
     while (TRUE) {
-        edges <- neighborEdgeList(pangenome)
-        edges[
-            ,
-            'id' := NULL
-        ]
-        edges <- unique(edges)
-        degrees <- table(c(edges$from, edges$to))
-        knots <- as.integer(names(degrees)[degrees > 2])
+        pc <- pcGraph(pangenome, slim = TRUE)
+        knots <- which(degree(pc) > 2)
+        if (length(knots) == 0) break
+        knots <- match(V(pc)$name[knots], groupNames(pangenome))
         if (length(knots) == 0) break
         if (length(considerNeighborsTo) != nGeneGroups(pangenome)) {
             knots <- knots[findIn(considerNeighborsTo, knots)]
