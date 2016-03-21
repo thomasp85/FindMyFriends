@@ -469,10 +469,10 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         
         dupPairs <- apply(matrix(duplicated(as.vector(pairs)), nrow = 2), 2, any)
         pairs <- pairs[, !dupPairs, drop = FALSE]
-        currentGroups <- seqToGeneGroup(pangenome)
-        toChange <- lapply(seq_len(ncol(pairs)), function(i) {
-            findIn(as.integer(pairs[,i]), as.integer(currentGroups))
-        })
+        
+        groupLookup <- split(seq_along(currentGroups), currentGroups)
+        toChange <- split(groupLookup[as.vector(pairs)], rep(seq_len(ncol(pairs)), each = 2))
+        toChange <- lapply(toChange, unlist, use.names = FALSE)
         currentGroups[unlist(toChange)] <- rep(seq.int(max(currentGroups) + 1, 
                                                        length.out = length(toChange)),
                                                lengths(toChange))
