@@ -467,6 +467,16 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         
         if (ncol(pairs) == 0) break
         
+        mode(pairs) <- 'character'
+        currentGroups <- seqToGeneGroup(pangenome)
+        
+        groupOrgs <- split(seqToOrg(pangenome), currentGroups)
+        pairOrgs <- split(groupOrgs[as.vector(pairs)], rep(seq_len(ncol(pairs)), each = 2))
+        pairParalogue <- sapply(pairOrgs, function(org) anyDuplicated(unlist(org)))
+        pairs <- pairs[, pairParalogue == 0, drop = FALSE]
+        
+        if (ncol(pairs) == 0) break
+        
         dupPairs <- apply(matrix(duplicated(as.vector(pairs)), nrow = 2), 2, any)
         pairs <- pairs[, !dupPairs, drop = FALSE]
         
