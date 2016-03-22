@@ -60,22 +60,24 @@ setMethod(
         finalGrouping <- startGrouping
         org <- seqToOrg(object)
         containsParalogues <- groupHasParalogues(startGroupingSplit, org)
+        isSingleton <- groupInfo(object)$nGenes == 1
         
-        prog <- makeProgress(length(startGroupingSplit), 'Splitting   ', 100, 12)
+        prog <- makeProgress(sum(!isSingleton), 'Splitting   ', 
+                             if (length(startGroupingSplit) > 1e5) 1000 else 100, 12)
         easySplits <- lapply(
-            which(!containsParalogues), 
+            which(!containsParalogues & !isSingleton), 
             neighborSplitting,
             object = object, seqToOrg = org, neighbors = gLoc, 
             grouping = finalGrouping, widths = widths, 
             maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
             flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
-            guide = guideGroups,
+            guideGroups = guideGroups,
             prog = prog
         )
         easySplits <- unlist(easySplits, recursive = FALSE)
         finalGrouping[unlist(easySplits)] <- rep(seq_along(easySplits) + max(finalGrouping), lengths(easySplits))
         
-        pending <- containsParalogues
+        pending <- containsParalogues & !isSingleton
         lastCall = 0
         while (any(pending)) {
             if (lastCall < 5) {
@@ -98,7 +100,7 @@ setMethod(
                 grouping = finalGrouping, widths = widths, 
                 maxLengthDif = maxLengthDif, forceParalogues = forceParalogues,
                 flankSize = flankSize, kmerSize = kmerSize, lowerLimit = lowerLimit,
-                guide = guideGroups,
+                guideGroups = guideGroups,
                 prog = prog
             )
             splits <- unlist(splits, recursive = FALSE)
@@ -255,7 +257,7 @@ kmerSplitting <- function(i, pangenome, kmerSize, lowerLimit, maxLengthDif) {
 neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping, 
                               widths, maxLengthDif, forceParalogues, flankSize, 
                               kmerSize, lowerLimit, guideGroups, prog) {
-    members <- which(grouping == group)
+    members <- findIn(as.integer(group), as.integer(grouping))
     if (length(members) == 1) {
         if (!missing(prog)) {
             progress(prog)
@@ -409,7 +411,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         knots <- match(V(pc)$name[knots], groupNames(pangenome))
         knots <- knots[knots %in% considerNeighborsTo]
         if (length(knots) == 0) break
-        geneInd <- which(seqToGeneGroup(pangenome) %in% knots)
+        geneInd <- findIn(as.integer(knots), seqToGeneGroup(pangenome))
         neighborSubset <- neighbors[geneInd, ]
         neighborSubset$up <- seqToGeneGroup(pangenome)[neighborSubset$up]
         neighborSubset$down <- seqToGeneGroup(pangenome)[neighborSubset$down]
@@ -445,7 +447,7 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
         pairs <- pairs[, !dupPairs, drop = FALSE]
         currentGroups <- seqToGeneGroup(pangenome)
         toChange <- lapply(seq_len(ncol(pairs)), function(i) {
-            which(currentGroups %in% pairs[,i])
+            findIn(as.integer(pairs[,i]), as.integer(currentGroups))
         })
         currentGroups[unlist(toChange)] <- rep(seq.int(max(currentGroups) + 1, 
                                                        length.out = length(toChange)),

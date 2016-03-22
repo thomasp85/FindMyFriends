@@ -61,7 +61,7 @@ void Progress::increment() {
     
     if (end == prog) {
         createBar();
-    } else if (last > freq || maxwait < difftime(timer, lasttime)) {
+    } else if (last >= freq || maxwait < difftime(timer, lasttime)) {
         R_CheckUserInterrupt();
         lasttime = timer;
         last = 0;

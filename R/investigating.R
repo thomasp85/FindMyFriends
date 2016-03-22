@@ -64,7 +64,6 @@ setMethod(
 #' 
 #' @importFrom dplyr bind_rows
 #' @importFrom Biostrings alphabetFrequency
-#' @importFrom Matrix colSums
 #' 
 setMethod(
     'orgStat', 'pgVirtual',
@@ -74,8 +73,8 @@ setMethod(
         } else if (inherits(subset, 'character')) {
             subset <- match(subset, orgNames(object))
         }
-        orgs <- split(which(seqToOrg(object) %in% subset), 
-                      seqToOrg(object)[seqToOrg(object) %in% subset])
+        orgInd <- findIn(as.integer(subset), seqToOrg(object))
+        orgs <- split(orgInd, seqToOrg(object)[orgInd])
         info <- lapply(orgs, function(org) {
             stat <- data.frame(
                 nGenes = length(org),
@@ -87,7 +86,7 @@ setMethod(
             )
             if (getFrequency) {
                 cbind(stat, 
-                      t(colSums(alphabetFrequency(genes(object, subset = org))))
+                      t(Matrix::colSums(alphabetFrequency(genes(object, subset = org))))
                 )
             } else {
                 stat
@@ -96,7 +95,7 @@ setMethod(
         info <- as.data.frame(bind_rows(info))
         
         rownames(info) <- orgNames(object)[as.integer(names(orgs))]
-        info$nGeneGroups <- colSums(
+        info$nGeneGroups <- Matrix::colSums(
             pgMatrix(object)[, rownames(info), drop = FALSE] != 0)
         if (hasParalogueLinks(object)) {
             links <- split(1:nGeneGroups(object), groupInfo(object)$paralogue)
@@ -110,7 +109,7 @@ setMethod(
         } else {
             parMat <- pgMatrix(object)[, rownames(info), drop = FALSE]
         }
-        info$nParalogues <- colSums(parMat > 1)
+        info$nParalogues <- Matrix::colSums(parMat > 1)
         info
     }
 )
@@ -231,7 +230,7 @@ setMethod(
                 stop('Bad group name')
             }
         }
-        groupGenes <- which(seqToGeneGroup(object) == group)
+        groupGenes <- findIn(as.integer(group), seqToGeneGroup(object))
         neighborhoods <- trailGroups(groupGenes, pg = object, 
                                      vicinity = vicinity)
         neighborhoods <- lapply(neighborhoods, 

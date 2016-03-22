@@ -72,3 +72,20 @@ DataFrame calcGroupInfo(List groupOrgs, int nOrgs, double threshold) {
         Named("stringsAsFactors") = false
     );
 }
+
+//[[Rcpp::export]]
+IntegerVector findIn(IntegerVector keys, IntegerVector lookup) {
+    std::deque<int> res;
+    int i, j;
+    int nl = lookup.size();
+    int nk = keys.size();
+    for (i = 0; i < nl; ++i) {
+        for (j = 0; j < nk; ++j) {
+            if (lookup[i] == keys[j]) {
+                res.push_back(i+1);
+                break;
+            }
+        }
+    }
+    return wrap(res);
+}
