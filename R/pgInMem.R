@@ -180,14 +180,13 @@ setMethod(
             removedGroups <- currentGroups[!keptGroups]
             
             if (length(removedGroups) != 0) {
-                object@seqToGeneGroup <- removeIndex(object@seqToGeneGroup, 
-                                                     removedGroups)
+                object@seqToGeneGroup <- removeIndex(object@seqToGeneGroup)
                 groupInfo(object) <- groupInfo(object)[-removedGroups, , 
                                                        drop = FALSE]
             }
         }
         if (length(removedOrgs) != 0) {
-            object@seqToOrg <- removeIndex(object@seqToOrg, removedOrgs)
+            object@seqToOrg <- removeIndex(object@seqToOrg)
             orgInfo(object) <- orgInfo(object)[-removedOrgs, , drop = FALSE]
         }
         if (inherits(object, 'pgInMemLoc')) {
@@ -199,7 +198,7 @@ setMethod(
             object@seqIndex <- object@seqIndex[-ind, , drop = FALSE]
         }
         orgInfo(object)$nGenes <- 0
-        nGenesOrg <- lengths(split(1:nGenes(object), seqToOrg(object)))
+        nGenesOrg <- lengths(split(seq_len(nGenes(object)), seqToOrg(object)))
         orgInfo(object)$nGenes[as.integer(names(nGenesOrg))] <- nGenesOrg
         object
     }
