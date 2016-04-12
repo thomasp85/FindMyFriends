@@ -275,8 +275,8 @@ setMethod(
         if (any(i > nOrganisms(x))) {
             warning('ignoring indices out of bound')
         }
-        remove <- seq_along(x) %in% i
-        removeGene(x, organism = i)
+        remove <- which(!seq_along(x) %in% i)
+        removeGene(x, organism = remove)
     }
 )
 #' @describeIn pgVirtual Create subsets of pangenomes based on index

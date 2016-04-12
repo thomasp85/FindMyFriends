@@ -94,5 +94,5 @@ test_that("Pair-to-index works", {
 })
 
 test_that("Removing index works", {
-    expect_equal(removeIndex(c(1,1,2,5,4,5,2), 3), c(1,1,2,4,3,4,2))
+    expect_equal(removeIndex(c(1,1,2,5,4,5,2)), c(1,1,2,4,3,4,2))
 })
