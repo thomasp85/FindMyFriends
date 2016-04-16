@@ -83,7 +83,7 @@ setMethod(
                                       length.out = addedGroups))
         newInfo <- resizeDataFrame(groupInfo(object), max(newGroups), 
                                    addedGroupNames)[-removedGroups, ]
-        newGroups <- removeIndex(newGroups, removedGroups)
+        newGroups <- removeIndex(newGroups)
         newPG <- mergePangenomes(object, newSet, newGroups, newInfo)
         
         if (hasParalogueLinks(object) && !(is.logical(klParam) && !klParam)) {
@@ -406,18 +406,12 @@ pairToIndex <- function(row, col, nrow) {
 #' 
 #' @param x A vector of indexes
 #' 
-#' @param index the indexes that have been removed
-#' 
 #' @return A reformatted x vector
 #' 
 #' @noRd
 #' 
-removeIndex <- function(x, index) {
-    index <- sort(index, decreasing = TRUE)
-    for (i in seq_along(index)) {
-        x[x > index[i]] <- x[x > index[i]] - 1
-    }
-    as.integer(x)
+removeIndex <- function(x) {
+    match(x, sort(unique(x)))
 }
 #' Match new groups to old ones based on members
 #' 
