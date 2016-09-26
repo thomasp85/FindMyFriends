@@ -275,8 +275,8 @@ setMethod(
         if (any(i > nOrganisms(x))) {
             warning('ignoring indices out of bound')
         }
-        remove <- seq_along(x) %in% i
-        removeGene(x, organism = i)
+        remove <- which(!seq_along(x) %in% i)
+        removeGene(x, organism = remove)
     }
 )
 #' @describeIn pgVirtual Create subsets of pangenomes based on index
@@ -827,13 +827,11 @@ evolMan <- function(pangenome, order) {
 #' @return A data.frame with one row and the columns Singleton, Accessory, Core
 #' and Total.
 #' 
-#' @importFrom Matrix rowSums
-#' 
 #' @noRd
 #' 
 panGroups <- function(mat, coreThreshold = 1) {
     mat <- as(mat, 'nsparseMatrix')
-    nGenes <- rowSums(mat)
+    nGenes <- Matrix::rowSums(mat)
     data.frame(group = c('Singleton', 'Accessory', 'Core', 'Total'),
                size = c(sum(nGenes == 1),
                         sum(nGenes > 1 & nGenes / ncol(mat) < coreThreshold),
