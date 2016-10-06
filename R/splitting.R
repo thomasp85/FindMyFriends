@@ -293,7 +293,7 @@ neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping,
 #' highest minimum weights are returned.
 #' 
 #' @param edges A data.frame with the edges in the graph. The start and end of
-#' the edgesis recorded in the "to" and "from" columns. The data.frame must
+#' the edges is recorded in the "to" and "from" columns. The data.frame must
 #' additionally contain the columns "nSim", "sSim" and "gSim", with the 
 #' similarity of the neighborhood, sequence and guidegroup respectively.
 #' 
@@ -303,18 +303,11 @@ neighborSplitting <- function(group, object, seqToOrg, neighbors, grouping,
 #' 
 #' @return An integer vector with the membership of each node
 #' 
-#' @importFrom igraph make_undirected_graph gorder degree V<-
-#' 
 #' @noRd
 #' 
 extractCliques <- function(edges, nNodes) {
     edges <- edges[order(edges$nSim, edges$sSim, edges$gSim, decreasing = TRUE),]
-    gr <- make_undirected_graph(rbind(edges$from, edges$to), n = nNodes)
-    if (all(degree(gr) == nNodes - 1)) {
-        return(list(rep(1, nNodes)))
-    }
-    V(gr)$ID <- seq_len(nNodes) - 1
-    getCliques(gr)
+    getCliques(edges, nNodes)
 }
 #' Get the adjacent genes for for each gene in a pangenome
 #' 
@@ -458,22 +451,3 @@ neighborhoodMerge <- function(pangenome, maxLengthDif, cdhitOpts = list()) {
     
     pangenome
 }
-#' igraph functions to access through Rcpp
-#' 
-#' This list allows one to access igraph functions without putting igraph in 
-#' Depends, thus polluting the seqrch path
-#' 
-#' @keywords Internal
-#' 
-#' @export
-#' 
-#' @noRd
-#' 
-.igraphFunctions <- list(
-    neighbors = igraph::neighbors,
-    gorder = igraph::gorder,
-    gsize = igraph::gsize,
-    ends = igraph::ends,
-    vertex_attr = igraph::vertex_attr,
-    delete_vertices = igraph::delete_vertices
-)

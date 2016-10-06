@@ -3,6 +3,7 @@
 #include <Rcpp.h>
 #include <algorithm>
 #include "fmf-common.h"
+#include "smallgraph.h"
 #include "progress.h"
 
 using namespace Rcpp;
@@ -283,101 +284,97 @@ IntegerVector widthSim(List groups, IntegerVector width, double threshold, Chara
 }
 
 //[[Rcpp::export]]
-IntegerVector getCliques(RObject graph) {
-    // R functionality
-    Environment FMF("package:FindMyFriends");
-    List igraph = FMF[".igraphFunctions"];
-    Function neighbors = igraph["neighbors"];
-    Function gorder = igraph["gorder"];
-    Function gsize = igraph["gsize"];
-    Function ends = igraph["ends"];
-    Function vertexAttr = igraph["vertex_attr"];
-    Function deleteVertices = igraph["delete_vertices"];
+IntegerVector getCliques(DataFrame edges, int nNodes) {
+    Graph gr(nNodes, edges);
+    
+    if (gr.isComplete()) {
+        return IntegerVector(nNodes, 1);
+    }
     
     // Containers for graph information etc.
-    int nVertices = as<int>(gorder(graph));
-    int nEdges = as<int>(gsize(graph));
-    IntegerMatrix edges;
+    int nEdges = edges.nrows();
     int i;
     int cliqueID = 1;
     
     // Result variable
-    IntegerVector cliques(nVertices);
+    IntegerVector cliques(nNodes);
     
     // Storage of possible vertices to add
-    int * possibles = new int[nVertices];
-    int * possiblesNext = new int[nVertices];
-    int * possiblesTemp;
-    int * possiblesEnd;
+    std::vector<int> possibles, possiblesNext;
+    possibles.reserve(nNodes);
+    possiblesNext.reserve(nNodes);
     
     // Current clique storage and touched edge info
+    std::vector< std::pair<int, int> > edgelist;
+    std::vector<int> neighbor1, neighbor2, members;
+    std::vector<int>::iterator itvec;
     std::set<int> cliqueMembers;
     std::vector<bool> disregard;
     disregard.reserve(nEdges);
     
-    // Initialize possibles
-    IntegerVector neighbor1, neighbor2;
-    
     while (nEdges) {
         R_CheckUserInterrupt();
         
-        edges = ends(graph, seq_len(nEdges), wrap(false));
-        IntegerMatrix::Column from = edges(_, 0);
-        IntegerMatrix::Column to = edges(_, 1);
-        
-        cliqueMembers.insert(from[0]);
-        cliqueMembers.insert(to[0]);
-        
-        neighbor1 = neighbors(graph, from[0]);
-        neighbor2 = neighbors(graph, to[0]);
-        possiblesEnd = std::set_intersection(neighbor1.begin(), neighbor1.end(), neighbor2.begin(), neighbor2.end(), possibles);
-        
-        disregard.resize(nEdges);
-        std::fill(disregard.begin(), disregard.end(), false);
-        
-        while (possibles != possiblesEnd) {
-            for (i = 1; i <= nEdges; i++) {
-                if (i == nEdges) // Couldn't find a qualifying edge while possibles remain
-                    stop("Missing edge to possible member");
-                if (disregard[i])
-                    continue;
-                if (std::binary_search(possibles, possiblesEnd, from[i])) {
-                    if (cliqueMembers.find(to[i]) == cliqueMembers.end())
-                        continue;
-                    neighbor1 = neighbors(graph, from[i]);
-                    cliqueMembers.insert(from[i]);
-                } else if (std::binary_search(possibles, possiblesEnd, to[i])) {
-                    if (cliqueMembers.find(from[i]) == cliqueMembers.end())
-                        continue;
-                    neighbor1 = neighbors(graph, to[i]);
-                    cliqueMembers.insert(to[i]);
-                } else {
-                    disregard[i] = true;
-                    continue;
+        if (gr.isComplete()) {
+            members = gr.nodeIds();
+        } else {
+            edgelist = gr.completeTriangle(gr.firstEdge());
+            
+            cliqueMembers.insert(edgelist[0].first);
+            cliqueMembers.insert(edgelist[0].second);
+            
+            if (edgelist.size() > 1) {
+                neighbor1 = gr.neighbors(edgelist[0].first);
+                neighbor2 = gr.neighbors(edgelist[0].second);
+                possibles.clear();
+                std::set_intersection(neighbor1.begin(), neighbor1.end(), neighbor2.begin(), neighbor2.end(), std::back_inserter(possibles));
+                
+                disregard.resize(nEdges);
+                std::fill(disregard.begin(), disregard.end(), false);
+                
+                while (possibles.size() != 0) {
+                    for (i = 1; i <= nEdges; i++) {
+                        if (i == nEdges) // Couldn't find a qualifying edge while possibles remain
+                            stop("Missing edge to possible member");
+                        if (disregard[i])
+                            continue;
+                        if (std::binary_search(possibles.begin(), possibles.end(), edgelist[i].first)) {
+                            if (cliqueMembers.find(edgelist[i].second) == cliqueMembers.end())
+                                continue;
+                            neighbor1 = gr.neighbors(edgelist[i].first);
+                            cliqueMembers.insert(edgelist[i].first);
+                        } else if (std::binary_search(possibles.begin(), possibles.end(), edgelist[i].second)) {
+                            if (cliqueMembers.find(edgelist[i].first) == cliqueMembers.end())
+                                continue;
+                            neighbor1 = gr.neighbors(edgelist[i].second);
+                            cliqueMembers.insert(edgelist[i].second);
+                        } else {
+                            disregard[i] = true;
+                            continue;
+                        }
+                        disregard[i] = true;
+                        possiblesNext.clear();
+                        std::set_intersection(possibles.begin(), possibles.end(), neighbor1.begin(), neighbor1.end(), std::back_inserter(possiblesNext));
+                        
+                        // Swap possibles storage around
+                        possibles.swap(possiblesNext);
+                        
+                        break;
+                    }
                 }
-                disregard[i] = true;
-                possiblesEnd = std::set_intersection(possibles, possiblesEnd, neighbor1.begin(), neighbor1.end(), possiblesNext);
-                
-                // Swap possibles storage around
-                possiblesTemp = possibles;
-                possibles = possiblesNext;
-                possiblesNext = possiblesTemp;
-                
-                break;
             }
+            members = std::vector<int>(cliqueMembers.begin(), cliqueMembers.end());
         }
-        IntegerVector members(cliqueMembers.begin(), cliqueMembers.end());
-        IntegerVector memberIDs = vertexAttr(graph, "ID", members);
-        for (IntegerVector::iterator memberIt = memberIDs.begin(); memberIt != memberIDs.end(); ++memberIt) {
-            cliques[*memberIt] = cliqueID;
+        for (itvec = members.begin(); itvec != members.end(); ++itvec) {
+            cliques[(*itvec) - 1] = cliqueID;
         }
         cliqueID++;
         cliqueMembers.clear();
-        graph = deleteVertices(graph, members);
-        nEdges = as<int>(gsize(graph));
+        gr.deleteNodes(members);
+        nEdges = gr.nEdges();
     }
     
-    if (gorder(graph) != 0) {
+    if (gr.nNodes() != 0) {
         for (i = 0; i < cliques.size(); ++i) {
             if (cliques[i] == 0) {
                 cliques[i] = cliqueID;
@@ -385,8 +382,6 @@ IntegerVector getCliques(RObject graph) {
             }
         }
     }
-    delete[] possibles;
-    delete[] possiblesNext;
     return cliques;
 }
 

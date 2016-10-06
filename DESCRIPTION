@@ -1,8 +1,8 @@
 Package: FindMyFriends
 Type: Package
 Title: Microbial Comparative Genomics in R
-Version: 1.3.2
-Date: 2016-03-22
+Version: 1.3.3
+Date: 2016-10-06
 Author: Thomas Lin Pedersen
 Maintainer: Thomas Lin Pedersen <thomasp85@gmail.com>
 Description: A framework for doing microbial comparative genomics in R.
