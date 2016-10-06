@@ -1044,7 +1044,7 @@ readAnnot <- function(file) {
 #' 
 #' @return A matrix of the same type and dimensions as similarity
 #' 
-#' @importFrom Matrix which
+#' @importFrom Matrix Matrix
 #' 
 #' @noRd
 #' 
