@@ -13,8 +13,9 @@ genomes. It is released as part of the [Bioconductor](http://bioconductor.org/)
 project and can be installed with the `biocLite()` function:
 
 ```r
-source("https://bioconductor.org/biocLite.R")
-biocLite("FindMyFriends")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("FindMyFriends")
 ```
 
 For the absolute latest version, install directly from GitHub:
