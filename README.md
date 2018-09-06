@@ -10,7 +10,7 @@
 
 FindMyFriends is an R package for doing pangenomic analyses on microbial 
 genomes. It is released as part of the [Bioconductor](http://bioconductor.org/) 
-project and can be installed with the `biocLite()` function:
+project and can be installed with the `BiocManager::install()` function:
 
 ```r
 if (!requireNamespace("BiocManager", quietly=TRUE))
