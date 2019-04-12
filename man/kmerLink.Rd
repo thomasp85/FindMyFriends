@@ -8,8 +8,8 @@
 \usage{
 kmerLink(object, ...)
 
-\S4method{kmerLink}{pgVirtual}(object, lowMem, kmerSize, lowerLimit, rescale,
-  transform, pParam, algorithm, ...)
+\S4method{kmerLink}{pgVirtual}(object, lowMem, kmerSize, lowerLimit,
+  rescale, transform, pParam, algorithm, ...)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -50,6 +50,7 @@ similarity is assessed using the kmer based cosine similarity.
 \itemize{
 \item \code{pgVirtual}: Linking for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
@@ -60,4 +61,3 @@ hasParalogueLinks(testPG)
 testPG <- kmerLink(testPG)
 
 }
-

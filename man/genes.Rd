@@ -3,12 +3,12 @@
 \docType{methods}
 \name{genes}
 \alias{genes}
-\alias{genes,pgFull,character-method}
-\alias{genes,pgFull,missing-method}
-\alias{genes,pgLM,character-method}
 \alias{genes,pgLM,missing-method}
-\alias{genes,pgSlim,character-method}
+\alias{genes,pgLM,character-method}
+\alias{genes,pgFull,missing-method}
+\alias{genes,pgFull,character-method}
 \alias{genes,pgSlim,missing-method}
+\alias{genes,pgSlim,character-method}
 \title{Extract gene sequences from a pangenome}
 \usage{
 genes(object, split, subset)
@@ -60,6 +60,7 @@ reading all genes into memory at once.
 
 \item \code{object = pgSlim,split = character}: Throws error for pgSlim
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -81,4 +82,3 @@ genes(testPG, split='paralogue')
 genes(testPG, split='organism', subset=1)
 
 }
-

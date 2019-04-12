@@ -16,6 +16,7 @@ for very large pangenome with millions of genes.
 \item{\code{sequences}}{Either an AAStringSet or DNAStringSet containing all 
 sequences in the pangenome.}
 }}
+
 \seealso{
 Other Pangenome_classes: \code{\link{pgFullLoc-class}},
   \code{\link{pgInMem-class}},
@@ -25,4 +26,4 @@ Other Pangenome_classes: \code{\link{pgFullLoc-class}},
   \code{\link{pgVirtual-class}},
   \code{\link{pgVirtualLoc-class}}
 }
-
+\concept{Pangenome_classes}

@@ -8,9 +8,9 @@
 \usage{
 cdhitGrouping(object, ...)
 
-\S4method{cdhitGrouping}{pgVirtual}(object, kmerSize, lowerLimit, maxLengthDif,
-  geneChunkSize, cdhitOpts, cdhitIter = TRUE, nrep = 1, from = 0.9,
-  by = 0.05)
+\S4method{cdhitGrouping}{pgVirtual}(object, kmerSize, lowerLimit,
+  maxLengthDif, geneChunkSize, cdhitOpts, cdhitIter = TRUE, nrep = 1,
+  from = 0.9, by = 0.05)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -68,6 +68,7 @@ standard FindMyFriends kmer cosine similarity.
 \itemize{
 \item \code{pgVirtual}: Grouping using cdhit for all pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample()
 
@@ -91,4 +92,4 @@ comparing large sets of protein or nucleotide sequences.
 Other grouping algorithms: \code{\link{gpcGrouping}},
   \code{\link{graphGrouping}}, \code{\link{manualGrouping}}
 }
-
+\concept{grouping algorithms}

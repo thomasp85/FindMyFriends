@@ -8,8 +8,8 @@
 \usage{
 gpcGrouping(object, ...)
 
-\S4method{gpcGrouping}{pgVirtual}(object, lowMem, kmerSize, tree, lowerLimit,
-  pParam, cacheDB, precluster = TRUE, ...)
+\S4method{gpcGrouping}{pgVirtual}(object, lowMem, kmerSize, tree,
+  lowerLimit, pParam, cacheDB, precluster = TRUE, ...)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -59,6 +59,7 @@ compared multiple times.
 \itemize{
 \item \code{pgVirtual}: gpc grouping for all pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample()
 
@@ -72,4 +73,4 @@ testPG <- gpcGrouping(testPG)
 Other grouping algorithms: \code{\link{cdhitGrouping}},
   \code{\link{graphGrouping}}, \code{\link{manualGrouping}}
 }
-
+\concept{grouping algorithms}

@@ -34,10 +34,10 @@ groups and number of paralogues.
 \itemize{
 \item \code{pgVirtual}: Organism statistics for all pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
 orgStats <- orgStat(testPG)
 
 }
-

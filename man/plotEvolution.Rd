@@ -33,6 +33,7 @@ ways of increasing the size of the pangenome is available.
 \itemize{
 \item \code{pgVirtual}: Evolution plots for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
@@ -43,4 +44,3 @@ plotEvolution(testPG, ordering='none')
 plotEvolution(testPG, ordering='bootstrap')
 
 }
-

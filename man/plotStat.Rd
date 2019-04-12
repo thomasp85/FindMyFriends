@@ -30,6 +30,7 @@ have been defined, the number of singleton, accessory and core gene groups.
 \itemize{
 \item \code{pgVirtual}: Plot basic statistics for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
@@ -37,4 +38,3 @@ testPG <- .loadPgExample(withGroups=TRUE)
 plotStat(testPG)
 
 }
-

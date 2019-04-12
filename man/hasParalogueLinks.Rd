@@ -25,6 +25,7 @@ This method checks for the existance of paralogue links in the object.
 \item \code{pgVirtual}: Check for secondary gene grouping in pgVirtual
 subclasses
 }}
+
 \examples{
 # No paralogues
 testPG <- .loadPgExample(withGroups=TRUE)
@@ -35,4 +36,3 @@ testPG <- .loadPgExample(withGroups=TRUE, withParalogues=TRUE)
 hasParalogueLinks(testPG)
 
 }
-

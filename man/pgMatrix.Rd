@@ -27,10 +27,10 @@ the gene grouping instead of being manipulated downstream.
 \itemize{
 \item \code{pgVirtual}: Get pangenome matrix for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
 head(pgMatrix(testPG))
 
 }
-

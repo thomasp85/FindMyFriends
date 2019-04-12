@@ -18,4 +18,4 @@ Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgVirtual-class}},
   \code{\link{pgVirtualLoc-class}}
 }
-
+\concept{Pangenome_classes}

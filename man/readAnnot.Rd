@@ -25,4 +25,3 @@ annot <- system.file('extdata', 'examplePG', 'example.annot', package='FindMyFri
 readAnnot(annot)
 
 }
-

@@ -28,6 +28,7 @@ and is therefore assumed
 \itemize{
 \item \code{pgVirtual}: Sequence type check for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample()
 
@@ -38,4 +39,3 @@ translated(testPG)
 class(genes(testPG, subset=1))
 
 }
-

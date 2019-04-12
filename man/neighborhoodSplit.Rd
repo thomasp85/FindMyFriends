@@ -8,9 +8,9 @@
 \usage{
 neighborhoodSplit(object, ...)
 
-\S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize, forceParalogues,
-  kmerSize, lowerLimit, maxLengthDif, guideGroups = NULL,
-  cdhitOpts = list())
+\S4method{neighborhoodSplit}{pgVirtualLoc}(object, flankSize,
+  forceParalogues, kmerSize, lowerLimit, maxLengthDif,
+  guideGroups = NULL, cdhitOpts = list())
 }
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
@@ -65,6 +65,7 @@ merged together to avoid spurius errors resulting from the initial grouping.
 \item \code{pgVirtualLoc}: Neighborhood-based gene group splitting for
 pgVirtualLoc subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withGroups=TRUE)
 
@@ -77,4 +78,4 @@ testPG <- neighborhoodSplit(testPG, lowerLimit=0.75)
 \seealso{
 Other group-splitting: \code{\link{kmerSplit}}
 }
-
+\concept{group-splitting}

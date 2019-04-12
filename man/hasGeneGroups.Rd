@@ -25,6 +25,7 @@ object and returns TRUE if that is the case.
 \itemize{
 \item \code{pgVirtual}: Gene group check for pgVirtual subclasses
 }}
+
 \examples{
 # Empty pangenome
 testPG <- .loadPgExample()
@@ -35,4 +36,3 @@ testPG <- .loadPgExample(withGroups=TRUE)
 hasGeneGroups(testPG)
 
 }
-

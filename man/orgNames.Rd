@@ -3,8 +3,8 @@
 \docType{methods}
 \name{orgNames}
 \alias{orgNames}
-\alias{orgNames,pgInMem-method}
 \alias{orgNames<-}
+\alias{orgNames,pgInMem-method}
 \alias{orgNames<-,pgInMem-method}
 \title{Get and set the names of organisms in the pangenome}
 \usage{
@@ -35,6 +35,7 @@ this can be changed at will.
 
 \item \code{pgInMem}: Set organism names for pgInMem subclasses
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -46,4 +47,3 @@ orgNames(testPG)
 orgNames(testPG)[3] <- 'Organism 3'
 
 }
-

@@ -46,6 +46,7 @@ to the pangenome.
 \itemize{
 \item \code{pgVirtual}: Kmer based similarities for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample()
 
@@ -55,4 +56,3 @@ kmerSim <- kmerSimilarity(testPG, lowerLimit=0.75)
 }
 
 }
-

@@ -29,6 +29,7 @@ should always be lower than end no matter the direction of translation)
 \itemize{
 \item \code{pgInMemLoc}: Get gene location for pgInMemLoc subclasses
 }}
+
 \note{
 Required for subclasses of pgVirtualLoc in order to extend the class
 system of FindMyFriends
@@ -38,4 +39,3 @@ testPG <- .loadPgExample(geneLoc=TRUE)
 head(geneLocation(testPG))
 
 }
-

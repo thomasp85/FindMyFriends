@@ -25,9 +25,9 @@ subclass. This is also the result of calling \code{length()} on the object.
 \item \code{pgVirtual}: The number of organisms in the pangenome for pgVirtual
 subclasses.
 }}
+
 \examples{
 testPG <- .loadPgExample()
 nOrganisms(testPG)
 
 }
-

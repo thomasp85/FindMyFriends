@@ -4,8 +4,8 @@
 \name{internal-metadata}
 \alias{internal-metadata}
 \alias{setGroupInfo}
-\alias{setGroupInfo,pgInMem-method}
 \alias{setOrgInfo}
+\alias{setGroupInfo,pgInMem-method}
 \alias{setOrgInfo,pgInMem-method}
 \title{Add metadata to the pangenome}
 \usage{
@@ -42,4 +42,3 @@ For internal use only. Use \code{\link{addGroupInfo}} and
 FindMyFriends.
 }
 \keyword{internal}
-

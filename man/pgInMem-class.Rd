@@ -44,6 +44,7 @@ specific gene group.}
 
 \item{\code{orgInfo}}{A data.frame storing metadata information about organisms}
 }}
+
 \seealso{
 Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgFullLoc-class}},
@@ -53,4 +54,4 @@ Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgVirtual-class}},
   \code{\link{pgVirtualLoc-class}}
 }
-
+\concept{Pangenome_classes}

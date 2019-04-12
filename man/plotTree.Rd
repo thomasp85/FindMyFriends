@@ -8,8 +8,9 @@
 \usage{
 plotTree(object, ...)
 
-\S4method{plotTree}{pgVirtual}(object, type = "pangenome", circular = FALSE,
-  info, kmerSize, dist, clust, pParam, chunkSize = 100)
+\S4method{plotTree}{pgVirtual}(object, type = "pangenome",
+  circular = FALSE, info, kmerSize, dist, clust, pParam,
+  chunkSize = 100)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -48,6 +49,7 @@ be based on either the pangenome matrix or kmer feature vectors.
 \itemize{
 \item \code{pgVirtual}: Dendrogram plotting for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
@@ -60,4 +62,3 @@ plotTree(testPG, circular=TRUE, dist='binary', clust='ward.D2')
 \seealso{
 \code{\link{plotSimilarity}} for a heatmap plot of the same data.
 }
-

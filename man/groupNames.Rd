@@ -3,8 +3,8 @@
 \docType{methods}
 \name{groupNames}
 \alias{groupNames}
-\alias{groupNames,pgInMem-method}
 \alias{groupNames<-}
+\alias{groupNames,pgInMem-method}
 \alias{groupNames<-,pgInMem-method}
 \title{Get and set the names of gene groups in the pangenome}
 \usage{
@@ -36,6 +36,7 @@ scheme has been introduced before.
 
 \item \code{pgInMem}: Set gene group names for pgInMem subclasses
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -47,4 +48,3 @@ head(groupNames(testPG))
 groupNames(testPG)[20] <- 'Gene group 20'
 
 }
-

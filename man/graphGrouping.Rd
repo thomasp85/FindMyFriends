@@ -38,6 +38,7 @@ ways e.g. be blast derived.
 \itemize{
 \item \code{pgVirtual}: graph grouping for all pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample()
 
@@ -55,4 +56,4 @@ testPG <- graphGrouping(testPG, simMat)
 Other grouping algorithms: \code{\link{cdhitGrouping}},
   \code{\link{gpcGrouping}}, \code{\link{manualGrouping}}
 }
-
+\concept{grouping algorithms}

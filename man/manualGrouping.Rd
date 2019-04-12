@@ -36,6 +36,7 @@ refers to gene indexes.
 
 \item \code{object = pgVirtual,groups = list}: manual grouping defined by list
 }}
+
 \examples{
 testPG <- .loadPgExample()
 
@@ -53,4 +54,4 @@ testPG <- manualGrouping(testPG, groups)
 Other grouping algorithms: \code{\link{cdhitGrouping}},
   \code{\link{gpcGrouping}}, \code{\link{graphGrouping}}
 }
-
+\concept{grouping algorithms}

@@ -3,8 +3,8 @@
 \docType{methods}
 \name{geneWidth}
 \alias{geneWidth}
-\alias{geneWidth,pgFull-method}
 \alias{geneWidth,pgLM-method}
+\alias{geneWidth,pgFull-method}
 \alias{geneWidth,pgSlim-method}
 \title{Get the sequence length of each gene}
 \usage{
@@ -34,6 +34,7 @@ the pangenome.
 
 \item \code{pgSlim}: Throws error for pgSlim
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -43,4 +44,3 @@ testPG <- .loadPgExample()
 head(geneWidth(testPG))
 
 }
-

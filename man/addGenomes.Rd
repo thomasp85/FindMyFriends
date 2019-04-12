@@ -8,8 +8,8 @@
 \usage{
 addGenomes(object, newSet, ...)
 
-\S4method{addGenomes}{pgVirtual,pgVirtual}(object, newSet, kmerSize, lowerLimit,
-  pParam, nsParam = list(), klParam = list())
+\S4method{addGenomes}{pgVirtual,pgVirtual}(object, newSet, kmerSize,
+  lowerLimit, pParam, nsParam = list(), klParam = list())
 }
 \arguments{
 \item{object}{A pgVirtual subclass to merge the new genomes into}
@@ -54,6 +54,7 @@ group metadata.
 \itemize{
 \item \code{object = pgVirtual,newSet = pgVirtual}: Genome addition for all pgVirtual subclasses
 }}
+
 \examples{
 # Get base pangenome
 pg <- .loadPgExample(geneLoc = TRUE, withGroups = TRUE, 
@@ -71,4 +72,3 @@ pg3 <- addGenomes(pg, pg2, nsParam = list(lowerLimit = 0.8))
 }
 
 }
-

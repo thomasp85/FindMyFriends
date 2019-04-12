@@ -8,7 +8,8 @@
 \usage{
 collapseParalogues(object, ...)
 
-\S4method{collapseParalogues}{pgVirtual}(object, combineInfo = "merge", ...)
+\S4method{collapseParalogues}{pgVirtual}(object, combineInfo = "merge",
+  ...)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -35,6 +36,7 @@ This method allows for merging of paralogue gene groups defined using
 \item \code{pgVirtual}: Merge paralogue gene groups for all pgVirtual
 subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE, withParalogues=TRUE)
 
@@ -46,4 +48,3 @@ testPG <- collapseParalogues(testPG, combineInfo='largest')
 nGeneGroups(testPG)
 
 }
-

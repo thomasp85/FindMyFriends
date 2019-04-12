@@ -4,56 +4,57 @@
 \name{removeGene}
 \alias{removeGene}
 \alias{removeGene,pgInMem,missing,missing,missing,numeric-method}
-\alias{removeGene,pgVirtual,character,character,missing,missing-method}
 \alias{removeGene,pgVirtual,character,missing,missing,missing-method}
+\alias{removeGene,pgVirtual,character,character,missing,missing-method}
 \alias{removeGene,pgVirtual,character,numeric,missing,missing-method}
 \alias{removeGene,pgVirtual,missing,character,missing,missing-method}
-\alias{removeGene,pgVirtual,missing,character,missing,numeric-method}
-\alias{removeGene,pgVirtual,missing,missing,character,missing-method}
-\alias{removeGene,pgVirtual,missing,missing,character,numeric-method}
-\alias{removeGene,pgVirtual,missing,missing,numeric,missing-method}
-\alias{removeGene,pgVirtual,missing,missing,numeric,numeric-method}
 \alias{removeGene,pgVirtual,missing,numeric,missing,missing-method}
+\alias{removeGene,pgVirtual,missing,character,missing,numeric-method}
 \alias{removeGene,pgVirtual,missing,numeric,missing,numeric-method}
+\alias{removeGene,pgVirtual,missing,missing,character,missing-method}
+\alias{removeGene,pgVirtual,missing,missing,numeric,missing-method}
+\alias{removeGene,pgVirtual,missing,missing,character,numeric-method}
+\alias{removeGene,pgVirtual,missing,missing,numeric,numeric-method}
 \title{Remove genes from a pangenome}
 \usage{
 removeGene(object, name, organism, group, ind, ...)
 
-\S4method{removeGene}{pgInMem,missing,missing,missing,numeric}(object, name,
-  organism, group, ind)
-
-\S4method{removeGene}{pgVirtual,character,missing,missing,missing}(object, name,
-  organism, group, ind)
-
-\S4method{removeGene}{pgVirtual,character,character,missing,missing}(object,
+\S4method{removeGene}{pgInMem,missing,missing,missing,numeric}(object,
   name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,character,numeric,missing,missing}(object, name,
-  organism, group, ind)
+\S4method{removeGene}{pgVirtual,character,missing,missing,missing}(object,
+  name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,character,missing,missing}(object, name,
-  organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,numeric,missing,missing}(object, name,
-  organism, group, ind)
+  \S4method{removeGene}{pgVirtual,character,character,missing,missing}(object,
+  name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,character,missing,numeric}(object, name,
-  organism, group, ind)
+\S4method{removeGene}{pgVirtual,character,numeric,missing,missing}(object,
+  name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,numeric,missing,numeric}(object, name,
-  organism, group, ind)
+\S4method{removeGene}{pgVirtual,missing,character,missing,missing}(object,
+  name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,missing,character,missing}(object, name,
-  organism, group, ind)
+\S4method{removeGene}{pgVirtual,missing,numeric,missing,missing}(object,
+  name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,missing,numeric,missing}(object, name,
-  organism, group, ind)
+\S4method{removeGene}{pgVirtual,missing,character,missing,numeric}(object,
+  name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,missing,character,numeric}(object, name,
-  organism, group, ind)
+\S4method{removeGene}{pgVirtual,missing,numeric,missing,numeric}(object,
+  name, organism, group, ind)
 
-\S4method{removeGene}{pgVirtual,missing,missing,numeric,numeric}(object, name,
-  organism, group, ind)
+\S4method{removeGene}{pgVirtual,missing,missing,character,missing}(object,
+  name, organism, group, ind)
+
+\S4method{removeGene}{pgVirtual,missing,missing,numeric,missing}(object,
+  name, organism, group, ind)
+
+\S4method{removeGene}{pgVirtual,missing,missing,character,numeric}(object,
+  name, organism, group, ind)
+
+\S4method{removeGene}{pgVirtual,missing,missing,numeric,numeric}(object,
+  name, organism, group, ind)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -110,6 +111,7 @@ to the gene index. See examples for details of the different possibilities.
 
 \item \code{object = pgVirtual,name = missing,organism = missing,group = numeric,ind = numeric}: Remove gene based on gene group and gene index
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -128,4 +130,3 @@ removeGene(testPG, organism='AE017244')
 removeGene(testPG, group=10, ind=1)
 
 }
-

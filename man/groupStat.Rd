@@ -48,10 +48,10 @@ group, downstream and upstream gene groups.
 \itemize{
 \item \code{pgVirtual}: Group statistics for all pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
 grStats <- groupStat(testPG)
 
 }
-

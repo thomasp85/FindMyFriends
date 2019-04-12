@@ -20,6 +20,7 @@ alternative though.
 \code{\link[Biostrings]{fasta.index}} with random access information for each
 gene.}
 }}
+
 \seealso{
 Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgFullLoc-class}},
@@ -30,4 +31,4 @@ Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgVirtual-class}},
   \code{\link{pgVirtualLoc-class}}
 }
-
+\concept{Pangenome_classes}

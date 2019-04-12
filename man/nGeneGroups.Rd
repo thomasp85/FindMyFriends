@@ -24,9 +24,9 @@ This method gives the number of different gene groups in the object.
 \item \code{pgVirtual}: The number of gene groups in the pangenome for
 pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 nGeneGroups(testPG)
 
 }
-

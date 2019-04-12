@@ -8,8 +8,8 @@
 \usage{
 plotGroup(object, ...)
 
-\S4method{plotGroup}{pgVirtual}(object, group, kmerSize, lowerLimit, rescale,
-  transform, ...)
+\S4method{plotGroup}{pgVirtual}(object, group, kmerSize, lowerLimit,
+  rescale, transform, ...)
 }
 \arguments{
 \item{object}{A pgVirtual subclass}
@@ -41,10 +41,10 @@ as weighted edges. Mildly informative at best :-)
 \item \code{pgVirtual}: Gene group similiarity plotting for all pgVirtual
 subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
 plotGroup(testPG, 10, lowerLimit=0.25)
 
 }
-

@@ -2,10 +2,10 @@
 % Please edit documentation in R/generics.R, R/pgVirtual.R, R/pgInMem.R
 \docType{methods}
 \name{internal-groupGenes}
-\alias{groupGenes}
-\alias{groupGenes,pgInMem-method}
-\alias{groupGenes,pgVirtual-method}
 \alias{internal-groupGenes}
+\alias{groupGenes}
+\alias{groupGenes,pgVirtual-method}
+\alias{groupGenes,pgInMem-method}
 \title{Add gene grouping to pangenome}
 \usage{
 groupGenes(object, ...)
@@ -39,4 +39,3 @@ Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
 }
 \keyword{internal}
-

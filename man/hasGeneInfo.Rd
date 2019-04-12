@@ -26,6 +26,7 @@ object i.e. if the object inherits from pgVirtualLoc
 \item \code{pgVirtual}: Checks whether gene location information is available
 for pgVirtual subclasses
 }}
+
 \examples{
 # Exclusive pgVirtual subclasses
 testPG <- .loadPgExample()
@@ -36,4 +37,3 @@ testPG <- .loadPgExample(geneLoc=TRUE)
 hasGeneInfo(testPG)
 
 }
-

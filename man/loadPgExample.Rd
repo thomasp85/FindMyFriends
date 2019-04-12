@@ -46,4 +46,3 @@ useful for examples and tests.
 .loadPgExample(withGroups=TRUE, withParalogues=TRUE)
 
 }
-

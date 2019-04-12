@@ -3,8 +3,8 @@
 \docType{methods}
 \name{orgInfo}
 \alias{orgInfo}
-\alias{orgInfo,pgInMem-method}
 \alias{orgInfo<-}
+\alias{orgInfo,pgInMem-method}
 \alias{orgInfo<-,pgInMem-method}
 \title{Get and set information about organisms}
 \usage{
@@ -36,6 +36,7 @@ not be changed manually but through the \code{\link{removeGene}} functions.
 
 \item \code{pgInMem}: Set organism metadata for pgInMem subclasses
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -51,4 +52,4 @@ orgInfo(testPG)$Genus <- 'Mycoplasma'
 Other Metadata: \code{\link{addGroupInfo}},
   \code{\link{addOrgInfo}}, \code{\link{groupInfo}}
 }
-
+\concept{Metadata}

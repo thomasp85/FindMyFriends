@@ -31,4 +31,4 @@ Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgSlimLoc-class}},
   \code{\link{pgVirtual-class}}
 }
-
+\concept{Pangenome_classes}

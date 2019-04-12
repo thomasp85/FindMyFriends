@@ -33,10 +33,10 @@ edges are annotated with numer of genes (as weight), and organism names.
 \itemize{
 \item \code{pgVirtualLoc}: Panchromosome creation for all pgVirtualLoc subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 
 panchromosome <- pcGraph(testPG)
 
 }
-

@@ -59,4 +59,3 @@ t(x=2, defs=list(x=5))
 \seealso{
 Set and get pangenome defaults with \code{\link{defaults}}
 }
-

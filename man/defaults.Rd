@@ -3,8 +3,8 @@
 \docType{methods}
 \name{defaults}
 \alias{defaults}
-\alias{defaults,pgVirtual-method}
 \alias{defaults<-}
+\alias{defaults,pgVirtual-method}
 \alias{defaults<-,pgVirtual-method}
 \title{Access default values for a pgVirtual subclass object}
 \usage{
@@ -53,6 +53,7 @@ passed to a function that support it.
 
 \item \code{pgVirtual}: Set defaults for pgVirtual subclass objects
 }}
+
 \examples{
 # Get all object defaults
 testPG <- .loadPgExample()
@@ -62,4 +63,3 @@ defaults(testPG)
 defaults(testPG)$minFlank <- 2
 
 }
-

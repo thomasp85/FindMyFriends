@@ -3,12 +3,12 @@
 \docType{methods}
 \name{geneNames}
 \alias{geneNames}
-\alias{geneNames,pgFull-method}
-\alias{geneNames,pgLM-method}
-\alias{geneNames,pgSlim-method}
 \alias{geneNames<-}
-\alias{geneNames<-,pgFull-method}
+\alias{geneNames,pgLM-method}
 \alias{geneNames<-,pgLM-method}
+\alias{geneNames,pgFull-method}
+\alias{geneNames<-,pgFull-method}
+\alias{geneNames,pgSlim-method}
 \alias{geneNames<-,pgSlim-method}
 \title{Get and set the names of the genes in the pangenome}
 \usage{
@@ -57,6 +57,7 @@ the underlying fasta files have no effect on the naming in your pangenome
 
 \item \code{pgSlim}: Throws error for pgSlim
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -68,4 +69,3 @@ head(geneNames(testPG))
 geneNames(testPG)[10] <- 'Gene number 10'
 
 }
-

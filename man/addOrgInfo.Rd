@@ -36,6 +36,7 @@ simplest cases.
 \itemize{
 \item \code{pgVirtual}: Add organism info safely for all pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample()
 
@@ -52,4 +53,4 @@ testPG <- addOrgInfo(testPG, info=info, key='name')
 Other Metadata: \code{\link{addGroupInfo}},
   \code{\link{groupInfo}}, \code{\link{orgInfo}}
 }
-
+\concept{Metadata}

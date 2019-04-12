@@ -25,9 +25,9 @@ of genes in each organism in the pangenome)
 \item \code{pgVirtual}: The number of genes in the pangenome for pgVirtual 
 subclasses.
 }}
+
 \examples{
 testPG <- .loadPgExample()
 nGenes(testPG)
 
 }
-

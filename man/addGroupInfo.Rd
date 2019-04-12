@@ -37,6 +37,7 @@ simplest cases.
 \item \code{pgVirtual}: Add gene group info safely for all pgVirtual 
 subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
@@ -51,4 +52,4 @@ testPG <- addGroupInfo(testPG, info=info, key='index')
 Other Metadata: \code{\link{addOrgInfo}},
   \code{\link{groupInfo}}, \code{\link{orgInfo}}
 }
-
+\concept{Metadata}

@@ -31,6 +31,7 @@ at a latter stage.
 \item \code{object = pgVirtual,method = character}: Get a representative sequence for each gene group for 
 pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
@@ -38,4 +39,3 @@ testPG <- .loadPgExample(withGroups=TRUE)
 getRep(testPG, 'random')
 
 }
-

@@ -26,6 +26,7 @@ it returns a vector of length 0.
 \itemize{
 \item \code{pgInMem}: Gene to genegroup indexing for pgInMem subclasses
 }}
+
 \note{
 Required for extending the class system of FindMyFriends
 }
@@ -39,4 +40,3 @@ head(seqToGeneGroup(testPG))
 \seealso{
 \code{\link{seqToOrg}} for gene-to-organism relationship
 }
-

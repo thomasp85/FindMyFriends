@@ -43,6 +43,7 @@ groups as information needed for this is not present.
 \item \code{pgVirtual}: Kmer similarity based group splitting for pgVirtual 
 subclasses
 }}
+
 \examples{
 # Get a grouped pangenome
 pg <- .loadPgExample(withGroups = TRUE)
@@ -56,4 +57,4 @@ pg <- kmerSplit(pg, lowerLimit = 0.8)
 \seealso{
 Other group-splitting: \code{\link{neighborhoodSplit}}
 }
-
+\concept{group-splitting}

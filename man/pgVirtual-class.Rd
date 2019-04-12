@@ -2,15 +2,15 @@
 % Please edit documentation in R/pgVirtual.R
 \docType{class}
 \name{pgVirtual-class}
-\alias{[,pgVirtual,character,ANY,ANY-method}
+\alias{pgVirtual-class}
+\alias{length,pgVirtual-method}
+\alias{show,pgVirtual-method}
 \alias{[,pgVirtual,integer,ANY,ANY-method}
-\alias{[,pgVirtual,logical,ANY,ANY-method}
 \alias{[,pgVirtual,numeric,ANY,ANY-method}
+\alias{[,pgVirtual,character,ANY,ANY-method}
+\alias{[,pgVirtual,logical,ANY,ANY-method}
 \alias{[[,pgVirtual,ANY,ANY-method}
 \alias{as}
-\alias{length,pgVirtual-method}
-\alias{pgVirtual-class}
-\alias{show,pgVirtual-method}
 \title{Base class for pangenomic data}
 \usage{
 \S4method{length}{pgVirtual}(x)
@@ -134,11 +134,13 @@ organisms it contain
 
 \item \code{[[}: Extract sequences from a single organism
 }}
+
 \section{Slots}{
 
 \describe{
 \item{\code{.settings}}{A list containing settings pertaining to the object}
 }}
+
 \seealso{
 Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgFullLoc-class}},
@@ -148,4 +150,4 @@ Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgSlimLoc-class}},
   \code{\link{pgVirtualLoc-class}}
 }
-
+\concept{Pangenome_classes}

@@ -41,6 +41,7 @@ matrix or from kmer calculations of the genes themselves.
 \itemize{
 \item \code{pgVirtual}: Similarity heatmaps for pgVirtual subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(withGroups=TRUE)
 
@@ -54,4 +55,3 @@ plotSimilarity(testPG, type='pangenome')
 \seealso{
 \code{\link{plotTree}} for a dendrogram plot of the same data.
 }
-

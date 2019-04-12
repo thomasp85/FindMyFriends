@@ -3,8 +3,8 @@
 \docType{methods}
 \name{groupInfo}
 \alias{groupInfo}
-\alias{groupInfo,pgInMem-method}
 \alias{groupInfo<-}
+\alias{groupInfo,pgInMem-method}
 \alias{groupInfo<-,pgInMem-method}
 \title{Get and set information about gene group}
 \usage{
@@ -43,6 +43,7 @@ added are valid. Additional columns can be added at will.
 
 \item \code{pgInMem}: Set gene group metadata for pgInMem subclasses
 }}
+
 \note{
 Required for subclasses of pgVirtual in order to extend the class
 system of FindMyFriends
@@ -58,4 +59,4 @@ groupInfo(testPG)$description[1] <- 'transposase'
 Other Metadata: \code{\link{addGroupInfo}},
   \code{\link{addOrgInfo}}, \code{\link{orgInfo}}
 }
-
+\concept{Metadata}

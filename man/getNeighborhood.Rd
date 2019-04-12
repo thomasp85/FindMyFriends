@@ -39,6 +39,7 @@ indicating whether or not the node is the queried gene group.
 \item \code{pgVirtualLoc}: Gene group neighborhoods for all pgVirtualLoc
 subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 
@@ -49,4 +50,3 @@ neighborhood <- getNeighborhood(testPG, group=10)
 \seealso{
 \code{\link{plotNeighborhood}} for nice plotting of the neighborhood
 }
-

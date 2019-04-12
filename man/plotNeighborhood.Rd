@@ -8,7 +8,8 @@
 \usage{
 plotNeighborhood(object, ...)
 
-\S4method{plotNeighborhood}{pgVirtualLoc}(object, group, vicinity = 4, ...)
+\S4method{plotNeighborhood}{pgVirtualLoc}(object, group, vicinity = 4,
+  ...)
 }
 \arguments{
 \item{object}{A pgVirtualLoc subclass}
@@ -35,6 +36,7 @@ information is visualised.
 \item \code{pgVirtualLoc}: Gene group neighborhood plotting for all
 pgVirtualLoc subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 
@@ -42,4 +44,3 @@ testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 plotNeighborhood(testPG, 30)
 
 }
-

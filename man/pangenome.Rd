@@ -59,4 +59,3 @@ pangenome(genomeFiles, TRUE, lowMem=TRUE)
 pangenome(genomeFiles, TRUE, geneLocation='prodigal', lowMem=TRUE)
 
 }
-

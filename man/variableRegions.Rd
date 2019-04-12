@@ -50,6 +50,7 @@ then joined together to form bigger groups of high variability.
 \item \code{pgVirtualLoc}: Variable region detection for all pgVirtualLoc
 subclasses
 }}
+
 \examples{
 testPG <- .loadPgExample(geneLoc=TRUE, withNeighborhoodSplit=TRUE)
 
@@ -62,4 +63,3 @@ regions[[1]]
 }
 
 }
-

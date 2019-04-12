@@ -33,4 +33,3 @@ comparisons.
 \author{
 Thomas Lin Pedersen
 }
-

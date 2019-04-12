@@ -25,6 +25,7 @@ index of the corresponding organism.
 \itemize{
 \item \code{pgInMem}: Gene to organism indexing for pgInMem subclasses
 }}
+
 \note{
 Required for extending the class system of FindMyFriends
 }
@@ -38,4 +39,3 @@ head(seqToOrg(testPG))
 \seealso{
 \code{\link{seqToGeneGroup}} for gene-to-genegroup relationship
 }
-

@@ -15,6 +15,7 @@ a data.frame.
 \item{\code{geneLocation}}{A data.frame containing the columns 'contig', 'start', 
 'end' and 'strand' and a row for each gene in the pangenome.}
 }}
+
 \seealso{
 Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgFullLoc-class}},
@@ -24,4 +25,4 @@ Other Pangenome_classes: \code{\link{pgFull-class}},
   \code{\link{pgVirtual-class}},
   \code{\link{pgVirtualLoc-class}}
 }
-
+\concept{Pangenome_classes}
