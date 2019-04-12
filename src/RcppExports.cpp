@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // cdhitestC
 IntegerVector cdhitestC(List opts, CharacterVector name, bool showProgress);
-RcppExport SEXP FindMyFriends_cdhitestC(SEXP optsSEXP, SEXP nameSEXP, SEXP showProgressSEXP) {
+RcppExport SEXP _FindMyFriends_cdhitestC(SEXP optsSEXP, SEXP nameSEXP, SEXP showProgressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -20,7 +20,7 @@ END_RCPP
 }
 // cdhitC
 IntegerVector cdhitC(List opts, CharacterVector name, bool showProgress);
-RcppExport SEXP FindMyFriends_cdhitC(SEXP optsSEXP, SEXP nameSEXP, SEXP showProgressSEXP) {
+RcppExport SEXP _FindMyFriends_cdhitC(SEXP optsSEXP, SEXP nameSEXP, SEXP showProgressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -33,7 +33,7 @@ END_RCPP
 }
 // nSeqs
 NumericVector nSeqs(CharacterVector files);
-RcppExport SEXP FindMyFriends_nSeqs(SEXP filesSEXP) {
+RcppExport SEXP _FindMyFriends_nSeqs(SEXP filesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -44,7 +44,7 @@ END_RCPP
 }
 // getClustersFromR
 IntegerVector getClustersFromR(IntegerVector I, IntegerVector P, NumericVector X);
-RcppExport SEXP FindMyFriends_getClustersFromR(SEXP ISEXP, SEXP PSEXP, SEXP XSEXP) {
+RcppExport SEXP _FindMyFriends_getClustersFromR(SEXP ISEXP, SEXP PSEXP, SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -57,7 +57,7 @@ END_RCPP
 }
 // createPanMatrix
 List createPanMatrix(IntegerVector org, IntegerVector group);
-RcppExport SEXP FindMyFriends_createPanMatrix(SEXP orgSEXP, SEXP groupSEXP) {
+RcppExport SEXP _FindMyFriends_createPanMatrix(SEXP orgSEXP, SEXP groupSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -69,7 +69,7 @@ END_RCPP
 }
 // calcGroupInfo
 DataFrame calcGroupInfo(List groupOrgs, int nOrgs, double threshold);
-RcppExport SEXP FindMyFriends_calcGroupInfo(SEXP groupOrgsSEXP, SEXP nOrgsSEXP, SEXP thresholdSEXP) {
+RcppExport SEXP _FindMyFriends_calcGroupInfo(SEXP groupOrgsSEXP, SEXP nOrgsSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -82,7 +82,7 @@ END_RCPP
 }
 // findIn
 IntegerVector findIn(IntegerVector keys, IntegerVector lookup);
-RcppExport SEXP FindMyFriends_findIn(SEXP keysSEXP, SEXP lookupSEXP) {
+RcppExport SEXP _FindMyFriends_findIn(SEXP keysSEXP, SEXP lookupSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -94,7 +94,7 @@ END_RCPP
 }
 // lkMatrix
 List lkMatrix(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
-RcppExport SEXP FindMyFriends_lkMatrix(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
+RcppExport SEXP _FindMyFriends_lkMatrix(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -110,7 +110,7 @@ END_RCPP
 }
 // lkMembers
 IntegerVector lkMembers(IntegerVector pX, IntegerVector jX, NumericVector xX, IntegerVector selX, double lowerLimit, double upperLimit);
-RcppExport SEXP FindMyFriends_lkMembers(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
+RcppExport SEXP _FindMyFriends_lkMembers(SEXP pXSEXP, SEXP jXSEXP, SEXP xXSEXP, SEXP selXSEXP, SEXP lowerLimitSEXP, SEXP upperLimitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -126,7 +126,7 @@ END_RCPP
 }
 // neighborhoodSim
 List neighborhoodSim(IntegerVector members, IntegerVector groups, IntegerVector organism, int size, IntegerVector down, IntegerVector up, LogicalVector reverse, IntegerVector width, double threshold, bool forceParalogues);
-RcppExport SEXP FindMyFriends_neighborhoodSim(SEXP membersSEXP, SEXP groupsSEXP, SEXP organismSEXP, SEXP sizeSEXP, SEXP downSEXP, SEXP upSEXP, SEXP reverseSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP forceParaloguesSEXP) {
+RcppExport SEXP _FindMyFriends_neighborhoodSim(SEXP membersSEXP, SEXP groupsSEXP, SEXP organismSEXP, SEXP sizeSEXP, SEXP downSEXP, SEXP upSEXP, SEXP reverseSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP forceParaloguesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -146,7 +146,7 @@ END_RCPP
 }
 // mergeSims
 DataFrame mergeSims(IntegerVector nI, IntegerVector nP, IntegerVector nX, IntegerVector sI, IntegerVector sP, NumericVector sX, IntegerVector guideGroup);
-RcppExport SEXP FindMyFriends_mergeSims(SEXP nISEXP, SEXP nPSEXP, SEXP nXSEXP, SEXP sISEXP, SEXP sPSEXP, SEXP sXSEXP, SEXP guideGroupSEXP) {
+RcppExport SEXP _FindMyFriends_mergeSims(SEXP nISEXP, SEXP nPSEXP, SEXP nXSEXP, SEXP sISEXP, SEXP sPSEXP, SEXP sXSEXP, SEXP guideGroupSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -163,7 +163,7 @@ END_RCPP
 }
 // widthSim
 IntegerVector widthSim(List groups, IntegerVector width, double threshold, CharacterVector progName, bool showProgress);
-RcppExport SEXP FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP progNameSEXP, SEXP showProgressSEXP) {
+RcppExport SEXP _FindMyFriends_widthSim(SEXP groupsSEXP, SEXP widthSEXP, SEXP thresholdSEXP, SEXP progNameSEXP, SEXP showProgressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -178,7 +178,7 @@ END_RCPP
 }
 // getCliques
 IntegerVector getCliques(DataFrame edges, int nNodes);
-RcppExport SEXP FindMyFriends_getCliques(SEXP edgesSEXP, SEXP nNodesSEXP) {
+RcppExport SEXP _FindMyFriends_getCliques(SEXP edgesSEXP, SEXP nNodesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -190,7 +190,7 @@ END_RCPP
 }
 // getPotentials
 IntegerVector getPotentials(IntegerVector down, IntegerVector up, LogicalVector pending, LogicalVector reverse, List groupSplit, IntegerVector groups);
-RcppExport SEXP FindMyFriends_getPotentials(SEXP downSEXP, SEXP upSEXP, SEXP pendingSEXP, SEXP reverseSEXP, SEXP groupSplitSEXP, SEXP groupsSEXP) {
+RcppExport SEXP _FindMyFriends_getPotentials(SEXP downSEXP, SEXP upSEXP, SEXP pendingSEXP, SEXP reverseSEXP, SEXP groupSplitSEXP, SEXP groupsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -206,7 +206,7 @@ END_RCPP
 }
 // groupHasParalogues
 LogicalVector groupHasParalogues(List groupMembers, IntegerVector org);
-RcppExport SEXP FindMyFriends_groupHasParalogues(SEXP groupMembersSEXP, SEXP orgSEXP) {
+RcppExport SEXP _FindMyFriends_groupHasParalogues(SEXP groupMembersSEXP, SEXP orgSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -218,7 +218,7 @@ END_RCPP
 }
 // groupNeighbors
 DataFrame groupNeighbors(IntegerVector down, IntegerVector up, IntegerVector groups, IntegerVector order);
-RcppExport SEXP FindMyFriends_groupNeighbors(SEXP downSEXP, SEXP upSEXP, SEXP groupsSEXP, SEXP orderSEXP) {
+RcppExport SEXP _FindMyFriends_groupNeighbors(SEXP downSEXP, SEXP upSEXP, SEXP groupsSEXP, SEXP orderSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -232,7 +232,7 @@ END_RCPP
 }
 // mergeGroupsByNeighbors
 DataFrame mergeGroupsByNeighbors(List GOI, DataFrame lookup);
-RcppExport SEXP FindMyFriends_mergeGroupsByNeighbors(SEXP GOISEXP, SEXP lookupSEXP) {
+RcppExport SEXP _FindMyFriends_mergeGroupsByNeighbors(SEXP GOISEXP, SEXP lookupSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -244,7 +244,7 @@ END_RCPP
 }
 // panSim
 NumericMatrix panSim(IntegerVector P, IntegerVector I, CharacterVector names);
-RcppExport SEXP FindMyFriends_panSim(SEXP PSEXP, SEXP ISEXP, SEXP namesSEXP) {
+RcppExport SEXP _FindMyFriends_panSim(SEXP PSEXP, SEXP ISEXP, SEXP namesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -254,4 +254,31 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(panSim(P, I, names));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_FindMyFriends_cdhitestC", (DL_FUNC) &_FindMyFriends_cdhitestC, 3},
+    {"_FindMyFriends_cdhitC", (DL_FUNC) &_FindMyFriends_cdhitC, 3},
+    {"_FindMyFriends_nSeqs", (DL_FUNC) &_FindMyFriends_nSeqs, 1},
+    {"_FindMyFriends_getClustersFromR", (DL_FUNC) &_FindMyFriends_getClustersFromR, 3},
+    {"_FindMyFriends_createPanMatrix", (DL_FUNC) &_FindMyFriends_createPanMatrix, 2},
+    {"_FindMyFriends_calcGroupInfo", (DL_FUNC) &_FindMyFriends_calcGroupInfo, 3},
+    {"_FindMyFriends_findIn", (DL_FUNC) &_FindMyFriends_findIn, 2},
+    {"_FindMyFriends_lkMatrix", (DL_FUNC) &_FindMyFriends_lkMatrix, 6},
+    {"_FindMyFriends_lkMembers", (DL_FUNC) &_FindMyFriends_lkMembers, 6},
+    {"_FindMyFriends_neighborhoodSim", (DL_FUNC) &_FindMyFriends_neighborhoodSim, 10},
+    {"_FindMyFriends_mergeSims", (DL_FUNC) &_FindMyFriends_mergeSims, 7},
+    {"_FindMyFriends_widthSim", (DL_FUNC) &_FindMyFriends_widthSim, 5},
+    {"_FindMyFriends_getCliques", (DL_FUNC) &_FindMyFriends_getCliques, 2},
+    {"_FindMyFriends_getPotentials", (DL_FUNC) &_FindMyFriends_getPotentials, 6},
+    {"_FindMyFriends_groupHasParalogues", (DL_FUNC) &_FindMyFriends_groupHasParalogues, 2},
+    {"_FindMyFriends_groupNeighbors", (DL_FUNC) &_FindMyFriends_groupNeighbors, 4},
+    {"_FindMyFriends_mergeGroupsByNeighbors", (DL_FUNC) &_FindMyFriends_mergeGroupsByNeighbors, 2},
+    {"_FindMyFriends_panSim", (DL_FUNC) &_FindMyFriends_panSim, 3},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_FindMyFriends(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
