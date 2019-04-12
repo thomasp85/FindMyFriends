@@ -19,6 +19,7 @@ biocViews: ComparativeGenomics, Clustering, DataRepresentation,
     GenomicVariation, SequenceMatching, GraphAndNetwork
 VignetteBuilder: knitr
 LinkingTo: Rcpp
+Encoding: UTF-8
 Imports:
     methods,
     BiocGenerics,
@@ -74,4 +75,4 @@ Collate:
     'similarities.R'
     'splitting.R'
 NeedsCompilation: yes
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.1
