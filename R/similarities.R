@@ -21,7 +21,7 @@ NULL
 #' used for parallelisation.
 #' 
 #' @importFrom kebabs spectrumKernel getExRep linearKernel
-#' @importFrom BiocParallel SerialParam bpworkers
+#' @importFrom BiocParallel SerialParam bpnworkers
 #' 
 setMethod(
     'kmerSimilarity', 'pgVirtual',
@@ -33,7 +33,7 @@ setMethod(
                 pParam <- SerialParam()
                 nSplits <- nOrganisms(object)
             } else {
-                nSplits <- bpworkers(pParam)
+                nSplits <- bpnworkers(pParam)
             }
             res <- lkParallelLM(object, kmerSize, pParam, nSplits, 
                                 lowerLimit = lowerLimit)
@@ -44,7 +44,7 @@ setMethod(
                 res <- linearKernel(er, sparse = TRUE, diag = FALSE, 
                                     lowerLimit = lowerLimit)
             } else {
-                res <- lkParallel(er, pParam, bpworkers(pParam), 
+                res <- lkParallel(er, pParam, bpnworkers(pParam), 
                                   lowerLimit = lowerLimit)
             }
         }

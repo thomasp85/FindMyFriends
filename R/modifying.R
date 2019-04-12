@@ -24,7 +24,7 @@
 #' 
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
 #' @importFrom dplyr bind_rows
-#' @importFrom BiocParallel bpworkers
+#' @importFrom BiocParallel bpnworkers
 #' 
 setMethod(
     'addGenomes', c('pgVirtual', 'pgVirtual'),
@@ -55,7 +55,7 @@ setMethod(
             sim <- linearKernel(er, sparse = TRUE, diag = FALSE, 
                                 lowerLimit = lowerLimit)
         } else {
-            sim <- lkParallel(er, pParam, bpworkers(pParam), 
+            sim <- lkParallel(er, pParam, bpnworkers(pParam), 
                               lowerLimit = lowerLimit)
         }
         gr <- graph_from_adjacency_matrix(sim, mode = 'lower', 

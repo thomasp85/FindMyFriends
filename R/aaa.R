@@ -374,7 +374,6 @@ weaveChunks <- function(squares, split) {
 #' @importFrom digest digest
 #' @importFrom filehash dbExists dbFetch dbInsert
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
-#' @importFrom BiocParallel bpworkers
 #' @importFrom igraph components graph_from_adjacency_matrix
 #' @importFrom Biostrings order
 #' @importFrom stats is.leaf runif

@@ -27,7 +27,7 @@ NULL
 #' which is also the recommended.
 #' 
 #' @importFrom kebabs getExRep spectrumKernel linearKernel
-#' @importFrom BiocParallel SerialParam bpworkers
+#' @importFrom BiocParallel SerialParam bpnworkers
 #' 
 setMethod(
     'kmerLink', 'pgVirtual',
@@ -39,7 +39,7 @@ setMethod(
         if(missing(pParam)) {
             sim <- linearKernel(er, sparse=TRUE, diag=FALSE, lowerLimit=lowerLimit)
         } else {
-            sim <- lkParallel(er, pParam, bpworkers(pParam), lowerLimit=lowerLimit)
+            sim <- lkParallel(er, pParam, bpnworkers(pParam), lowerLimit=lowerLimit)
         }
         sim <- transformSim(sim, lowerLimit, rescale, transform)
         members <- igGroup(sim, algorithm, ...)
