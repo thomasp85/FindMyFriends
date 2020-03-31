@@ -944,22 +944,25 @@ rbindGtable <- function(..., size = "max", z = NULL) {
 #' @noRd
 #' 
 rbind_gtable <- function(x, y, size = "max") {
-    if (nrow(x) == 0) return(y)
-    if (nrow(y) == 0) return(x)
-    if (ncol(x) > ncol(y)) {
-        y <- gtable_add_cols(y, rep(unit(1e-6, 'mm'), ncol(x) - ncol(y)))
-        background <- grep('background', y$layout$name)
-        y$layout$r[background] <- ncol(y)
-    }
-    if (ncol(x) < ncol(y)) {
-        x <- gtable_add_cols(x, rep(unit(1e-6, 'mm'), ncol(y) - ncol(x)))
-        background <- grep('background', x$layout$name)
-        x$layout$r[background] <- ncol(x)
-    }
+    if (length(x$widths) != length(y$widths)) 
+        stop("x and y must have the same number of columns", call. = FALSE)
+    x_row <- length(x$heights)
+    y_row <- length(y$heights)
+    if (x_row == 0) return(y)
+    if (y_row == 0) return(x)
     
-    y$layout$t <- y$layout$t + nrow(x)
-    y$layout$b <- y$layout$b + nrow(x)
-    x$layout <- rbind(x$layout, y$layout)
+    lay_x <- unclass(x$layout)
+    lay_y <- unclass(y$layout)
+    
+    x$layout <- data.frame(
+        t = c(lay_x$t, lay_y$t + x_row),
+        l = c(lay_x$l, lay_y$l),
+        b = c(lay_x$b, lay_y$b + x_row),
+        r = c(lay_x$r, lay_y$r),
+        z = c(lay_x$z, lay_y$z),
+        clip = c(lay_x$clip, lay_y$clip),
+        name = c(lay_x$name, lay_y$name)
+    )
     
     x$heights <- gtable:::insert.unit(x$heights, y$heights)
     x$rownames <- c(x$rownames, y$rownames)
@@ -968,26 +971,11 @@ rbind_gtable <- function(x, y, size = "max") {
     x$widths <- switch(size,
                        first = x$widths,
                        last = y$widths,
-                       min = grid::unit.pmin(x$widths, y$widths),
-                       max = grid::unit.pmax(x$widths, y$widths)
+                       min = gtable:::compare_unit(x$widths, y$widths, pmin),
+                       max = gtable:::compare_unit(x$widths, y$widths, pmax)
     )
-    if (size %in% c('max', 'min')) {
-        x$widths <- do.call(unit.c, lapply(x$widths, function(x) {
-            if (identical(x[[1]]$arg1[1], x[[1]]$arg1[2])) {
-                x[[1]]$arg1[1]
-            } else {
-                x
-            }
-        }))
-    }
+    
     x$grobs <- append(x$grobs, y$grobs)
-    
-    backgrounds <- grep('background', x$layout$name)
-    
-    x$layout <- x$layout[-backgrounds[2],]
-    x$grobs[backgrounds[2]] <- NULL
-    x$layout$r[backgrounds[1]] <- ncol(x)
-    x$layout$b[backgrounds[1]] <- nrow(x)
     
     x
 }
