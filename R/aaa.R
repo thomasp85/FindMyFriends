@@ -944,8 +944,18 @@ rbindGtable <- function(..., size = "max", z = NULL) {
 #' @noRd
 #' 
 rbind_gtable <- function(x, y, size = "max") {
-    if (length(x$widths) != length(y$widths)) 
-        stop("x and y must have the same number of columns", call. = FALSE)
+    if (nrow(x) == 0) return(y)
+    if (nrow(y) == 0) return(x)
+    if (ncol(x) > ncol(y)) {
+        y <- gtable_add_cols(y, rep(unit(1e-6, 'mm'), ncol(x) - ncol(y)))
+        background <- grep('background', y$layout$name)
+        y$layout$r[background] <- ncol(y)
+    }
+    if (ncol(x) < ncol(y)) {
+        x <- gtable_add_cols(x, rep(unit(1e-6, 'mm'), ncol(y) - ncol(x)))
+        background <- grep('background', x$layout$name)
+        x$layout$r[background] <- ncol(x)
+    }
     x_row <- length(x$heights)
     y_row <- length(y$heights)
     if (x_row == 0) return(y)
